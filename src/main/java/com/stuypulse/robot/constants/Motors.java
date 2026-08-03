@@ -9,6 +9,7 @@ import static org.wpilib.units.Units.*;
 import org.wpilib.units.measure.*;
 
 import com.ctre.phoenix6.configs.*;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.*;
 
@@ -23,6 +24,139 @@ import com.ctre.phoenix6.signals.*;
  */
 public interface Motors {
     /** Classes to store all of the values a motor needs */
+    public interface Intake {
+        TalonFXConfig PIVOT_CONFIG = new Motors.TalonFXConfig()
+                .withInvertedValue(InvertedValue.Clockwise_Positive)
+                .withNeutralMode(NeutralModeValue.Brake)
+                .withSupplyCurrentLimit(10.0) // was 60 on practice day
+                .withStatorCurrentLimitEnabled(false)
+                .withRampRate(0.25)
+                .withPIDConstants(
+                        Gains.Intake.Pivot.kP.get(),
+                        Gains.Intake.Pivot.kI.get(),
+                        Gains.Intake.Pivot.kD.get(),
+                        0)
+                .withFFConstants(
+                        Gains.Intake.Pivot.kS.get(),
+                        Gains.Intake.Pivot.kV.get(),
+                        Gains.Intake.Pivot.kA.get(),
+                        Gains.Intake.Pivot.kG,
+                        0)
+                .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseVelocitySign, 0)
+                .withGravityType(GravityTypeValue.Arm_Cosine)
+                .withSensorToMechanismRatio(Settings.Intake.PIVOT_GEAR_RATIO);
+
+        TalonFXConfig ROLLER_CONFIG = new Motors.TalonFXConfig()
+                .withInvertedValue(InvertedValue.Clockwise_Positive)
+                .withNeutralMode(NeutralModeValue.Coast)
+                .withSupplyCurrentLimit(37.0)
+                .withStatorCurrentLimitEnabled(false)
+                .withRampRate(0.50);
+    }
+
+    public interface Spindexer {
+        TalonFXConfig SPINDEXER_CONFIG = new TalonFXConfig()
+                .withInvertedValue(InvertedValue.Clockwise_Positive)
+                .withNeutralMode(NeutralModeValue.Brake)
+                .withSupplyCurrentLimit(45)
+                .withStatorCurrentLimitEnabled(false)
+                .withRampRate(0.25)
+                .withSensorToMechanismRatio(Settings.Spindexer.GEAR_RATIO);
+    }
+
+    public interface Superstructure {
+        public interface Shooter {
+            TalonFXConfig SHOOTER_CONFIG = new TalonFXConfig()
+                    .withInvertedValue(InvertedValue.CounterClockwise_Positive)
+                    .withNeutralMode(NeutralModeValue.Coast)
+                    .withSupplyCurrentLimitEnabled(false)
+                    .withStatorCurrentLimitEnabled(false)
+                    .withPIDConstants(
+                            Gains.Superstructure.Shooter.kP.get(),
+                            Gains.Superstructure.Shooter.kI.get(),
+                            Gains.Superstructure.Shooter.kD.get(),
+                            0)
+                    .withFFConstants(
+                            Gains.Superstructure.Shooter.kS.get(),
+                            Gains.Superstructure.Shooter.kV.get(),
+                            Gains.Superstructure.Shooter.kA.get(),
+                            0)
+                    .withSensorToMechanismRatio(Settings.Superstructure.Shooter.GEAR_RATIO)
+                    .withStatorCurrentLimit(140)
+                    .withStatorCurrentLimitEnabled(false)
+                    .withSupplyCurrentLimit(100)
+                    .withSupplyCurrentLimitEnabled(true)
+                    .withLowerLimitSupplyCurrent(60, 1);
+        }
+
+        public interface Hood {
+            TalonFXConfig HOOD_CONFIG = new TalonFXConfig()
+                    .withInvertedValue(InvertedValue.Clockwise_Positive)
+                    .withNeutralMode(NeutralModeValue.Brake)
+                    .withSupplyCurrentLimit(80.0)
+                    .withStatorCurrentLimitEnabled(false)
+                    .withRampRate(0.25)
+                    .withPIDConstants(
+                            Gains.Superstructure.Hood.kP,
+                            Gains.Superstructure.Hood.kI,
+                            Gains.Superstructure.Hood.kD,
+                            0)
+                    .withFFConstants(
+                            Gains.Superstructure.Hood.kS,
+                            Gains.Superstructure.Hood.kV,
+                            Gains.Superstructure.Hood.kA,
+                            0)
+                    .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign, 0)
+                    .withSensorToMechanismRatio(Settings.Superstructure.Hood.GEAR_RATIO)
+                    .withSoftLimits(
+                            true,
+                            true,
+                            Settings.Superstructure.Hood.FORWARD_SOFT_LIMIT.in(Rotations),
+                            Settings.Superstructure.Hood.REVERSE_SOFT_LIMIT.in(Rotations));
+        }
+    }
+
+    public static class CANCoderConfig {
+        private final CANcoderConfiguration configuration = new CANcoderConfiguration();
+        private final MagnetSensorConfigs magnetSensorConfigs = new MagnetSensorConfigs();
+
+        public void configure(CANcoder encoder) {
+            CANcoderConfiguration defaultConfig = new CANcoderConfiguration();
+            encoder.getConfigurator().apply(defaultConfig);
+
+            encoder.getConfigurator().apply(configuration);
+        }
+
+        public CANcoderConfiguration getConfiguration() {
+            return this.configuration;
+        }
+
+        // MAGNET SENSOR CONFIGS
+
+        public CANCoderConfig withSensorDirection(SensorDirectionValue sensorDirection) {
+            magnetSensorConfigs.SensorDirection = sensorDirection;
+
+            configuration.withMagnetSensor(magnetSensorConfigs);
+
+            return this;
+        }
+
+        public CANCoderConfig withAbsoluteSensorDiscontinuityPoint(double discontinuityPoint) {
+            magnetSensorConfigs.AbsoluteSensorDiscontinuityPoint = discontinuityPoint;
+
+            configuration.withMagnetSensor(magnetSensorConfigs);
+
+            return this;
+        }
+
+        public CANCoderConfig withMagnetOffset(double magnetOffset) {
+            magnetSensorConfigs.MagnetOffset = magnetOffset;
+
+            configuration.withMagnetSensor(magnetSensorConfigs);
+
+            return this;
+        }
+    }
 
     /** Wrapper class for configuring TalonFX motors */
     public static class TalonFXConfig {
@@ -36,10 +170,8 @@ public interface Motors {
         private final CurrentLimitsConfigs currentLimitsConfigs = new CurrentLimitsConfigs();
         private final FeedbackConfigs feedbackConfigs = new FeedbackConfigs();
         private final MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
-        private final SoftwareLimitSwitchConfigs softwareLimitSwitchConfigs =
-                new SoftwareLimitSwitchConfigs();
-        private final ClosedLoopGeneralConfigs closedLoopGeneralConfigs =
-                new ClosedLoopGeneralConfigs();
+        private final SoftwareLimitSwitchConfigs softwareLimitSwitchConfigs = new SoftwareLimitSwitchConfigs();
+        private final ClosedLoopGeneralConfigs closedLoopGeneralConfigs = new ClosedLoopGeneralConfigs();
         private final VoltageConfigs voltageConfigs = new VoltageConfigs();
         private final TorqueCurrentConfigs torqueCurrentConfigs = new TorqueCurrentConfigs();
 
@@ -74,26 +206,24 @@ public interface Motors {
                 return;
             }
 
-            final boolean changed =
-                    kP != lastKP[slot]
-                            || kI != lastKI[slot]
-                            || kD != lastKD[slot]
-                            || kS != lastKS[slot]
-                            || kV != lastKV[slot]
-                            || kA != lastKA[slot];
+            final boolean changed = kP != lastKP[slot]
+                    || kI != lastKI[slot]
+                    || kD != lastKD[slot]
+                    || kS != lastKS[slot]
+                    || kV != lastKV[slot]
+                    || kA != lastKA[slot];
 
             if (!changed) {
                 return;
             }
 
-            final SlotConfigs gainConfig =
-                    new SlotConfigs()
-                            .withKP(kP)
-                            .withKI(kI)
-                            .withKD(kD)
-                            .withKS(kS)
-                            .withKV(kV)
-                            .withKA(kA);
+            final SlotConfigs gainConfig = new SlotConfigs()
+                    .withKP(kP)
+                    .withKI(kI)
+                    .withKD(kD)
+                    .withKS(kS)
+                    .withKV(kV)
+                    .withKA(kA);
 
             gainConfig.SlotNumber = slot;
 
@@ -194,14 +324,16 @@ public interface Motors {
         }
 
         /**
-         * Modifies this configuration's GainSchedErrorThreshold parameter, which is the position
+         * Modifies this configuration's GainSchedErrorThreshold parameter, which is the
+         * position
          * closed-loop error threshold to apply gains scheduling.
          *
-         * @param value Gains scheduling behavior, see {@link
-         *     com.ctre.phoenix6.signals.GainSchedBehaviorValue}.
-         * @param thresholdRotations The position closed-loop error threshold for gain scheduling in
-         *     rotations.
-         * @param slot Slot to apply gains scheduling behavior to.
+         * @param value              Gains scheduling behavior, see {@link
+         *                           com.ctre.phoenix6.signals.GainSchedBehaviorValue}.
+         * @param thresholdRotations The position closed-loop error threshold for gain
+         *                           scheduling in
+         *                           rotations.
+         * @param slot               Slot to apply gains scheduling behavior to.
          * @return Itself for method-chaining.
          */
         public TalonFXConfig withGainSchedBehavior(
@@ -210,13 +342,15 @@ public interface Motors {
         }
 
         /**
-         * Modifies this configuration's GainSchedErrorThreshold parameter, which is the position
+         * Modifies this configuration's GainSchedErrorThreshold parameter, which is the
+         * position
          * closed-loop error threshold to apply gains scheduling.
          *
-         * @param value Gains scheduling behavior, see {@link
-         *     com.ctre.phoenix6.signals.GainSchedBehaviorValue}.
-         * @param thresholdRotations The position closed-loop error threshold for gain scheduling.
-         * @param slot Slot to apply gains scheduling behavior to.
+         * @param value              Gains scheduling behavior, see {@link
+         *                           com.ctre.phoenix6.signals.GainSchedBehaviorValue}.
+         * @param thresholdRotations The position closed-loop error threshold for gain
+         *                           scheduling.
+         * @param slot               Slot to apply gains scheduling behavior to.
          * @return Itself for method-chaining.
          */
         public TalonFXConfig withGainSchedBehavior(
@@ -225,23 +359,20 @@ public interface Motors {
             configuration.withClosedLoopGeneral(closedLoopGeneralConfigs);
 
             switch (slot) {
-                case 0:
-                    {
-                        slot0Configs.withGainSchedBehavior(value);
-                        configuration.withSlot0(slot0Configs);
-                    }
+                case 0: {
+                    slot0Configs.withGainSchedBehavior(value);
+                    configuration.withSlot0(slot0Configs);
+                }
                     break;
-                case 1:
-                    {
-                        slot1Configs.withGainSchedBehavior(value);
-                        configuration.withSlot1(slot1Configs);
-                    }
+                case 1: {
+                    slot1Configs.withGainSchedBehavior(value);
+                    configuration.withSlot1(slot1Configs);
+                }
                     break;
-                case 2:
-                    {
-                        slot2Configs.withGainSchedBehavior(value);
-                        configuration.withSlot2(slot2Configs);
-                    }
+                case 2: {
+                    slot2Configs.withGainSchedBehavior(value);
+                    configuration.withSlot2(slot2Configs);
+                }
                     break;
             }
 
@@ -269,8 +400,9 @@ public interface Motors {
         /**
          * Modifies this configuration's velocity filter's time constant.
          *
-         * @param filterTime The configurable time constant in seconds of the Kalman velocity
-         *     filter.
+         * @param filterTime The configurable time constant in seconds of the Kalman
+         *                   velocity
+         *                   filter.
          * @return Itself for easier method-chaining
          */
         public TalonFXConfig withVelocityTimeFilter(double filterTimeSeconds) {
@@ -280,7 +412,8 @@ public interface Motors {
         /**
          * Modifies this configuration's velocity filter's time constant.
          *
-         * @param filterTime The configurable time constant of the Kalman velocity filter.
+         * @param filterTime The configurable time constant of the Kalman velocity
+         *                   filter.
          * @return Itself for easier method-chaining
          */
         public TalonFXConfig withVelocityTimeFilter(Time filterTime) {
@@ -294,13 +427,14 @@ public interface Motors {
         // RAMP RATE CONFIGS
 
         /**
-         * Modifies this configuration's open and closed loop ramp periods for the following control
+         * Modifies this configuration's open and closed loop ramp periods for the
+         * following control
          * types:
          *
          * <ul>
-         *   <li>DutyCycle
-         *   <li>TorqueCurrent
-         *   <li>Voltage
+         * <li>DutyCycle
+         * <li>TorqueCurrent
+         * <li>Voltage
          * </ul>
          *
          * <br>
@@ -313,13 +447,14 @@ public interface Motors {
         }
 
         /**
-         * Modifies this configuration's open and closed loop ramp periods for the following control
+         * Modifies this configuration's open and closed loop ramp periods for the
+         * following control
          * types:
          *
          * <ul>
-         *   <li>DutyCycle
-         *   <li>TorqueCurrent
-         *   <li>Voltage
+         * <li>DutyCycle
+         * <li>TorqueCurrent
+         * <li>Voltage
          * </ul>
          *
          * <br>
@@ -346,12 +481,17 @@ public interface Motors {
         /**
          * Modifies this configuration's supply current lower limit.
          *
-         * @param currentLowerLimit The amount of supply current in amperes allowed after the
-         *     regular {@link CurrentLimitsConfigs#SupplyCurrentLimit} is active for longer than the
-         *     time parameter.
-         * @param time The amount of time in seconds that the regular {@link
-         *     CurrentLimitsConfigs#SupplyCurrentLimit} can be active before lowring it to the
-         *     currentLowerLimit parameter.
+         * @param currentLowerLimit The amount of supply current in amperes allowed
+         *                          after the
+         *                          regular
+         *                          {@link CurrentLimitsConfigs#SupplyCurrentLimit} is
+         *                          active for longer than the
+         *                          time parameter.
+         * @param time              The amount of time in seconds that the regular
+         *                          {@link
+         *                          CurrentLimitsConfigs#SupplyCurrentLimit} can be
+         *                          active before lowring it to the
+         *                          currentLowerLimit parameter.
          * @return
          */
         public TalonFXConfig withLowerLimitSupplyCurrent(
@@ -363,12 +503,15 @@ public interface Motors {
         /**
          * Modifies this configuration's supply current lower limit.
          *
-         * @param currentLowerLimit The amount of supply current allowed after the regular {@link
-         *     CurrentLimitsConfigs#SupplyCurrentLimit} is active for longer than the time
-         *     parameter.
-         * @param time The amount of time that the regular {@link
-         *     CurrentLimitsConfigs#SupplyCurrentLimit} can be active before lowring it to the
-         *     currentLowerLimit parameter.
+         * @param currentLowerLimit The amount of supply current allowed after the
+         *                          regular {@link
+         *                          CurrentLimitsConfigs#SupplyCurrentLimit} is active
+         *                          for longer than the time
+         *                          parameter.
+         * @param time              The amount of time that the regular {@link
+         *                          CurrentLimitsConfigs#SupplyCurrentLimit} can be
+         *                          active before lowring it to the
+         *                          currentLowerLimit parameter.
          * @return
          */
         public TalonFXConfig withLowerLimitSupplyCurrent(Current currentLowerLimit, Time time) {
@@ -383,7 +526,8 @@ public interface Motors {
         /**
          * Modifies this configuration's supply current limit and enables it.
          *
-         * @param currentLimit Maximum allowed current in amperes drawn from the battery.
+         * @param currentLimit Maximum allowed current in amperes drawn from the
+         *                     battery.
          * @return Itself for easier method-chaining.
          */
         public TalonFXConfig withSupplyCurrentLimit(double currentLimitAmps) {
@@ -416,8 +560,9 @@ public interface Motors {
         /**
          * Modifies this configuration's stator current limit and enables it.
          *
-         * @param currentLimit Amount of current in amperes allowed in the motor (motoring and regen
-         *     current).
+         * @param currentLimit Amount of current in amperes allowed in the motor
+         *                     (motoring and regen
+         *                     current).
          * @return Itself for easier method chaining.
          */
         public TalonFXConfig withStatorCurrentLimit(double currentLimitAmps) {
@@ -427,7 +572,8 @@ public interface Motors {
         /**
          * Modifies this configuration's stator current limit and enables it.
          *
-         * @param currentLimit Amount of current allowed in the motor (motoring and regen current).
+         * @param currentLimit Amount of current allowed in the motor (motoring and
+         *                     regen current).
          * @return Itself for easier method chaining.
          */
         public TalonFXConfig withStatorCurrentLimit(Current currentLimit) {
@@ -448,13 +594,17 @@ public interface Motors {
         }
 
         /**
-         * Modifies this configuration's torque current limits. Limits apply during torque current
+         * Modifies this configuration's torque current limits. Limits apply during
+         * torque current
          * control modes.
          *
-         * @param peakForwardTorqueCurrent Maximum forward torque current output in amperes.
-         * @param peakReverseTorqueCurrent Maximum reverse torque current output in amperes.
-         * @param neutralTolerance Current range in amperes where requested torque current will
-         *     result in zero bridge output.
+         * @param peakForwardTorqueCurrent Maximum forward torque current output in
+         *                                 amperes.
+         * @param peakReverseTorqueCurrent Maximum reverse torque current output in
+         *                                 amperes.
+         * @param neutralTolerance         Current range in amperes where requested
+         *                                 torque current will
+         *                                 result in zero bridge output.
          * @return Itself for easier method-chaining.
          */
         public TalonFXConfig withTorqueCurrentLimits(
@@ -468,13 +618,15 @@ public interface Motors {
         }
 
         /**
-         * Modifies this configuration's torque current limits. Limits apply during torque current
+         * Modifies this configuration's torque current limits. Limits apply during
+         * torque current
          * control modes.
          *
          * @param peakForwardTorqueCurrent Maximum forward torque current output.
          * @param peakReverseTorqueCurrent Maximum reverse torque current output.
-         * @param neutralTolerance Current range where requested torque current will result in zero
-         *     bridge output.
+         * @param neutralTolerance         Current range where requested torque current
+         *                                 will result in zero
+         *                                 bridge output.
          * @return Itself for easier method-chaining.
          */
         public TalonFXConfig withTorqueCurrentLimits(
@@ -493,7 +645,8 @@ public interface Motors {
         // VOLTAGE LIMIT CONFIGS
 
         /**
-         * Modifies this configuration's voltage limits. Limits apply during voltage control modes.
+         * Modifies this configuration's voltage limits. Limits apply during voltage
+         * control modes.
          *
          * @param peakForwardVoltage Maximum forward voltage output in volts.
          * @param peakReverseVoltage Maximum reverse voltage output in volts.
@@ -504,7 +657,8 @@ public interface Motors {
         }
 
         /**
-         * Modifies this configuration's voltage limits. Limits apply during voltage control modes.
+         * Modifies this configuration's voltage limits. Limits apply during voltage
+         * control modes.
          *
          * @param peakForwardVoltage Maximum forward voltage output.
          * @param peakReverseVoltage Maximum reverse voltage output.
@@ -524,14 +678,18 @@ public interface Motors {
         /**
          * Modifies this configuration's software limit switch.
          *
-         * @param forwardEnable Whether to set the motor output to neutral if its position exceeds
-         *     the forward threshold.
-         * @param reverseEnable Whether to set the motor output to neutral if its position exceeds
-         *     the reverse threshold.
-         * @param forwardThreshold The threshold angle in rotations for the application of the
-         *     forward limit.
-         * @param reverseThreshold The threshold angle in rotations for the application of the
-         *     reverse limit.
+         * @param forwardEnable    Whether to set the motor output to neutral if its
+         *                         position exceeds
+         *                         the forward threshold.
+         * @param reverseEnable    Whether to set the motor output to neutral if its
+         *                         position exceeds
+         *                         the reverse threshold.
+         * @param forwardThreshold The threshold angle in rotations for the application
+         *                         of the
+         *                         forward limit.
+         * @param reverseThreshold The threshold angle in rotations for the application
+         *                         of the
+         *                         reverse limit.
          * @return Itself for easier method-chaining.
          */
         public TalonFXConfig withSoftLimits(
@@ -549,12 +707,16 @@ public interface Motors {
         /**
          * Modifies this configuration's software limit switch.
          *
-         * @param forwardEnable Whether to set the motor output to neutral if its position exceeds
-         *     the forward threshold.
-         * @param reverseEnable Whether to set the motor output to neutral if its position exceeds
-         *     the reverse threshold.
-         * @param forwardThreshold The threshold angle for the application of the forward limit.
-         * @param reverseThreshold The threshold angle for the application of the reverse limit.
+         * @param forwardEnable    Whether to set the motor output to neutral if its
+         *                         position exceeds
+         *                         the forward threshold.
+         * @param reverseEnable    Whether to set the motor output to neutral if its
+         *                         position exceeds
+         *                         the reverse threshold.
+         * @param forwardThreshold The threshold angle for the application of the
+         *                         forward limit.
+         * @param reverseThreshold The threshold angle for the application of the
+         *                         reverse limit.
          * @return Itself for easier method-chaining.
          */
         public TalonFXConfig withSoftLimits(
@@ -576,9 +738,11 @@ public interface Motors {
         /**
          * Modifies this configuration's motion magic profile.
          *
-         * @param maxVelocity Maximum/cruise velocity of the motion profile in rotations per second.
-         * @param maxAcceleration Maximum acceleration of the motion profile in rotations per second
-         *     squared.
+         * @param maxVelocity     Maximum/cruise velocity of the motion profile in
+         *                        rotations per second.
+         * @param maxAcceleration Maximum acceleration of the motion profile in
+         *                        rotations per second
+         *                        squared.
          * @return Itself for method-chaining.
          */
         public TalonFXConfig withMotionProfile(
@@ -591,7 +755,7 @@ public interface Motors {
         /**
          * Modifies this configuration's motion magic profile.
          *
-         * @param maxVelocity Maximum/cruise velocity of the motion profile.
+         * @param maxVelocity     Maximum/cruise velocity of the motion profile.
          * @param maxAcceleration Maximum acceleration of the motion profile.
          * @return Itself for method-chaining.
          */
