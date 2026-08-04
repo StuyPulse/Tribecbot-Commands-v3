@@ -6,16 +6,17 @@ import org.wpilib.units.measure.*;
 import com.stuypulse.robot.Robot;
 import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.subsystems.superstructure.turret.TurretIO.TurretIOOutputs;
+
+import org.wpilib.command3.Command;
+import org.wpilib.command3.Mechanism;
+import org.wpilib.command3.Trigger;
 import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.filter.Debouncer.DebounceType;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import org.littletonrobotics.junction.Logger;
 
-public class Turret extends SubsystemBase {
+public class Turret extends Mechanism {
     private static final Turret instance;
     private Translation2d driverInput;
 
@@ -55,7 +56,6 @@ public class Turret extends SubsystemBase {
         atTolerance = false;
     }
 
-    @Override
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("Turret", inputs);
@@ -99,32 +99,32 @@ public class Turret extends SubsystemBase {
     }
 
     public Command runFerry() {
-        return run(() -> runPosition(Settings.Superstructure.Turret.FOTM_TOLERANCE, OTM));
+        return run(coroutine -> runPosition(Settings.Superstructure.Turret.FOTM_TOLERANCE, OTM)).named("Run ferry");
     }
 
     public Command runLeftCorner() {
-        return run(() -> runPosition(Settings.Superstructure.Turret.LEFT_CORNER, OTM));
+        return run(coroutine -> runPosition(Settings.Superstructure.Turret.LEFT_CORNER, OTM)).named("Run left corner");
     }
 
     public Command runRightCorner() {
-        return run(() -> runPosition(Settings.Superstructure.Turret.RIGHT_CORNER, OTM));
+        return run(coroutine -> runPosition(Settings.Superstructure.Turret.RIGHT_CORNER, OTM)).named("Run right corner");
     }
 
     public Command runKB() {
-        return run(() -> runPosition(Settings.Superstructure.Turret.KB, OTM));
+        return run(coroutine -> runPosition(Settings.Superstructure.Turret.KB, OTM)).named("Run KB");
     }
 
     public Command runShoot() {
         return run(
-                () -> runPosition(
-                        Degrees.of(Settings.Superstructure.Turret.SOTM_TOLERANCE_FAR.getAsDouble()), OTM));
+                coroutine -> runPosition(
+                        Degrees.of(Settings.Superstructure.Turret.SOTM_TOLERANCE_FAR.getAsDouble()), OTM)).named("Run shoot");
     }
 
     public Command runIdle() {
-        return run(() -> runPosition(Degrees.of(0), OTM));
+        return run(coroutine -> runPosition(Degrees.of(0), OTM)).named("Run idle");
     }
 
-    public Command runAnalog(CommandXboxController gamepad) {
-        return run(() -> runPosition(driverInputToAngle(), OTM));
+    public Command runAnalog(Trigger gamepad) {
+        return run(coroutine -> runPosition(driverInputToAngle(), OTM)).named("Run analog");
     }
 }

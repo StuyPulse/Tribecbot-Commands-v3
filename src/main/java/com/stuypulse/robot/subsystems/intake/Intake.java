@@ -8,13 +8,13 @@ import com.stuypulse.robot.util.DualDebouncer;
 import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.filter.Debouncer.DebounceType;
 import org.wpilib.units.measure.*;
+import org.wpilib.command3.Command;
+import org.wpilib.command3.Coroutine;
+import org.wpilib.command3.Mechanism;
 import org.wpilib.driverstation.DriverStation;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import org.littletonrobotics.junction.Logger;
 
-public class Intake extends SubsystemBase {
+public class Intake extends Mechanism {
     private static final Intake instance;
 
     static {
@@ -89,7 +89,7 @@ public class Intake extends SubsystemBase {
     }
 
     public Command runIntake() {
-        return run(() -> {
+        return run(coroutine -> {
             if (inputs.pivotMotorPosition.lte(Settings.Intake.THRESHOLD_TO_START_ROLLERS)) {
                 runRollersDutyCycle(1.0);
             } else {
@@ -106,11 +106,11 @@ public class Intake extends SubsystemBase {
                 runPivotPosition(Settings.Intake.PIVOT_DEPLOY_ANGLE);
             }
         })
-                .withName("Intake Intake");
+                .named("Intake Intake");
     }
 
     public Command runOuttake() {
-        return run(() -> {
+        return run(coroutine -> {
             if (inputs.pivotMotorPosition.lte(Settings.Intake.THRESHOLD_TO_START_ROLLERS)) {
                 runRollersDutyCycle(-1.0);
             } else {
@@ -127,35 +127,37 @@ public class Intake extends SubsystemBase {
                 runPivotPosition(Settings.Intake.PIVOT_DEPLOY_ANGLE);
             }
         })
-                .withName("Intake Outtake");
+                .named("Intake Outtake");
     }
 
     public Command runStow() {
-        return run(() -> {
+        return run(coroutine -> {
             runRollersDutyCycle(0.0);
             runPivotPosition(Settings.Intake.PIVOT_STOW_ANGLE);
         })
-                .withName("Intake Stow");
+                .named("Intake Stow");
     }
 
     public Command runHoming() {
-        return run(() -> {
+        return run(coroutine -> {
             runRollersDutyCycle(0.0);
             runPivotVoltage(Settings.Intake.HOMING_VOLTAGE);
         })
                 .until(this::pivotStalling)
                 .andThen(() -> io.seedPivotPosition(Settings.Intake.PIVOT_MIN_ANGLE))
                 .andThen(() -> runPivotPosition(Settings.Intake.PIVOT_MIN_ANGLE))
-                .withName("Intake Homing");
+                .named("Intake Homing");
     }
 
     public Command runAutoDigest() {
-        return run(() -> {
+            Command runDigest = run(coroutine -> {
             runRollersDutyCycle(0);
-            runPivotPosition(Settings.Intake.PIVOT_DIGEST_ANGLE);
-        })
-                .withDeadline(new WaitCommand(0.5))
-                .andThen(runIntake().withDeadline(new WaitCommand(0.5)))
-                .withName("Intake Auto Digest");
+            runPivotPosition(Settings.Intake.PIVOT_DIGEST_ANGLE);            
+            })
+            .named("RUN INTAKE");
+            Command runIntake = 
+                runIntake().raceWith(Command.waitFor(Seconds.of(0.5)).named("Wait 0.5 sec"))
+                .named("Intake Auto Digest");
+            return (runDigest.andThen(runIntake)).named("Intake auto digest");
     }
 }

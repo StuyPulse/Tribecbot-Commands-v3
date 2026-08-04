@@ -7,14 +7,15 @@ import com.stuypulse.robot.Robot;
 import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.subsystems.superstructure.hood.HoodIO.HoodIOOutputMode;
 import com.stuypulse.robot.subsystems.superstructure.hood.HoodIO.HoodIOOutputs;
+
+import org.wpilib.command3.Command;
+import org.wpilib.command3.Mechanism;
+import org.wpilib.command3.Trigger;
 import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.filter.Debouncer.DebounceType;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import org.littletonrobotics.junction.Logger;
 
-public class Hood extends SubsystemBase {
+public class Hood extends Mechanism {
     private static final Hood instance;
 
     static {
@@ -51,7 +52,6 @@ public class Hood extends SubsystemBase {
         hoodStallingDebouncer = new Debouncer(Settings.Superstructure.Hood.STALL_DEBOUNCE, DebounceType.kBoth);
     }
 
-    @Override
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("Hood", inputs);
@@ -95,7 +95,7 @@ public class Hood extends SubsystemBase {
         outputs.voltage = voltage;
     }
 
-    private Angle hoodAnalogToInput(CommandXboxController gamepad) {
+    private Angle hoodAnalogToInput(Trigger gamepad) {
         double hoodMin = Settings.Superstructure.Hood.Angles.MIN.in(Degrees);
         double hoodMax = Settings.Superstructure.Hood.Angles.MAX.in(Degrees);
 
@@ -108,19 +108,20 @@ public class Hood extends SubsystemBase {
     }
 
     public Command runHomingUpper() {
-        return run(() -> {
+        Command runVoltage = run(coroutine -> {
             runVoltage(Settings.Superstructure.Hood.HOOD_HOMING_VOLTAGE);
         })
-                .until(this::isStalling)
-                .andThen(() -> io.seedHoodPosition(Settings.Superstructure.Hood.MAX_FROM_HORIZON))
-                .andThen(runStow());
+                .until(this::isStalling).named("Hood stalling");
+
+        Command seedHood = run(coroutine -> io.seedHoodPosition(Settings.Superstructure.Hood.MAX_FROM_HORIZON)).named("Seed hood");
+        return(runVoltage.andThen(seedHood).andThen(runStow())).named("Run homing upper");
     }
 
     public Command runStow() {
-        return run(() -> runPosition(Settings.Superstructure.Hood.Angles.STOW, false));
+        return run(coroutine -> runPosition(Settings.Superstructure.Hood.Angles.STOW, false)).named("Run stow");
     }
 
-    public Command runAnalog(CommandXboxController gamepad) {
-        return run(() -> runPosition(hoodAnalogToInput(gamepad), false));
+    public Command runAnalog(Trigger gamepad) {
+        return run(coroutine -> runPosition(hoodAnalogToInput(gamepad), false)).named("Run analog");
     }
 }

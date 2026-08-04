@@ -5,14 +5,15 @@ import org.wpilib.units.measure.*;
 
 import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.subsystems.superstructure.shooter.ShooterIO.ShooterIOOutputs;
+
+import org.wpilib.command3.Command;
+import org.wpilib.command3.Mechanism;
 import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.filter.Debouncer.DebounceType;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
-public class Shooter extends SubsystemBase {
+public class Shooter extends Mechanism {
     private static final Shooter instance;
 
     static {
@@ -46,7 +47,6 @@ public class Shooter extends SubsystemBase {
         atTolerance = false;
     }
 
-    @Override
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("Shooter", inputs);
@@ -70,13 +70,13 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command stopShooter() {
-        return run(() -> runVelocity(RPM.zero()));
+        return run(coroutine -> runVelocity(RPM.zero())).named("Stop shooter");
     }
 
     // Anything that isn't SOTM or FOTM
     private Command runManual(DoubleSupplier rpmSupplier) {
         return run(
-                () -> {
+                coroutine -> {
                     double targetRPM = rpmSupplier.getAsDouble();
 
                     runVelocity(RPM.of(targetRPM));
@@ -84,7 +84,7 @@ public class Shooter extends SubsystemBase {
 
                     atTolerance = error > -Settings.Superstructure.SHOOTER_TOLERANCE_RPM_LOW
                             && error < Settings.Superstructure.SHOOTER_TOLERANCE_RPM_HIGH;
-                });
+                }).named("Run manual");
     }
 
     public Command runManualOverride() {

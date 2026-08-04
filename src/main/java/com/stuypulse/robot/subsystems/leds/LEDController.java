@@ -2,10 +2,10 @@ package com.stuypulse.robot.subsystems.leds;
 
 import com.stuypulse.robot.Robot;
 import com.stuypulse.robot.subsystems.leds.LEDIO.LEDIOOutputs;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
+import org.wpilib.command3.Mechanism;
 
-public class LEDController extends SubsystemBase {
+public class LEDController extends Mechanism {
     private static final LEDController instance; // LED instance
 
     static {
@@ -35,7 +35,6 @@ public class LEDController extends SubsystemBase {
         this.outputs = new LEDIOOutputs();
     }
 
-    @Override
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("LEDs", inputs);

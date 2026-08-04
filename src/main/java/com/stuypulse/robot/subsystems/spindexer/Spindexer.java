@@ -2,11 +2,11 @@ package com.stuypulse.robot.subsystems.spindexer;
 
 import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.subsystems.spindexer.SpindexerIO.SpindexerIOOutputs;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
+import org.wpilib.command3.Command;
+import org.wpilib.command3.Mechanism;
 
-public class Spindexer extends SubsystemBase {
+public class Spindexer extends Mechanism {
     private static final Spindexer instance;
 
     static {
@@ -34,7 +34,6 @@ public class Spindexer extends SubsystemBase {
         this.outputs = new SpindexerIOOutputs();
     }
 
-    @Override
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("Spindexer", inputs);
@@ -50,14 +49,14 @@ public class Spindexer extends SubsystemBase {
     }
 
     public Command runSpindexerForward() {
-        return run(() -> runDutyCycle(Settings.Spindexer.FORWARD_DUTY_CYCLE)).withName("Spindexer Forward");
+        return run(coroutine -> runDutyCycle(Settings.Spindexer.FORWARD_DUTY_CYCLE)).named("Spindexer Forward");
     }
 
     public Command runSpindexerReverse() {
-        return run(() -> runDutyCycle(Settings.Spindexer.REVERSE_DUTY_CYCLE)).withName("Spindexer Reverse");
+        return run(coroutine -> runDutyCycle(Settings.Spindexer.REVERSE_DUTY_CYCLE)).named("Spindexer Reverse");
     }
 
     public Command stopSpindexer() {
-        return run(() -> runDutyCycle(0)).withName("Spindexer Stop");
+        return run(coroutine -> runDutyCycle(0)).named("Spindexer Stop");
     }
 }
