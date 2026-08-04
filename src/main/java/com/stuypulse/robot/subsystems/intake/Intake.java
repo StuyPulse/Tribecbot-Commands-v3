@@ -2,6 +2,8 @@ package com.stuypulse.robot.subsystems.intake;
 
 import static org.wpilib.units.Units.*;
 
+import java.util.function.Consumer;
+
 import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.subsystems.intake.IntakeIO.IntakeIOOutputs;
 import com.stuypulse.robot.util.DualDebouncer;
@@ -12,6 +14,8 @@ import org.wpilib.command3.Command;
 import org.wpilib.command3.Coroutine;
 import org.wpilib.command3.Mechanism;
 import org.wpilib.driverstation.DriverStation;
+import org.wpilib.driverstation.RobotState;
+import org.wpilib.command3.*;
 import org.littletonrobotics.junction.Logger;
 
 public class Intake extends Mechanism {
@@ -97,7 +101,7 @@ public class Intake extends Mechanism {
             }
 
             if (isPivotBelowPushdownThreshold()) {
-                Current pushdownCurrent = DriverStation.isTeleop()
+                Current pushdownCurrent = RobotState.isTeleop()
                         ? Settings.Intake.PUSHDOWN_CURRENT_TELEOP
                         : Settings.Intake.PUSHDOWN_CURRENT_AUTON;
 
@@ -105,6 +109,8 @@ public class Intake extends Mechanism {
             } else {
                 runPivotPosition(Settings.Intake.PIVOT_DEPLOY_ANGLE);
             }
+
+            coroutine.yield();
         })
                 .named("Intake Intake");
     }
@@ -118,7 +124,7 @@ public class Intake extends Mechanism {
             }
 
             if (isPivotBelowPushdownThreshold()) {
-                Current pushdownCurrent = DriverStation.isTeleop()
+                Current pushdownCurrent = RobotState.isTeleop()
                         ? Settings.Intake.PUSHDOWN_CURRENT_TELEOP
                         : Settings.Intake.PUSHDOWN_CURRENT_AUTON;
 
@@ -126,6 +132,8 @@ public class Intake extends Mechanism {
             } else {
                 runPivotPosition(Settings.Intake.PIVOT_DEPLOY_ANGLE);
             }
+
+            coroutine.yield();
         })
                 .named("Intake Outtake");
     }
@@ -134,30 +142,44 @@ public class Intake extends Mechanism {
         return run(coroutine -> {
             runRollersDutyCycle(0.0);
             runPivotPosition(Settings.Intake.PIVOT_STOW_ANGLE);
+            
+            coroutine.yield();
         })
                 .named("Intake Stow");
     }
 
     public Command runHoming() {
-        return run(coroutine -> {
+        Command homing = run(coroutine -> {
             runRollersDutyCycle(0.0);
             runPivotVoltage(Settings.Intake.HOMING_VOLTAGE);
         })
                 .until(this::pivotStalling)
-                .andThen(() -> io.seedPivotPosition(Settings.Intake.PIVOT_MIN_ANGLE))
-                .andThen(() -> runPivotPosition(Settings.Intake.PIVOT_MIN_ANGLE))
-                .named("Intake Homing");
-    }
+                .named("pivot Stall");
+        Command seedPivot = run(coroutine -> {
+            io.seedPivotPosition(Settings.Intake.PIVOT_MIN_ANGLE);
+        })
+            .named("seedPivot");
+        
+        Command pivotPosition = run(coroutine -> {
+            runPivotPosition(Settings.Intake.PIVOT_MIN_ANGLE);
+        })
+            .named("pivotPosition");
 
+        return homing.andThen(seedPivot).andThen(pivotPosition).named("Homing");
+    }
+    
     public Command runAutoDigest() {
-            Command runDigest = run(coroutine -> {
+        Command digest = run(coroutine -> {
             runRollersDutyCycle(0);
-            runPivotPosition(Settings.Intake.PIVOT_DIGEST_ANGLE);            
-            })
-            .named("RUN INTAKE");
-            Command runIntake = 
-                runIntake().raceWith(Command.waitFor(Seconds.of(0.5)).named("Wait 0.5 sec"))
-                .named("Intake Auto Digest");
-            return (runDigest.andThen(runIntake)).named("Intake auto digest");
+            runPivotPosition(Settings.Intake.PIVOT_DIGEST_ANGLE);
+        })
+            .named("Digest")
+            .raceWith(Command.waitFor(Seconds.of(1)).named("1 sec"))
+            .named("Digest (Max 1s)");
+                
+        Command intake = runIntake().raceWith(Command.waitFor(Seconds.of(1)).named("1 sec"))
+            .named("Intake (Max 1s)");
+        
+        return digest.andThen(intake).named("Auto Digest");
     }
 }
