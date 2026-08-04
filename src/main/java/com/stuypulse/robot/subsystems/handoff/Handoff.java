@@ -4,15 +4,15 @@ package com.stuypulse.robot.subsystems.handoff;
 
 import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.subsystems.handoff.HandoffIO.HandoffIOOutputs;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.wpilib.command3.*;
 
 import static org.wpilib.units.Units.Amps;
 
 import org.littletonrobotics.junction.Logger;
+import org.wpilib.command3.Mechanism;
 import org.wpilib.math.filter.Debouncer;
 
-public class Handoff extends SubsystemBase {
+public class Handoff extends Mechanism {
   private static final Handoff instance;
 
   static {
@@ -44,7 +44,7 @@ public class Handoff extends SubsystemBase {
         new Debouncer(Settings.Handoff.HANDOFF_STALL_DEBOUNCE_SEC, DebounceType.kBoth);
   }
 
-  @Override
+  
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Handoff", inputs);
@@ -65,23 +65,23 @@ public class Handoff extends SubsystemBase {
   }
 
   public Command runHandoff() {
-    return runOnce(
-        () -> {
+    return run(
+        coroutine -> {
           runHandoffDutyCycle(1.0);
-        }).withName("Handoff Forward");
+        }).named("Handoff Forward");
   }
 
   public Command runHandoffReverse() {
-    return runOnce(
-        () -> {
+    return run(
+        coroutine -> {
           runHandoffDutyCycle(-1.0);
-        }).withName("Handoff Reverse");
+        }).named("Handoff Reverse");
   }
 
   public Command runHandoffStop() {
-    return runOnce(
-        () -> {
+    return run(
+        coroutine -> {
           runHandoffDutyCycle(0.0);
-        }).withName("Handoff Stop");
+        }).named("Handoff Stop");
   }
 }

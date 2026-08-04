@@ -52,7 +52,7 @@ public class Intake extends Mechanism {
         this.pivotStallingDebouncer = new Debouncer(Settings.Intake.PIVOT_STALL_DEBOUNCE, DebounceType.kBoth);
     }
 
-    @Override
+    
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("Intake", inputs);
@@ -110,7 +110,6 @@ public class Intake extends Mechanism {
                 runPivotPosition(Settings.Intake.PIVOT_DEPLOY_ANGLE);
             }
 
-            coroutine.yield();
         })
                 .named("Intake Intake");
     }
@@ -133,7 +132,6 @@ public class Intake extends Mechanism {
                 runPivotPosition(Settings.Intake.PIVOT_DEPLOY_ANGLE);
             }
 
-            coroutine.yield();
         })
                 .named("Intake Outtake");
     }
@@ -143,7 +141,6 @@ public class Intake extends Mechanism {
             runRollersDutyCycle(0.0);
             runPivotPosition(Settings.Intake.PIVOT_STOW_ANGLE);
             
-            coroutine.yield();
         })
                 .named("Intake Stow");
     }
