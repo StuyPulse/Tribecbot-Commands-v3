@@ -53,6 +53,16 @@ public interface Motors {
                 .withStatorCurrentLimitEnabled(false)
                 .withRampRate(0.50);
     }
+    
+    public interface Handoff {
+    TalonFXConfig HANDOFF_CONFIG =
+      new Motors.TalonFXConfig()
+        .withInvertedValue(InvertedValue.Clockwise_Positive)
+        .withNeutralMode(NeutralModeValue.Brake)
+        .withSupplyCurrentLimitAmps(80.0)
+        .withStatorCurrentLimitEnabled(false)
+        .withRampRate(0.25);
+  }
 
     public interface Spindexer {
         TalonFXConfig SPINDEXER_CONFIG = new TalonFXConfig()
