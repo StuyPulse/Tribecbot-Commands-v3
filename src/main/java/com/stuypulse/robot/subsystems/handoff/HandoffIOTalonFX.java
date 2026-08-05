@@ -32,8 +32,8 @@ public class HandoffIOTalonFX implements HandoffIO {
   private final StatusSignal<Voltage> motorFollowAppliedVoltage;
 
   public HandoffIOTalonFX() {
-    motorLead = new TalonFX(Ports.Handoff.MOTOR_LEAD);
-    motorFollow = new TalonFX(Ports.Handoff.MOTOR_FOLLOW);
+    motorLead = new TalonFX(Ports.Handoff.MOTOR_LEAD, Ports.RIO);
+    motorFollow = new TalonFX(Ports.Handoff.MOTOR_FOLLOW, Ports.RIO);
 
     Motors.Handoff.HANDOFF_CONFIG.configure(motorLead);
     Motors.Handoff.HANDOFF_CONFIG.configure(motorFollow);
