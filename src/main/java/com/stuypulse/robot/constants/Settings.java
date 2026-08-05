@@ -68,6 +68,13 @@ public interface Settings {
         double ROLLER_STALL_DEBOUNCE = 0.05; // TODO: VERIFY
         Current ROLLER_STALL_CURRENT = Amps.of(50.0);
     }
+    public interface Handoff {
+        public final double GEAR_RATIO = 3.0 / 1.0;
+        
+        Current HANDOFF_STALL_CURRENT = Amps.of(30); // TODO: set value
+        double HANDOFF_STALL_DEBOUNCE_SEC = 0.5; // TODO: VERIFY
+    }
+
 
     public interface Spindexer {
         double FORWARD_DUTY_CYCLE = 1.0;

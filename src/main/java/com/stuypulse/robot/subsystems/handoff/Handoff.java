@@ -11,6 +11,7 @@ import static org.wpilib.units.Units.Amps;
 import org.littletonrobotics.junction.Logger;
 import org.wpilib.command3.Mechanism;
 import org.wpilib.math.filter.Debouncer;
+import org.wpilib.math.filter.Debouncer.DebounceType;
 
 public class Handoff extends Mechanism {
   private static final Handoff instance;
