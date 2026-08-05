@@ -9,7 +9,7 @@ import com.stuypulse.robot.subsystems.superstructure.turret.TurretIO.TurretIOOut
 
 import org.wpilib.command3.Command;
 import org.wpilib.command3.Mechanism;
-import org.wpilib.command3.Trigger;
+import org.wpilib.command3.button.CommandGamepad;
 import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.filter.Debouncer.DebounceType;
 import org.wpilib.math.geometry.Rotation2d;
@@ -124,7 +124,7 @@ public class Turret extends Mechanism {
         return run(coroutine -> runPosition(Degrees.of(0), OTM)).named("Run idle");
     }
 
-    public Command runAnalog(Trigger gamepad) {
+    public Command runAnalog(CommandGamepad gamepad) {
         return run(coroutine -> runPosition(driverInputToAngle(), OTM)).named("Run analog");
     }
 }

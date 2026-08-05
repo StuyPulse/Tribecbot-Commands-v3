@@ -10,7 +10,7 @@ import com.stuypulse.robot.subsystems.superstructure.hood.HoodIO.HoodIOOutputs;
 
 import org.wpilib.command3.Command;
 import org.wpilib.command3.Mechanism;
-import org.wpilib.command3.Trigger;
+import org.wpilib.command3.button.CommandGamepad;
 import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.filter.Debouncer.DebounceType;
 import org.littletonrobotics.junction.Logger;
@@ -95,7 +95,7 @@ public class Hood extends Mechanism {
         outputs.voltage = voltage;
     }
 
-    private Angle hoodAnalogToInput(Trigger gamepad) {
+    private Angle hoodAnalogToInput(CommandGamepad gamepad) {
         double hoodMin = Settings.Superstructure.Hood.Angles.MIN.in(Degrees);
         double hoodMax = Settings.Superstructure.Hood.Angles.MAX.in(Degrees);
 
@@ -121,7 +121,7 @@ public class Hood extends Mechanism {
         return run(coroutine -> runPosition(Settings.Superstructure.Hood.Angles.STOW, false)).named("Run stow");
     }
 
-    public Command runAnalog(Trigger gamepad) {
+    public Command runAnalog(CommandGamepad gamepad) {
         return run(coroutine -> runPosition(hoodAnalogToInput(gamepad), false)).named("Run analog");
     }
 }
