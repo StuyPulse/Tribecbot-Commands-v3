@@ -8,7 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     # This must be updated depending on the year
-    container: wpilib/roborio-cross-ubuntu:2025-24.04
+    container: wpilib/roborio-cross-ubuntu:2026-22.04-py314
     steps:
     - uses: actions/checkout@v7
 
