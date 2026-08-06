@@ -11,7 +11,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.stuypulse.robot.constants.Motors.TalonFXConfig;
 
-import static org.wpilib.units.Units.*;
 import org.wpilib.units.measure.*;
 
 import org.wpilib.system.RobotController;
