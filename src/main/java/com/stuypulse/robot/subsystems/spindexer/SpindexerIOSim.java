@@ -26,8 +26,6 @@ public class SpindexerIOSim implements SpindexerIO {
     private final TalonFXSimulation spindexerLeaderSim;
     private final TalonFXSimulation spindexerFollowerSim;
 
-    //private final DutyCycleOut spindexerController;
-
     private final StatusSignal<Angle> spindexerLeaderPosition;
     private final StatusSignal<Current> spindexerLeaderSupplyCurrent;
     private final StatusSignal<Current> spindexerLeaderStatorCurrent;
@@ -68,8 +66,6 @@ public class SpindexerIOSim implements SpindexerIO {
         
         spindexerController = new DutyCycleOut(0);
         followerController = new Follower(spindexerLeaderSim.getDeviceID(), MotorAlignmentValue.Aligned);
-
-
 
         spindexerFollowerSim.setControl(followerController);
 
