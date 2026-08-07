@@ -206,12 +206,12 @@ public class Intake extends Mechanism {
     public Command autoDigest() {
         return run(
                 coroutine -> {
-                    digest();
-                    coroutine.wait(Seconds.of(0.5)); deploy();
-                    coroutine.wait(Seconds.of(0.5)); digest();
-                    coroutine.wait(Seconds.of(0.5)); deploy();
-                    coroutine.wait(Seconds.of(0.5)); digest();
-                    coroutine.wait(Seconds.of(0.5)); deploy();
+                    coroutine.await(digest());
+                    coroutine.wait(Seconds.of(0.5)); coroutine.await(deploy());
+                    coroutine.wait(Seconds.of(0.5)); coroutine.await(digest());
+                    coroutine.wait(Seconds.of(0.5)); coroutine.await(deploy());
+                    coroutine.wait(Seconds.of(0.5)); coroutine.await(digest());
+                    coroutine.wait(Seconds.of(0.5)); coroutine.await(deploy());
                 })
                 .named("Intake Auto Digest");
     }
@@ -219,8 +219,9 @@ public class Intake extends Mechanism {
   public Command teleopDigest() {
         return run(
             coroutine -> {
-                digest();
-                coroutine.wait(Seconds.of(0.5)); deploy();
+                coroutine.await(digest());
+                coroutine.wait(Seconds.of(0.5)); 
+                coroutine.await(deploy());
                 coroutine.wait(Second.of(0.5));
         })
         .named("Intake Telop Digest");
