@@ -4,6 +4,7 @@ import static org.wpilib.units.Units.*;
 import org.wpilib.units.measure.*;
 
 import org.littletonrobotics.junction.AutoLog;
+import org.littletonrobotics.junction.AutoLogOutput;
 
 public interface SpindexerIO {
     @AutoLog
@@ -23,7 +24,16 @@ public interface SpindexerIO {
         public AngularVelocity spindexerFollowerMotorVelocity = DegreesPerSecond.zero();
     }
 
+    public enum SpindexerIOOutputMode {
+        DUTY_CYCLE,
+        STOP
+    }
+
     public static class SpindexerIOOutputs {
+        @AutoLogOutput(key = "Spindexer/Output Mode")
+        public SpindexerIOOutputMode spindexerMode = SpindexerIOOutputMode.DUTY_CYCLE;
+
+        @AutoLogOutput(key = "Spindexer/Duty Cycle Setpoint")
         public double spindexerLeaderDutyCycle = 0;
     }
 

@@ -38,6 +38,7 @@ public interface Settings {
     public interface EnabledSubsystems {
         LoggedNetworkBoolean INTAKE = new LoggedNetworkBoolean("Enabled Subsystems/Intake", true);
         LoggedNetworkBoolean HANDOFF = new LoggedNetworkBoolean("Enabled Subsystems/Handoff", true);
+        LoggedNetworkBoolean SPINDEXER = new LoggedNetworkBoolean("Enabled Subsystems/Spindexer", true);
     }
 
     public interface Intake {
