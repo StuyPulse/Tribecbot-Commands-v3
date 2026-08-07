@@ -85,16 +85,13 @@ public class HandoffIOTalonFX implements HandoffIO {
 
   @Override
   public void applyOutputs(HandoffIOOutputs outputs) {
-    if (!Settings.EnabledSubsystems.HANDOFF.get()) {
-      motorLead.stopMotor();
-      motorFollow.stopMotor();
-
-      motorFollow.setControl(follower);
-
-      return;
+    switch(outputs.handoffMode) {
+      case DUTY_CYCLE -> motorLead.setControl(controller.withOutput(outputs.handoffDutyCycle));
+      case STOP ->  {
+        motorLead.stopMotor();
+        motorFollow.stopMotor();
+        motorFollow.setControl(follower);
+      }
     }
-
-    motorLead.setControl(controller.withOutput(outputs.handoffDutyCycle));
-    motorFollow.setControl(follower);
   }
 }

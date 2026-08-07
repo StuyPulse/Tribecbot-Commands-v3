@@ -3,11 +3,13 @@ package com.stuypulse.robot.subsystems.handoff;
 
 
 import com.stuypulse.robot.constants.Settings;
+import com.stuypulse.robot.subsystems.handoff.HandoffIO.HandoffIOOutputMode;
 import com.stuypulse.robot.subsystems.handoff.HandoffIO.HandoffIOOutputs;
 import org.wpilib.command3.*;
 
 import static org.wpilib.units.Units.Amps;
 
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.wpilib.command3.Mechanism;
 import org.wpilib.math.filter.Debouncer;
@@ -34,6 +36,9 @@ public class Handoff extends Mechanism {
   private final HandoffIOInputsAutoLogged inputs;
   private final HandoffIOOutputs outputs;
 
+  @AutoLogOutput(key = "States/Handoff")
+  private HandoffState state;
+
   private final Debouncer handoffStallingDebouncer;
 
   private Handoff(HandoffIO io) {
@@ -41,48 +46,67 @@ public class Handoff extends Mechanism {
     this.inputs = new HandoffIOInputsAutoLogged();
     this.outputs = new HandoffIOOutputs();
 
+    setState(HandoffState.STOP);
+
     this.handoffStallingDebouncer =
         new Debouncer(Settings.Handoff.HANDOFF_STALL_DEBOUNCE_SEC, DebounceType.kBoth);
   }
 
-  
+  public enum HandoffState {
+    FORWARD,
+    REVERSE,
+    STOP
+  }
+
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Handoff", inputs);
+
+    if (!Settings.EnabledSubsystems.HANDOFF.get()) {
+      stopHandoff();
+
+      return;
+    }
+
+    switch (state) {
+      case FORWARD -> runHandoffDutyCycle(Settings.Handoff.FORWARD_DUTY_CYCLE);
+      case REVERSE -> runHandoffDutyCycle(Settings.Handoff.REVERSE_DUTY_CYCLE);
+      case STOP -> stopHandoff();
+    }
   }
 
   public void periodicAfterScheduler() {
-    Logger.recordOutput("Handoff/Duty Cycle Setpoint", outputs.handoffDutyCycle);
     io.applyOutputs(outputs);
   }
 
   private void runHandoffDutyCycle(double dutyCycle) {
+    outputs.handoffMode = HandoffIOOutputMode.DUTY_CYCLE;
     outputs.handoffDutyCycle = dutyCycle;
   }
 
-  public boolean handoffStalling() {
-    return handoffStallingDebouncer.calculate(
-        inputs.motorLeadSupplyCurrent.abs(Amps) > Settings.Intake.PIVOT_STALL_CURRENT.in(Amps));
+  private void stopHandoff() {
+    outputs.handoffMode = HandoffIOOutputMode.STOP;
   }
 
-  public Command runHandoff() {
-    return run(
-        coroutine -> {
-          runHandoffDutyCycle(1.0);
-        }).named("Handoff Forward");
+  public boolean isHandoffStalling() {
+    return handoffStallingDebouncer.calculate(
+        inputs.motorLeadSupplyCurrent.abs(Amps)
+            > Settings.Handoff.HANDOFF_STALL_CURRENT_AMPS.get());
+  }
+
+  private void setState(HandoffState state) {
+    this.state = state;
+  }
+
+  public Command runHandoffForward() {
+    return run(coroutine -> setState(HandoffState.FORWARD)).named("Handoff Forward");
   }
 
   public Command runHandoffReverse() {
-    return run(
-        coroutine -> {
-          runHandoffDutyCycle(-1.0);
-        }).named("Handoff Reverse");
+    return run(coroutine -> setState(HandoffState.REVERSE)).named("Handoff Reverse");
   }
 
-  public Command runHandoffStop() {
-    return run(
-        coroutine -> {
-          runHandoffDutyCycle(0.0);
-        }).named("Handoff Stop");
+  public Command stopHandoffCommand() {
+    return run(coroutine -> setState(HandoffState.STOP)).named("Handoff Stop");
   }
 }
