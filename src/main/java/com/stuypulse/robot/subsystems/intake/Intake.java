@@ -16,167 +16,242 @@ import org.wpilib.command3.Mechanism;
 import org.wpilib.driverstation.DriverStation;
 import org.wpilib.driverstation.RobotState;
 import org.wpilib.command3.*;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Intake extends Mechanism {
-    private static final Intake instance;
+  private static final Intake instance;
 
-    static {
-        switch (Settings.currentMode) {
-            case REAL -> instance = new Intake(new IntakeIOTalonFX());
+  static {
+    switch (Settings.currentMode) {
+      case REAL -> instance = new Intake(new IntakeIOTalonFX());
 
-            case SIM -> instance = new Intake(new IntakeIOSim());
+      case SIM -> instance = new Intake(new IntakeIOSim());
 
-            default -> instance = new Intake(new IntakeIO() {
-            });
+      default -> instance = new Intake(new IntakeIO() {});
+    }
+  }
+
+  public static Intake getInstance() {
+    return instance;
+  }
+
+  @AutoLogOutput(key = "States/Intake/Pivot")
+  private PivotState pivotState;
+
+  @AutoLogOutput(key = "States/Intake/Rollers")
+  private RollerState rollerState;
+
+  private final DualDebouncer pivotPositionDebouncer;
+  private final Debouncer pivotStallingDebouncer;
+
+  private final IntakeIO io;
+  private final IntakeIOInputsAutoLogged inputs;
+  private final IntakeIOOutputs outputs;
+
+  private Intake(IntakeIO io) {
+    this.io = io;
+    this.inputs = new IntakeIOInputsAutoLogged();
+    this.outputs = new IntakeIOOutputs();
+    this.pivotState = PivotState.STOW;
+    this.rollerState = RollerState.STOP;
+
+    this.pivotPositionDebouncer = new DualDebouncer(0.5, 0.1);
+    this.pivotStallingDebouncer =
+        new Debouncer(Settings.Intake.PIVOT_STALL_DEBOUNCE, DebounceType.kBoth);
+  }
+
+  public enum PivotState {
+    DEPLOY,
+    HOMING,
+    DIGEST,
+    STOW;
+  }
+
+  public enum RollerState {
+    INTAKE,
+    OUTTAKE,
+    STOP;
+  }
+
+  
+  public void periodic() {
+    io.updateInputs(inputs);
+    Logger.processInputs("Intake", inputs);
+
+    if (!Settings.EnabledSubsystems.INTAKE.get()) {
+      stopPivot();
+      stopRollers();
+
+      return;
+    }
+
+    switch (pivotState) {
+      case DEPLOY -> {
+        if (isPivotBelowPushdownThreshold()) {
+          Current pushdownCurrent =
+              RobotState.isTeleop()
+                  ? Settings.Intake.PUSHDOWN_CURRENT_TELEOP
+                  : Settings.Intake.PUSHDOWN_CURRENT_AUTON;
+
+          runPivotTorqueCurrent(pushdownCurrent);
+        } else {
+          runPivotPosition(Settings.Intake.PIVOT_DEPLOY_ANGLE);
         }
+      }
+
+      case HOMING -> {
+        if (pivotStalling()) {
+          io.seedPivotPosition(Settings.Intake.PIVOT_MIN_ANGLE);
+          setPivotState(PivotState.DEPLOY);
+        } else {
+          runPivotVoltage(Settings.Intake.HOMING_VOLTAGE);
+        }
+      }
+      case DIGEST -> runPivotPosition(Settings.Intake.PIVOT_DIGEST_ANGLE);
+      case STOW -> runPivotPosition(Settings.Intake.PIVOT_STOW_ANGLE);
     }
 
-    public static Intake getInstance() {
-        return instance;
+    if (pivotState == PivotState.DEPLOY
+        && inputs.pivotMotorPosition.lte(Settings.Intake.THRESHOLD_TO_START_ROLLERS)) {
+      switch (rollerState) {
+        case INTAKE -> runRollersDutyCycle(1.0);
+        case OUTTAKE -> runRollersDutyCycle(-1.0);
+        case STOP -> stopRollers();
+      }
+    } else {
+      stopRollers();
     }
+  }
 
-    private final DualDebouncer pivotPositionDebouncer;
-    private final Debouncer pivotStallingDebouncer;
+  public void periodicAfterScheduler() {
+    io.applyOutputs(outputs);
+  }
 
-    private final IntakeIO io;
-    private final IntakeIOInputsAutoLogged inputs;
-    private final IntakeIOOutputs outputs;
+  private boolean isPivotBelowPushdownThreshold() {
+    return pivotPositionDebouncer.calculate(
+        inputs.pivotMotorPosition.lte(Settings.Intake.ANGLE_THRESHOLD_FOR_HOLDING_VOLTAGE));
+  }
 
-    private Intake(IntakeIO io) {
-        this.io = io;
-        this.inputs = new IntakeIOInputsAutoLogged();
-        this.outputs = new IntakeIOOutputs();
+  private boolean pivotStalling() {
+    return pivotStallingDebouncer.calculate(
+        inputs.pivotMotorStatorCurrent.abs(Amps) > Settings.Intake.PIVOT_STALL_CURRENT.in(Amps));
+  }
 
-        this.pivotPositionDebouncer = new DualDebouncer(0.5, 0.1);
-        this.pivotStallingDebouncer = new Debouncer(Settings.Intake.PIVOT_STALL_DEBOUNCE, DebounceType.kBoth);
-    }
+  private void setPivotState(PivotState state) {
+    this.pivotState = state;
+  }
 
-    
-    public void periodic() {
-        io.updateInputs(inputs);
-        Logger.processInputs("Intake", inputs);
-    }
+  private void setRollerState(RollerState state) {
+    this.rollerState = state;
+  }
 
-    public void periodicAfterScheduler() {
-        Logger.recordOutput("Intake", outputs.pivotOutputMode);
-        io.applyOutputs(outputs);
-    }
+  private void stopPivot() {
+    outputs.pivotMode = IntakeIO.PivotIOOutputMode.STOP;
+  }
 
-    private boolean isPivotBelowPushdownThreshold() {
-        return pivotPositionDebouncer.calculate(
-                inputs.pivotMotorPosition.lte(Settings.Intake.ANGLE_THRESHOLD_FOR_HOLDING_VOLTAGE));
-    }
+  private void stopRollers() {
+    outputs.rollerMode = IntakeIO.RollerIOOutputMode.STOP;
+  }
 
-    private void runPivotPosition(Angle position) {
-        outputs.pivotOutputMode = IntakeIO.PivotIOOutputMode.POSITION;
-        outputs.pivotPosition = position;
-    }
+  private void runPivotPosition(Angle position) {
+    outputs.pivotMode = IntakeIO.PivotIOOutputMode.POSITION;
+    outputs.pivotTargetPosition = position;
+  }
 
-    private void runPivotTorqueCurrent(Current torqueCurrent) {
-        outputs.pivotOutputMode = IntakeIO.PivotIOOutputMode.TORQUE_CURRENT;
-        outputs.pivotTorqueCurrent = torqueCurrent;
-    }
+  private void runPivotTorqueCurrent(Current torqueCurrent) {
+    outputs.pivotMode = IntakeIO.PivotIOOutputMode.TORQUE_CURRENT;
+    outputs.pivotTargetTorqueCurrent = torqueCurrent;
+  }
 
-    private void runPivotVoltage(Voltage voltage) {
-        outputs.pivotOutputMode = IntakeIO.PivotIOOutputMode.VOLTAGE;
-        outputs.pivotVoltage = voltage;
-    }
+  private void runPivotVoltage(Voltage voltage) {
+    outputs.pivotMode = IntakeIO.PivotIOOutputMode.VOLTAGE;
+    outputs.pivotTargetVoltage = voltage;
+  }
 
-    private void runRollersDutyCycle(double dutyCycle) {
-        outputs.rollerDutyCycle = dutyCycle;
-    }
+  private void runRollersDutyCycle(double dutyCycle) {
+    outputs.rollerMode = IntakeIO.RollerIOOutputMode.DUTY_CYCLE;
+    outputs.rollerTargetDutyCycle = dutyCycle;
+  }
 
-    private boolean pivotStalling() {
-        return pivotStallingDebouncer.calculate(
-                inputs.pivotMotorStatorCurrent.abs(Amps) > Settings.Intake.PIVOT_STALL_CURRENT.in(Amps));
-    }
+  public Command deploy() {
+    return run(
+            coroutine -> {
+              setPivotState(PivotState.DEPLOY);
+              setRollerState(RollerState.INTAKE);
+            })
+        .named("Intake Deploy");
+  }
 
-    public Command runIntake() {
-        return run(coroutine -> {
-            if (inputs.pivotMotorPosition.lte(Settings.Intake.THRESHOLD_TO_START_ROLLERS)) {
-                runRollersDutyCycle(1.0);
-            } else {
-                runRollersDutyCycle(0.0);
-            }
+  public Command stow() {
+    return run(
+            coroutine -> {
+              setPivotState(PivotState.STOW);
+              setRollerState(RollerState.STOP);
+            })
+        .named("Intake Stow");
+  }
 
-            if (isPivotBelowPushdownThreshold()) {
-                Current pushdownCurrent = RobotState.isTeleop()
-                        ? Settings.Intake.PUSHDOWN_CURRENT_TELEOP
-                        : Settings.Intake.PUSHDOWN_CURRENT_AUTON;
+  public Command home() {
+    return run(coroutine -> setPivotState(PivotState.HOMING)).named("Intake Home");
+  }
 
-                runPivotTorqueCurrent(pushdownCurrent);
-            } else {
-                runPivotPosition(Settings.Intake.PIVOT_DEPLOY_ANGLE);
-            }
+  public Command digest() {
+    return run(
+            coroutine -> {
+              setPivotState(PivotState.DIGEST);
+              setRollerState(RollerState.INTAKE);
+            })
+        .named("Intake Digest");
+  }
 
-        })
-                .named("Intake Intake");
-    }
+  public Command autoDigest() {
+    return digest()
+        .andThen(Command.waitFor(Seconds.of(0.5)).named("Wait")).andThen(deploy()).andThen(Command.waitFor(Seconds.of(0.5)).named("Wait"))
+        .andThen(digest()).andThen(Command.waitFor(Seconds.of(0.5)).named("Wait")).andThen(deploy())
+        .andThen(Command.waitFor(Seconds.of(0.5)).named("Wait"))
+        .andThen(digest()).andThen(Command.waitFor(Seconds.of(0.5)).named("Wait")).andThen(deploy())
+        .named("Intake Auto Digest");
+  }
 
-    public Command runOuttake() {
-        return run(coroutine -> {
-            if (inputs.pivotMotorPosition.lte(Settings.Intake.THRESHOLD_TO_START_ROLLERS)) {
-                runRollersDutyCycle(-1.0);
-            } else {
-                runRollersDutyCycle(0.0);
-            }
-
-            if (isPivotBelowPushdownThreshold()) {
-                Current pushdownCurrent = RobotState.isTeleop()
-                        ? Settings.Intake.PUSHDOWN_CURRENT_TELEOP
-                        : Settings.Intake.PUSHDOWN_CURRENT_AUTON;
-
-                runPivotTorqueCurrent(pushdownCurrent);
-            } else {
-                runPivotPosition(Settings.Intake.PIVOT_DEPLOY_ANGLE);
-            }
-
-        })
-                .named("Intake Outtake");
-    }
-
-    public Command runStow() {
-        return run(coroutine -> {
-            runRollersDutyCycle(0.0);
-            runPivotPosition(Settings.Intake.PIVOT_STOW_ANGLE);
-            
-        })
-                .named("Intake Stow");
-    }
-
-    public Command runHoming() {
-        Command homing = run(coroutine -> {
-            runRollersDutyCycle(0.0);
-            runPivotVoltage(Settings.Intake.HOMING_VOLTAGE);
-        })
-                .until(this::pivotStalling)
-                .named("pivot Stall");
-        Command seedPivot = run(coroutine -> {
-            io.seedPivotPosition(Settings.Intake.PIVOT_MIN_ANGLE);
-        })
-            .named("seedPivot");
+  public Command teleopDigest() {
+    return digest()
+        .andThen(Command.waitFor(Seconds.of(0.5)).named("Wait"))
+        .andThen(deploy())
+        .andThen(Command.waitFor(Seconds.of(0.5)).named("Wait"))
+        .named("Intake Teleop Digest");
         
-        Command pivotPosition = run(coroutine -> {
-            runPivotPosition(Settings.Intake.PIVOT_MIN_ANGLE);
-        })
-            .named("pivotPosition");
+  }
 
-        return homing.andThen(seedPivot).andThen(pivotPosition).named("Homing");
-    }
-    
-    public Command runAutoDigest() {
-        Command digest = run(coroutine -> {
-            runRollersDutyCycle(0);
-            runPivotPosition(Settings.Intake.PIVOT_DIGEST_ANGLE);
-        })
-            .named("Digest")
-            .raceWith(Command.waitFor(Seconds.of(1)).named("1 sec"))
-            .named("Digest (Max 1s)");
-                
-        Command intake = runIntake().raceWith(Command.waitFor(Seconds.of(1)).named("1 sec"))
-            .named("Intake (Max 1s)");
-        
-        return digest.andThen(intake).named("Auto Digest");
-    }
+  public Command outtake() {
+    return run(coroutine -> setRollerState(RollerState.OUTTAKE)).named("Intake Outtake");
+  }
+
+  public Command runRollers() {
+    return run(coroutine -> setRollerState(RollerState.INTAKE)).named("Intake Run Rollers");
+  }
+
+  public Command stopRollersCommand() {
+    return run(coroutine -> setRollerState(RollerState.STOP)).named("Intake Stop Rollers");
+  }
+
+  public Command seedPivotDeployed() {
+    return run(
+            coroutine -> {
+              io.seedPivotPosition(Settings.Intake.PIVOT_DEPLOY_ANGLE);
+              setPivotState(PivotState.DEPLOY);
+            })
+        //.ignoringDisable(true) TODO: Wait for replacement
+        .named("Intake Seed Pivot Deployed");
+  }
+
+  public Command seedPivotStowed() {
+    return run(
+            coroutine -> {
+              io.seedPivotPosition(Settings.Intake.PIVOT_STOW_ANGLE);
+              setPivotState(PivotState.STOW);
+            })
+        //.ignoringDisable(true) TODO: Wait for replacement
+        .named("Intake Seed Pivot Stowed");
+  }
 }

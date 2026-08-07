@@ -131,33 +131,34 @@ public class IntakeIOTalonFX implements IntakeIO {
     }
 
     @Override
-    public void applyOutputs(IntakeIOOutputs outputs) {
-        if (!Settings.EnabledSubsystems.INTAKE.get()) {
-            pivotMotor.stopMotor();
-            rollerLeaderMotor.stopMotor();
-            rollerFollowerMotor.stopMotor();
-
-            rollerFollowerMotor.setControl(rollerFollowerController);
-
-            return;
-        }
-
-        switch (outputs.pivotOutputMode) {
-            case POSITION -> pivotMotor.setControl(
-                    pivotPositionController.withPosition(outputs.pivotPosition));
-
-            case TORQUE_CURRENT -> pivotMotor.setControl(
-                    pivotPushdownController.withOutput(outputs.pivotTorqueCurrent));
-
-            case VOLTAGE -> pivotMotor.setControl(
-                    pivotVoltageController.withOutput(outputs.pivotVoltage));
-        }
-
-        rollerLeaderMotor.setControl(rollerLeaderController.withOutput(outputs.rollerDutyCycle));
+    public void seedPivotPosition(Angle position) {
+        pivotMotor.setPosition(position);
     }
 
     @Override
-    public void seedPivotPosition(Angle position) {
-        pivotMotor.setPosition(position);
+    public void applyOutputs(IntakeIOOutputs outputs) {
+        switch (outputs.pivotMode) {
+            case POSITION -> pivotMotor.setControl(
+                    pivotPositionController.withPosition(outputs.pivotTargetPosition));
+
+            case TORQUE_CURRENT -> pivotMotor.setControl(
+                    pivotPushdownController.withOutput(outputs.pivotTargetTorqueCurrent));
+
+            case VOLTAGE -> pivotMotor.setControl(
+                    pivotVoltageController.withOutput(outputs.pivotTargetVoltage));
+           
+            case STOP -> pivotMotor.stopMotor();
+        }
+
+        switch (outputs.rollerMode) {
+            case DUTY_CYCLE -> rollerLeaderMotor.setControl(
+                rollerLeaderController.withOutput(outputs.rollerTargetDutyCycle));
+            
+            case STOP -> {
+                rollerLeaderMotor.stopMotor();
+                rollerFollowerMotor.stopMotor();
+                rollerFollowerMotor.setControl(rollerFollowerController);
+            }
+        }
     }
 }
