@@ -39,6 +39,7 @@ public interface Settings {
         LoggedNetworkBoolean INTAKE = new LoggedNetworkBoolean("Enabled Subsystems/Intake", true);
         LoggedNetworkBoolean HANDOFF = new LoggedNetworkBoolean("Enabled Subsystems/Handoff", true);
         LoggedNetworkBoolean HOOD = new LoggedNetworkBoolean("Enabled Subsystems/Hood", true);
+        LoggedNetworkBoolean SHOOTER = new LoggedNetworkBoolean("Enabled Subsystems/Shooter", true);
     }
 
     public interface Intake {

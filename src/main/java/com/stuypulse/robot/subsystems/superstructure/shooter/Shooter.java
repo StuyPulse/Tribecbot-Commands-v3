@@ -4,13 +4,18 @@ import static org.wpilib.units.Units.*;
 import org.wpilib.units.measure.*;
 
 import com.stuypulse.robot.constants.Settings;
+import com.stuypulse.robot.subsystems.superstructure.shooter.ShooterIO.ShooterIOOutputMode;
 import com.stuypulse.robot.subsystems.superstructure.shooter.ShooterIO.ShooterIOOutputs;
+import com.stuypulse.robot.util.superstructure.InterpolationCalculator;
+import com.stuypulse.robot.util.superstructure.SOTMCalculator;
 
 import org.wpilib.command3.Command;
 import org.wpilib.command3.Mechanism;
 import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.filter.Debouncer.DebounceType;
 import java.util.function.DoubleSupplier;
+
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Shooter extends Mechanism {
@@ -35,7 +40,11 @@ public class Shooter extends Mechanism {
     private final ShooterIOInputsAutoLogged inputs;
     private final ShooterIOOutputs outputs;
 
+    @AutoLogOutput(key = "States/Shooter")
+    private ShooterState state;
+
     private final Debouncer readyToShootDebouncer;
+    private final Debouncer currentlyShootingDebouncer;
     private boolean atTolerance;
 
     private Shooter(ShooterIO io) {
@@ -44,16 +53,49 @@ public class Shooter extends Mechanism {
         this.outputs = new ShooterIOOutputs();
 
         readyToShootDebouncer = new Debouncer(0.5, DebounceType.kBoth);
+        currentlyShootingDebouncer = new Debouncer(2, DebounceType.kFalling);
         atTolerance = false;
+    }
+
+    public enum ShooterState {
+        STOP,
+        MANUAL_OVERRIDE,
+        FERRY,
+        REVERSE,
+        KB,
+        LEFT_CORNER,
+        RIGHT_CORNER,
+        INTERPOLATION,
+        SOTM,
+        FOTM;
     }
 
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("Shooter", inputs);
+
+        if (!Settings.EnabledSubsystems.SHOOTER.get()) {
+      stopShooter();
+
+      return;
+    }
+
+    switch (state) {
+      case STOP -> stopShooter();
+      case MANUAL_OVERRIDE -> runVelocity(
+          RPM.of(Settings.Superstructure.Shooter.RPM.MANUAL_OVERRIDE.get()));
+      //case FERRY -> runVelocity(InterpolationCalculator.getInterpolatedFerryRPM());
+      case REVERSE -> runVelocity(Settings.Superstructure.Shooter.RPM.REVERSE);
+      case KB -> runVelocity(Settings.Superstructure.Shooter.RPM.KB);
+      case LEFT_CORNER -> runVelocity(Settings.Superstructure.Shooter.RPM.LEFT_CORNER);
+      case RIGHT_CORNER -> runVelocity(Settings.Superstructure.Shooter.RPM.RIGHT_CORNER);
+      //case INTERPOLATION -> runVelocity(InterpolationCalculator.getInterpolatedShotRPM());
+      //case SOTM -> runVelocity(SOTMCalculator.calculateShooterRPMSOTM());
+      //case FOTM -> runVelocity(SOTMCalculator.calculateShooterRPMFOTM());
+    }
     }
 
     public void periodicAfterScheduler() {
-        Logger.recordOutput("Shooter/Velocity Setpoint", outputs.shooterVelocity);
         io.applyOutputs(outputs);
     }
 
@@ -61,45 +103,43 @@ public class Shooter extends Mechanism {
         return inputs.shooterLeaderMotorVelocity;
     }
 
+    public void stopShooter() {
+        outputs.shooterMode = ShooterIOOutputMode.STOP;
+    }
     private void runVelocity(AngularVelocity velocity) {
+        outputs.shooterMode = ShooterIOOutputMode.VELOCITY;
         outputs.shooterVelocity = velocity;
+
+        AngularVelocity error = inputs.shooterLeaderMotorVelocity.minus(velocity);
+
+        AngularVelocity toleranceHigh =
+            switch (state) {
+            case SOTM -> RPM.of(Settings.Superstructure.SHOOTER_SOTM_TOLERANCE_RPM_HIGH);
+            case FOTM -> RPM.of(Settings.Superstructure.SHOOTER_FOTM_TOLERANCE_RPM_HIGH);
+            default -> RPM.of(Settings.Superstructure.SHOOTER_TOLERANCE_RPM_HIGH);
+        };
+
+        AngularVelocity toleranceLow =
+            switch (state) {
+            case SOTM -> RPM.of(Settings.Superstructure.SHOOTER_SOTM_TOLERANCE_RPM_LOW);
+            case FOTM -> RPM.of(Settings.Superstructure.SHOOTER_FOTM_TOLERANCE_RPM_LOW);
+            default -> RPM.of(Settings.Superstructure.SHOOTER_TOLERANCE_RPM_LOW);
+        };
+
+    atTolerance = error.lt(toleranceLow.unaryMinus()) && error.gt(toleranceHigh);    
     }
 
     public boolean readyToShoot() {
         return readyToShootDebouncer.calculate(atTolerance);
     }
 
-    public Command stopShooter() {
-        return run(coroutine -> runVelocity(RPM.zero())).named("Stop shooter");
+    public boolean isShooting() {
+        return currentlyShootingDebouncer.calculate(
+            inputs.shooterLeaderMotorStatorCurrent.gt(
+            Settings.Superstructure.Shooter.IS_SHOOTING_CURRENT));
     }
 
-    // Anything that isn't SOTM or FOTM
-    private Command runManual(DoubleSupplier rpmSupplier) {
-        return run(
-                coroutine -> {
-                    double targetRPM = rpmSupplier.getAsDouble();
-
-                    runVelocity(RPM.of(targetRPM));
-                    double error = inputs.shooterLeaderMotorVelocity.in(RPM) - targetRPM;
-
-                    atTolerance = error > -Settings.Superstructure.SHOOTER_TOLERANCE_RPM_LOW
-                            && error < Settings.Superstructure.SHOOTER_TOLERANCE_RPM_HIGH;
-                }).named("Run manual");
-    }
-
-    public Command runManualOverride() {
-        return runManual(Settings.Superstructure.Shooter.RPM.MANUAL_OVERRIDE::get);
-    }
-
-    public Command runLeftCorner() {
-        return runManual(() -> Settings.Superstructure.Shooter.RPM.LEFT_CORNER.in(RPM));
-    }
-
-    public Command runRightCorner() {
-        return runManual(() -> Settings.Superstructure.Shooter.RPM.RIGHT_CORNER.in(RPM));
-    }
-
-    public Command runReverse() {
-        return runManual(() -> Settings.Superstructure.Shooter.RPM.REVERSE.in(RPM));
+    private void setState(ShooterState state) {
+        this.state = state;
     }
 }
