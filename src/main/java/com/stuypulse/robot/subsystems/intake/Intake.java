@@ -205,27 +205,20 @@ public class Intake extends Mechanism {
         .named("Intake Digest");
   }
 
-  public Command waitSeconds() {
-    return run(
-            coroutine -> {
-                Command.waitFor(Seconds.of(0.5));
-            })
-        .named("wait 0.5 seconds");
-  }
   public Command autoDigest() {
     return digest()
-        .andThen(waitSeconds()).andThen(deploy()).andThen(waitSeconds())
-        .andThen(digest()).andThen(waitSeconds()).andThen(deploy())
-        .andThen(waitSeconds())
-        .andThen(digest()).andThen(waitSeconds()).andThen(deploy())
+        .andThen(Command.waitFor(Seconds.of(0.5)).named("Wait")).andThen(deploy()).andThen(Command.waitFor(Seconds.of(0.5)).named("Wait"))
+        .andThen(digest()).andThen(Command.waitFor(Seconds.of(0.5)).named("Wait")).andThen(deploy())
+        .andThen(Command.waitFor(Seconds.of(0.5)).named("Wait"))
+        .andThen(digest()).andThen(Command.waitFor(Seconds.of(0.5)).named("Wait")).andThen(deploy())
         .named("Intake Auto Digest");
   }
 
   public Command teleopDigest() {
     return digest()
-        .andThen(waitSeconds())
+        .andThen(Command.waitFor(Seconds.of(0.5)).named("Wait"))
         .andThen(deploy())
-        .andThen(waitSeconds())
+        .andThen(Command.waitFor(Seconds.of(0.5)).named("Wait"))
         .named("Intake Teleop Digest");
         
   }
