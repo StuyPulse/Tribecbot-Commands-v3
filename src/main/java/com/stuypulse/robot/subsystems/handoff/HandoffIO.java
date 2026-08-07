@@ -3,6 +3,7 @@ package com.stuypulse.robot.subsystems.handoff;
 import static org.wpilib.units.Units.*;
 
 import org.littletonrobotics.junction.AutoLog;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.wpilib.units.measure.*;
 
 public interface HandoffIO {
@@ -21,7 +22,16 @@ public interface HandoffIO {
     public Voltage motorFollowAppliedVoltage = Volts.zero();
   }
 
+  public enum HandoffIOOutputMode {
+    DUTY_CYCLE,
+    STOP
+  }
+
   public static class HandoffIOOutputs {
+    @AutoLogOutput(key = "Handoff/Output Mode")
+    public HandoffIOOutputMode handoffMode = HandoffIOOutputMode.DUTY_CYCLE;
+
+    @AutoLogOutput(key = "Handoff/ Target Duty Cycle")
     public double handoffDutyCycle = 0.0;
   }
 
