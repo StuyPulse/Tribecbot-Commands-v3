@@ -33,7 +33,7 @@ public interface IntakeIO {
 
     public default void updateInputs(IntakeIOInputs inputs) {
     }
-    
+
     public static enum PivotIOOutputMode {
         POSITION,
         TORQUE_CURRENT,

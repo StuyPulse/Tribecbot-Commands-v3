@@ -23,8 +23,8 @@ public interface Ports {
     }
 
     public interface Handoff {
-        int MOTOR_LEAD = 43;
-        int MOTOR_FOLLOW = 48;
+        int LEADER_MOTOR = 43;
+        int FOLLOWER_MOTOR = 48;
     }
 
     public interface Superstructure {

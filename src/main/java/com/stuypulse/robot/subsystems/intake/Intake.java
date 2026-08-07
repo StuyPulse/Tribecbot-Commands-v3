@@ -2,8 +2,6 @@ package com.stuypulse.robot.subsystems.intake;
 
 import static org.wpilib.units.Units.*;
 
-import java.util.function.Consumer;
-
 import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.subsystems.intake.IntakeIO.IntakeIOOutputs;
 import com.stuypulse.robot.util.DualDebouncer;
@@ -11,11 +9,8 @@ import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.filter.Debouncer.DebounceType;
 import org.wpilib.units.measure.*;
 import org.wpilib.command3.Command;
-import org.wpilib.command3.Coroutine;
 import org.wpilib.command3.Mechanism;
-import org.wpilib.driverstation.DriverStation;
 import org.wpilib.driverstation.RobotState;
-import org.wpilib.command3.*;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -28,8 +23,7 @@ public class Intake extends Mechanism {
 
             case SIM -> instance = new Intake(new IntakeIOSim());
 
-            default -> instance = new Intake(new IntakeIO() {
-            });
+            default -> instance = new Intake(new IntakeIO() {});
         }
     }
 
@@ -58,7 +52,7 @@ public class Intake extends Mechanism {
         this.rollerState = RollerState.STOP;
 
         this.pivotPositionDebouncer = new DualDebouncer(0.5, 0.1);
-        this.pivotStallingDebouncer = new Debouncer(Settings.Intake.PIVOT_STALL_DEBOUNCE, DebounceType.kBoth);
+        this.pivotStallingDebouncer = new Debouncer(IntakeConstants.Intake.PIVOT_STALL_DEBOUNCE, DebounceType.kBoth);
     }
 
     public enum PivotState {
@@ -89,29 +83,29 @@ public class Intake extends Mechanism {
             case DEPLOY -> {
                 if (isPivotBelowPushdownThreshold()) {
                     Current pushdownCurrent = RobotState.isTeleop()
-                            ? Settings.Intake.PUSHDOWN_CURRENT_TELEOP
-                            : Settings.Intake.PUSHDOWN_CURRENT_AUTON;
+                            ? IntakeConstants.Intake.PUSHDOWN_CURRENT_TELEOP
+                            : IntakeConstants.Intake.PUSHDOWN_CURRENT_AUTON;
 
                     runPivotTorqueCurrent(pushdownCurrent);
                 } else {
-                    runPivotPosition(Settings.Intake.PIVOT_DEPLOY_ANGLE);
+                    runPivotPosition(IntakeConstants.Intake.PIVOT_DEPLOY_ANGLE);
                 }
             }
 
             case HOMING -> {
                 if (pivotStalling()) {
-                    io.seedPivotPosition(Settings.Intake.PIVOT_MIN_ANGLE);
+                    io.seedPivotPosition(IntakeConstants.Intake.PIVOT_MIN_ANGLE);
                     setPivotState(PivotState.DEPLOY);
                 } else {
-                    runPivotVoltage(Settings.Intake.HOMING_VOLTAGE);
+                    runPivotVoltage(IntakeConstants.Intake.HOMING_VOLTAGE);
                 }
             }
-            case DIGEST -> runPivotPosition(Settings.Intake.PIVOT_DIGEST_ANGLE);
-            case STOW -> runPivotPosition(Settings.Intake.PIVOT_STOW_ANGLE);
+            case DIGEST -> runPivotPosition(IntakeConstants.Intake.PIVOT_DIGEST_ANGLE);
+            case STOW -> runPivotPosition(IntakeConstants.Intake.PIVOT_STOW_ANGLE);
         }
 
         if (pivotState == PivotState.DEPLOY
-                && inputs.pivotMotorPosition.lte(Settings.Intake.THRESHOLD_TO_START_ROLLERS)) {
+                && inputs.pivotMotorPosition.lte(IntakeConstants.Intake.THRESHOLD_TO_START_ROLLERS)) {
             switch (rollerState) {
                 case INTAKE -> runRollersDutyCycle(1.0);
                 case OUTTAKE -> runRollersDutyCycle(-1.0);
@@ -128,12 +122,12 @@ public class Intake extends Mechanism {
 
     private boolean isPivotBelowPushdownThreshold() {
         return pivotPositionDebouncer.calculate(
-                inputs.pivotMotorPosition.lte(Settings.Intake.ANGLE_THRESHOLD_FOR_HOLDING_VOLTAGE));
+                inputs.pivotMotorPosition.lte(IntakeConstants.Intake.ANGLE_THRESHOLD_FOR_HOLDING_VOLTAGE));
     }
 
     private boolean pivotStalling() {
         return pivotStallingDebouncer.calculate(
-                inputs.pivotMotorStatorCurrent.abs(Amps) > Settings.Intake.PIVOT_STALL_CURRENT.in(Amps));
+                inputs.pivotMotorStatorCurrent.abs(Amps) > IntakeConstants.Intake.PIVOT_STALL_CURRENT.in(Amps));
     }
 
     private void setPivotState(PivotState state) {
@@ -207,26 +201,31 @@ public class Intake extends Mechanism {
         return run(
                 coroutine -> {
                     coroutine.await(digest());
-                    coroutine.wait(Seconds.of(0.5)); coroutine.await(deploy());
-                    coroutine.wait(Seconds.of(0.5)); coroutine.await(digest());
-                    coroutine.wait(Seconds.of(0.5)); coroutine.await(deploy());
-                    coroutine.wait(Seconds.of(0.5)); coroutine.await(digest());
-                    coroutine.wait(Seconds.of(0.5)); coroutine.await(deploy());
+                    coroutine.wait(Seconds.of(0.5));
+                    coroutine.await(deploy());
+                    coroutine.wait(Seconds.of(0.5));
+                    coroutine.await(digest());
+                    coroutine.wait(Seconds.of(0.5));
+                    coroutine.await(deploy());
+                    coroutine.wait(Seconds.of(0.5));
+                    coroutine.await(digest());
+                    coroutine.wait(Seconds.of(0.5));
+                    coroutine.await(deploy());
                 })
                 .named("Intake Auto Digest");
     }
 
-  public Command teleopDigest() {
+    public Command teleopDigest() {
         return run(
-            coroutine -> {
-                coroutine.await(digest());
-                coroutine.wait(Seconds.of(0.5)); 
-                coroutine.await(deploy());
-                coroutine.wait(Second.of(0.5));
-        })
-        .named("Intake Telop Digest");
-        
-  }
+                coroutine -> {
+                    coroutine.await(digest());
+                    coroutine.wait(Seconds.of(0.5));
+                    coroutine.await(deploy());
+                    coroutine.wait(Second.of(0.5));
+                })
+                .named("Intake Telop Digest");
+
+    }
 
     public Command outtake() {
         return run(coroutine -> setRollerState(RollerState.OUTTAKE)).named("Intake Outtake");
@@ -243,7 +242,7 @@ public class Intake extends Mechanism {
     public Command seedPivotDeployed() {
         return run(
                 coroutine -> {
-                    io.seedPivotPosition(Settings.Intake.PIVOT_DEPLOY_ANGLE);
+                    io.seedPivotPosition(IntakeConstants.Intake.PIVOT_DEPLOY_ANGLE);
                     setPivotState(PivotState.DEPLOY);
                 })
                 // .ignoringDisable(true) TODO: Wait for replacement
@@ -253,7 +252,7 @@ public class Intake extends Mechanism {
     public Command seedPivotStowed() {
         return run(
                 coroutine -> {
-                    io.seedPivotPosition(Settings.Intake.PIVOT_STOW_ANGLE);
+                    io.seedPivotPosition(IntakeConstants.Intake.PIVOT_STOW_ANGLE);
                     setPivotState(PivotState.STOW);
                 })
                 // .ignoringDisable(true) TODO: Wait for replacement

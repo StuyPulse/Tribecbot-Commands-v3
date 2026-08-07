@@ -12,6 +12,8 @@ import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.*;
+import com.stuypulse.robot.subsystems.intake.IntakeConstants;
+import com.stuypulse.robot.subsystems.spindexer.SpindexerConstants;
 
 /*-
  * File containing all of the configurations that different motors require.
@@ -44,7 +46,7 @@ public interface Motors {
                         0)
                 .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseVelocitySign, 0)
                 .withGravityType(GravityTypeValue.Arm_Cosine)
-                .withSensorToMechanismRatio(Settings.Intake.PIVOT_GEAR_RATIO);
+                .withSensorToMechanismRatio(IntakeConstants.Intake.PIVOT_GEAR_RATIO);
 
         TalonFXConfig ROLLER_CONFIG = new Motors.TalonFXConfig()
                 .withInvertedValue(InvertedValue.Clockwise_Positive)
@@ -53,16 +55,15 @@ public interface Motors {
                 .withStatorCurrentLimitEnabled(false)
                 .withRampRate(0.50);
     }
-    
+
     public interface Handoff {
-        TalonFXConfig HANDOFF_CONFIG =
-             new Motors.TalonFXConfig()
-            .withInvertedValue(InvertedValue.Clockwise_Positive)
-            .withNeutralMode(NeutralModeValue.Brake)
-            .withSupplyCurrentLimit(80.0)
-            .withStatorCurrentLimitEnabled(false)
-            .withRampRate(0.25);
-  }
+        TalonFXConfig HANDOFF_CONFIG = new Motors.TalonFXConfig()
+                .withInvertedValue(InvertedValue.Clockwise_Positive)
+                .withNeutralMode(NeutralModeValue.Brake)
+                .withSupplyCurrentLimit(80.0)
+                .withStatorCurrentLimitEnabled(false)
+                .withRampRate(0.25);
+    }
 
     public interface Spindexer {
         TalonFXConfig SPINDEXER_CONFIG = new TalonFXConfig()
@@ -71,7 +72,7 @@ public interface Motors {
                 .withSupplyCurrentLimit(45)
                 .withStatorCurrentLimitEnabled(false)
                 .withRampRate(0.25)
-                .withSensorToMechanismRatio(Settings.Spindexer.GEAR_RATIO);
+                .withSensorToMechanismRatio(SpindexerConstants.Spindexer.GEAR_RATIO);
     }
 
     public interface Superstructure {

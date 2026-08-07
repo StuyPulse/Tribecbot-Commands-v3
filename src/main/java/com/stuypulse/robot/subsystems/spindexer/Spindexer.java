@@ -9,86 +9,86 @@ import org.wpilib.command3.Command;
 import org.wpilib.command3.Mechanism;
 
 public class Spindexer extends Mechanism {
-  private static final Spindexer instance;
+    private static final Spindexer instance;
 
-  static {
-    switch (Settings.currentMode) {
-      case REAL -> instance = new Spindexer(new SpindexerIOTalonFX());
+    static {
+        switch (Settings.currentMode) {
+            case REAL -> instance = new Spindexer(new SpindexerIOTalonFX());
 
-      case SIM -> instance = new Spindexer(new SpindexerIOSim());
+            case SIM -> instance = new Spindexer(new SpindexerIOSim());
 
-      default -> instance = new Spindexer(new SpindexerIO() {});
-    }
-  }
-
-  public static Spindexer getInstance() {
-    return instance;
-  }
-
-  private final SpindexerIO io;
-  private final SpindexerIOInputsAutoLogged inputs;
-  private final SpindexerIOOutputs outputs;
-
-  @AutoLogOutput(key = "States/Spindexer")
-  private SpindexerState state;
-
-  private Spindexer(SpindexerIO io) {
-    this.io = io;
-    this.inputs = new SpindexerIOInputsAutoLogged();
-    this.outputs = new SpindexerIOOutputs();
-
-    setState(SpindexerState.STOP);
-  }
-
-  public enum SpindexerState {
-    FORWARD,
-    REVERSE,
-    STOP
-  }
-
-  public void periodic() {
-    io.updateInputs(inputs);
-    Logger.processInputs("Spindexer", inputs);
-
-    if (!Settings.EnabledSubsystems.SPINDEXER.get()) {
-      stop();
-
-      return;
+            default -> instance = new Spindexer(new SpindexerIO() {});
+        }
     }
 
-    switch (state) {
-      case FORWARD -> runDutyCycle(Settings.Spindexer.FORWARD_DUTY_CYCLE);
-      case REVERSE -> runDutyCycle(Settings.Spindexer.REVERSE_DUTY_CYCLE);
-      case STOP -> stop();
+    public static Spindexer getInstance() {
+        return instance;
     }
-  }
 
-  public void periodicAfterScheduler() {
-    io.applyOutputs(outputs);
-  }
+    private final SpindexerIO io;
+    private final SpindexerIOInputsAutoLogged inputs;
+    private final SpindexerIOOutputs outputs;
 
-  private void runDutyCycle(double dutyCycle) {
-    outputs.spindexerMode = SpindexerIO.SpindexerIOOutputMode.DUTY_CYCLE;
-    outputs.spindexerLeaderDutyCycle = dutyCycle;
-  }
+    @AutoLogOutput(key = "States/Spindexer")
+    private SpindexerState state;
 
-  private void stop() {
-    outputs.spindexerMode = SpindexerIO.SpindexerIOOutputMode.STOP;
-  }
+    private Spindexer(SpindexerIO io) {
+        this.io = io;
+        this.inputs = new SpindexerIOInputsAutoLogged();
+        this.outputs = new SpindexerIOOutputs();
 
-  private void setState(SpindexerState state) {
-    this.state = state;
-  }
+        setState(SpindexerState.STOP);
+    }
 
-  public Command runSpindexerForward() {
-    return run(coroutine -> setState(SpindexerState.FORWARD)).named("Spindexer Forward");
-  }
+    public enum SpindexerState {
+        FORWARD,
+        REVERSE,
+        STOP
+    }
 
-  public Command runSpindexerReverse() {
-    return run(coroutine -> setState(SpindexerState.REVERSE)).named("Spindexer Reverse");
-  }
+    public void periodic() {
+        io.updateInputs(inputs);
+        Logger.processInputs("Spindexer", inputs);
 
-  public Command stopSpindexer() {
-    return run(coroutine -> setState(SpindexerState.STOP)).named("Spindexer Stop");
-  }
+        if (!Settings.EnabledSubsystems.SPINDEXER.get()) {
+            stop();
+
+            return;
+        }
+
+        switch (state) {
+            case FORWARD -> runDutyCycle(SpindexerConstants.Spindexer.FORWARD_DUTY_CYCLE);
+            case REVERSE -> runDutyCycle(SpindexerConstants.Spindexer.REVERSE_DUTY_CYCLE);
+            case STOP -> stop();
+        }
+    }
+
+    public void periodicAfterScheduler() {
+        io.applyOutputs(outputs);
+    }
+
+    private void runDutyCycle(double dutyCycle) {
+        outputs.spindexerMode = SpindexerIO.SpindexerIOOutputMode.DUTY_CYCLE;
+        outputs.spindexerLeaderDutyCycle = dutyCycle;
+    }
+
+    private void stop() {
+        outputs.spindexerMode = SpindexerIO.SpindexerIOOutputMode.STOP;
+    }
+
+    private void setState(SpindexerState state) {
+        this.state = state;
+    }
+
+    public Command runSpindexerForward() {
+        return run(coroutine -> setState(SpindexerState.FORWARD)).named("Spindexer Forward");
+    }
+
+    public Command runSpindexerReverse() {
+        return run(coroutine -> setState(SpindexerState.REVERSE)).named("Spindexer Reverse");
+    }
+
+    public Command stopSpindexer() {
+        return run(coroutine -> setState(SpindexerState.STOP)).named("Spindexer Stop");
+    }
 }
