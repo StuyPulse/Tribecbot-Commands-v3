@@ -1,4 +1,4 @@
-package com.stuypulse.robot.util.Simulation.TalonFXSimulation;
+package com.stuypulse.robot.util.talonfx.sim;
 
 import static org.wpilib.units.Units.*;
 import org.wpilib.units.measure.*;

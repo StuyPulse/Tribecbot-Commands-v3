@@ -1,14 +1,13 @@
 package com.stuypulse.robot.subsystems.intake;
 
+import static org.wpilib.units.Units.*;
 import org.wpilib.units.measure.*;
 
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
-import com.stuypulse.robot.constants.Motors.TalonFXConfig;
-
-import static org.wpilib.units.Units.*;
+import com.stuypulse.robot.util.talonfx.TalonFXConfig;
 
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
@@ -41,11 +40,11 @@ public final class IntakeConstants {
             Distance PIVOT_ARM_LENGTH = Inches.of(17.522719); // estimate from onshape
 
             Current PIVOT_STALL_CURRENT = Amps.of(0); // TODO: set value
-            double PIVOT_STALL_DEBOUNCE = 1.0; // TODO: VERIFY
+            Time PIVOT_STALL_DEBOUNCE = Seconds.of(1.0); // TODO: VERIFY
         }
 
         public static interface Roller {
-            double ROLLER_STALL_DEBOUNCE = 0.05; // TODO: VERIFY
+            Time ROLLER_STALL_DEBOUNCE = Seconds.of(0.05); // TODO: VERIFY
             Current ROLLER_STALL_CURRENT = Amps.of(50.0);
 
             MomentOfInertia ROLLER_MOI = KilogramSquareMeters.of(0.000358470114); // found on onshape

@@ -8,8 +8,8 @@ import org.wpilib.simulation.FlywheelSim;
 import org.wpilib.simulation.SingleJointedArmSim;
 
 import com.stuypulse.robot.constants.Settings;
-import com.stuypulse.robot.util.Simulation.TalonFXSimulation.SystemSim;
-import com.stuypulse.robot.util.Simulation.TalonFXSimulation.TalonFXSimulation;
+import com.stuypulse.robot.util.talonfx.sim.SystemSim;
+import com.stuypulse.robot.util.talonfx.sim.TalonFXSimulation;
 
 public class IntakeIOSim extends IntakeIOBase {
     private final SystemSim<SingleJointedArmSim> pivotSim;

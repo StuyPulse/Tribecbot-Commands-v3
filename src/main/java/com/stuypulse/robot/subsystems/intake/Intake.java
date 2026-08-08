@@ -52,7 +52,7 @@ public class Intake extends Mechanism {
         this.rollerState = RollerState.STOP;
 
         this.pivotPositionDebouncer = new DualDebouncer(0.5, 0.1);
-        this.pivotStallingDebouncer = new Debouncer(IntakeConstants.Settings.Pivot.PIVOT_STALL_DEBOUNCE, DebounceType.kBoth);
+        this.pivotStallingDebouncer = new Debouncer(IntakeConstants.Settings.Pivot.PIVOT_STALL_DEBOUNCE.in(Seconds), DebounceType.kBoth);
     }
 
     public enum PivotState {

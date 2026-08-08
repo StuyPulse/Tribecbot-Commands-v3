@@ -6,6 +6,7 @@ import com.stuypulse.robot.subsystems.handoff.HandoffIO.HandoffIOOutputs;
 import org.wpilib.command3.*;
 
 import static org.wpilib.units.Units.Amps;
+import static org.wpilib.units.Units.Seconds;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -46,7 +47,7 @@ public class Handoff extends Mechanism {
 
         setState(HandoffState.STOP);
 
-        this.handoffStallingDebouncer = new Debouncer(HandoffConstants.Settings.STALL_DEBOUNCE_SEC, DebounceType.kBoth);
+        this.handoffStallingDebouncer = new Debouncer(HandoffConstants.Settings.STALL_DEBOUNCE.in(Seconds), DebounceType.kBoth);
     }
 
     public enum HandoffState {

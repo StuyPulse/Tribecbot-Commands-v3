@@ -3,13 +3,13 @@
 /* Use of this source code is governed by an MIT-style license */
 /* that can be found in the repository LICENSE file.           */
 /***************************************************************/
-package com.stuypulse.robot.util.Simulation.TalonFXSimulation;
+package com.stuypulse.robot.util.talonfx.sim;
 
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.TalonFXSimState;
-import com.stuypulse.robot.constants.Motors.TalonFXConfig;
+import com.stuypulse.robot.util.talonfx.TalonFXConfig;
 
 import org.wpilib.units.measure.*;
 
