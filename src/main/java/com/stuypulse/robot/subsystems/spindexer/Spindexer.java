@@ -57,8 +57,8 @@ public class Spindexer extends Mechanism {
         }
 
         switch (state) {
-            case FORWARD -> runDutyCycle(SpindexerConstants.Spindexer.FORWARD_DUTY_CYCLE);
-            case REVERSE -> runDutyCycle(SpindexerConstants.Spindexer.REVERSE_DUTY_CYCLE);
+            case FORWARD -> runDutyCycle(SpindexerConstants.Settings.FORWARD_DUTY_CYCLE);
+            case REVERSE -> runDutyCycle(SpindexerConstants.Settings.REVERSE_DUTY_CYCLE);
             case STOP -> stop();
         }
     }

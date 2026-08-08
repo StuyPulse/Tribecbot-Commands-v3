@@ -27,7 +27,7 @@ public class HoodIOTalonFX implements HoodIO {
     public HoodIOTalonFX() {
         hoodMotor = new TalonFX(Ports.Superstructure.Hood.MOTOR, Ports.RIO);
 
-        Motors.Superstructure.Hood.HOOD_CONFIG.configure(hoodMotor);
+        Motors.Superstructure.Hood.HOOD_MOTOR.configure(hoodMotor);
 
         seedHoodPosition(Settings.Superstructure.Hood.Angles.STOW);
 

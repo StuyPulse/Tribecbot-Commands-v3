@@ -16,7 +16,7 @@ public class SpindexerIOSim extends SpindexerIOBase {
     private final TalonFXSimulation spindexerFollowerMotor;
 
     public SpindexerIOSim() {
-        final double gearing = SpindexerConstants.Spindexer.GEAR_RATIO;
+        final double gearing = SpindexerConstants.Settings.GEAR_RATIO;
         final SystemSim<FlywheelSim> spindexerSim = SystemSim.of(
                 new FlywheelSim(
                         Models.flywheelFromPhysicalConstants(
@@ -25,11 +25,11 @@ public class SpindexerIOSim extends SpindexerIOBase {
                         0.01));
 
         final TalonFXSimulation spindexerLeaderMotor = new TalonFXSimulation(
-                Ports.Spindexer.LEADER,
+                SpindexerConstants.Ports.LEADER_MOTOR,
                 gearing,
                 spindexerSim);
         final TalonFXSimulation spindexerFollowerMotor = new TalonFXSimulation(
-                Ports.Spindexer.FOLLOWER,
+                SpindexerConstants.Ports.FOLLOWER_MOTOR,
                 gearing,
                 spindexerSim);
 

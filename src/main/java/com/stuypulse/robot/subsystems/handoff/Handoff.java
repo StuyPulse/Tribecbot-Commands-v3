@@ -46,7 +46,7 @@ public class Handoff extends Mechanism {
 
         setState(HandoffState.STOP);
 
-        this.handoffStallingDebouncer = new Debouncer(HandoffConstants.Handoff.STALL_DEBOUNCE_SEC, DebounceType.kBoth);
+        this.handoffStallingDebouncer = new Debouncer(HandoffConstants.Settings.STALL_DEBOUNCE_SEC, DebounceType.kBoth);
     }
 
     public enum HandoffState {
@@ -66,8 +66,8 @@ public class Handoff extends Mechanism {
         }
 
         switch (state) {
-            case FORWARD -> runHandoffDutyCycle(HandoffConstants.Handoff.FORWARD_DUTY_CYCLE);
-            case REVERSE -> runHandoffDutyCycle(HandoffConstants.Handoff.REVERSE_DUTY_CYCLE);
+            case FORWARD -> runHandoffDutyCycle(HandoffConstants.Settings.FORWARD_DUTY_CYCLE);
+            case REVERSE -> runHandoffDutyCycle(HandoffConstants.Settings.REVERSE_DUTY_CYCLE);
             case STOP -> stopHandoff();
         }
     }
@@ -87,7 +87,7 @@ public class Handoff extends Mechanism {
 
     public boolean isHandoffStalling() {
         return handoffStallingDebouncer.calculate(
-                inputs.motorLeadSupplyCurrent.abs(Amps) > HandoffConstants.Handoff.STALL_CURRENT_AMPS.get());
+                inputs.motorLeadSupplyCurrent.abs(Amps) > HandoffConstants.Settings.STALL_CURRENT_AMPS.get());
     }
 
     private void setState(HandoffState state) {

@@ -69,8 +69,8 @@ public class ShooterIOSim implements ShooterIO {
                 Settings.Superstructure.Shooter.GEAR_RATIO, 
                 flywheelSim);
 
-        shooterLeaderSim.configure(Motors.Superstructure.Shooter.SHOOTER_CONFIG);
-        shooterFollowerSim.configure(Motors.Superstructure.Shooter.SHOOTER_CONFIG);
+        shooterLeaderSim.configure(Motors.Superstructure.Shooter.SHOOTER_MOTOR);
+        shooterFollowerSim.configure(Motors.Superstructure.Shooter.SHOOTER_MOTOR);
 
         shooterLeaderController = new VelocityTorqueCurrentFOC(0);
 

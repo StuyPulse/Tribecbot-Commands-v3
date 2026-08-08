@@ -49,9 +49,9 @@ public abstract class IntakeIOBase implements IntakeIO {
         this.rollerLeaderMotor = rollerLeaderMotor;
         this.rollerFollowerMotor = rollerFollowerMotor;
 
-        Motors.Intake.PIVOT_CONFIG.configure(pivotMotor);
-        Motors.Intake.ROLLER_CONFIG.configure(rollerLeaderMotor);
-        Motors.Intake.ROLLER_CONFIG.configure(rollerFollowerMotor);
+        IntakeConstants.Motors.PIVOT_CONFIG.configure(pivotMotor);
+        IntakeConstants.Motors.ROLLER_CONFIG.configure(rollerLeaderMotor);
+        IntakeConstants.Motors.ROLLER_CONFIG.configure(rollerFollowerMotor);
 
         rollerLeaderController = new DutyCycleOut(0).withEnableFOC(true);
         rollerFollowerController = new Follower(rollerLeaderMotor.getDeviceID(), MotorAlignmentValue.Opposed);
@@ -60,7 +60,7 @@ public abstract class IntakeIOBase implements IntakeIO {
         pivotVoltageController = new VoltageOut(0).withEnableFOC(true);
 
         rollerFollowerMotor.setControl(rollerFollowerController);
-        pivotMotor.setPosition(IntakeConstants.Intake.PIVOT_STOW_ANGLE);
+        pivotMotor.setPosition(IntakeConstants.Settings.Pivot.PIVOT_STOW_ANGLE);
 
         pivotPosition = pivotMotor.getPosition();
         pivotSupplyCurrent = pivotMotor.getSupplyCurrent();

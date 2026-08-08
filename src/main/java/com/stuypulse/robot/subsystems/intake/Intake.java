@@ -52,7 +52,7 @@ public class Intake extends Mechanism {
         this.rollerState = RollerState.STOP;
 
         this.pivotPositionDebouncer = new DualDebouncer(0.5, 0.1);
-        this.pivotStallingDebouncer = new Debouncer(IntakeConstants.Intake.PIVOT_STALL_DEBOUNCE, DebounceType.kBoth);
+        this.pivotStallingDebouncer = new Debouncer(IntakeConstants.Settings.Pivot.PIVOT_STALL_DEBOUNCE, DebounceType.kBoth);
     }
 
     public enum PivotState {
@@ -83,29 +83,29 @@ public class Intake extends Mechanism {
             case DEPLOY -> {
                 if (isPivotBelowPushdownThreshold()) {
                     Current pushdownCurrent = RobotState.isTeleop()
-                            ? IntakeConstants.Intake.PUSHDOWN_CURRENT_TELEOP
-                            : IntakeConstants.Intake.PUSHDOWN_CURRENT_AUTON;
+                            ? IntakeConstants.Settings.Pivot.PUSHDOWN_CURRENT_TELEOP
+                            : IntakeConstants.Settings.Pivot.PUSHDOWN_CURRENT_AUTON;
 
                     runPivotTorqueCurrent(pushdownCurrent);
                 } else {
-                    runPivotPosition(IntakeConstants.Intake.PIVOT_DEPLOY_ANGLE);
+                    runPivotPosition(IntakeConstants.Settings.Pivot.PIVOT_DEPLOY_ANGLE);
                 }
             }
 
             case HOMING -> {
                 if (pivotStalling()) {
-                    io.seedPivotPosition(IntakeConstants.Intake.PIVOT_MIN_ANGLE);
+                    io.seedPivotPosition(IntakeConstants.Settings.Pivot.PIVOT_MIN_ANGLE);
                     setPivotState(PivotState.DEPLOY);
                 } else {
-                    runPivotVoltage(IntakeConstants.Intake.HOMING_VOLTAGE);
+                    runPivotVoltage(IntakeConstants.Settings.Pivot.HOMING_VOLTAGE);
                 }
             }
-            case DIGEST -> runPivotPosition(IntakeConstants.Intake.PIVOT_DIGEST_ANGLE);
-            case STOW -> runPivotPosition(IntakeConstants.Intake.PIVOT_STOW_ANGLE);
+            case DIGEST -> runPivotPosition(IntakeConstants.Settings.Pivot.PIVOT_DIGEST_ANGLE);
+            case STOW -> runPivotPosition(IntakeConstants.Settings.Pivot.PIVOT_STOW_ANGLE);
         }
 
         if (pivotState == PivotState.DEPLOY
-                && inputs.pivotMotorPosition.lte(IntakeConstants.Intake.THRESHOLD_TO_START_ROLLERS)) {
+                && inputs.pivotMotorPosition.lte(IntakeConstants.Settings.Pivot.THRESHOLD_TO_START_ROLLERS)) {
             switch (rollerState) {
                 case INTAKE -> runRollersDutyCycle(1.0);
                 case OUTTAKE -> runRollersDutyCycle(-1.0);
@@ -122,12 +122,12 @@ public class Intake extends Mechanism {
 
     private boolean isPivotBelowPushdownThreshold() {
         return pivotPositionDebouncer.calculate(
-                inputs.pivotMotorPosition.lte(IntakeConstants.Intake.ANGLE_THRESHOLD_FOR_HOLDING_VOLTAGE));
+                inputs.pivotMotorPosition.lte(IntakeConstants.Settings.Pivot.ANGLE_THRESHOLD_FOR_HOLDING_VOLTAGE));
     }
 
     private boolean pivotStalling() {
         return pivotStallingDebouncer.calculate(
-                inputs.pivotMotorStatorCurrent.abs(Amps) > IntakeConstants.Intake.PIVOT_STALL_CURRENT.in(Amps));
+                inputs.pivotMotorStatorCurrent.abs(Amps) > IntakeConstants.Settings.Pivot.PIVOT_STALL_CURRENT.in(Amps));
     }
 
     private void setPivotState(PivotState state) {
@@ -242,7 +242,7 @@ public class Intake extends Mechanism {
     public Command seedPivotDeployed() {
         return run(
                 coroutine -> {
-                    io.seedPivotPosition(IntakeConstants.Intake.PIVOT_DEPLOY_ANGLE);
+                    io.seedPivotPosition(IntakeConstants.Settings.Pivot.PIVOT_DEPLOY_ANGLE);
                     setPivotState(PivotState.DEPLOY);
                 })
                 // .ignoringDisable(true) TODO: Wait for replacement
@@ -252,7 +252,7 @@ public class Intake extends Mechanism {
     public Command seedPivotStowed() {
         return run(
                 coroutine -> {
-                    io.seedPivotPosition(IntakeConstants.Intake.PIVOT_STOW_ANGLE);
+                    io.seedPivotPosition(IntakeConstants.Settings.Pivot.PIVOT_STOW_ANGLE);
                     setPivotState(PivotState.STOW);
                 })
                 // .ignoringDisable(true) TODO: Wait for replacement

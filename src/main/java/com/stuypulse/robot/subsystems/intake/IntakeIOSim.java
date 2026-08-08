@@ -21,27 +21,27 @@ public class IntakeIOSim extends IntakeIOBase {
     private final TalonFXSimulation rollerFollowerMotor;
 
     public IntakeIOSim() {
-        final double pivotGearRatio = IntakeConstants.Intake.PIVOT_GEAR_RATIO;
+        final double pivotGearRatio = IntakeConstants.Settings.Pivot.PIVOT_GEAR_RATIO;
         final SystemSim<SingleJointedArmSim> pivotSim = SystemSim.of(new SingleJointedArmSim(
             DCMotor.getKrakenX60Foc(1), 
             pivotGearRatio, 
-            IntakeConstants.Intake.PIVOT_MOI.in(KilogramSquareMeters), 
-            IntakeConstants.Intake.PIVOT_ARM_LENGTH.in(Meters), 
-            IntakeConstants.Intake.PIVOT_MIN_ANGLE.in(Radians), 
-            IntakeConstants.Intake.PIVOT_MAX_ANGLE.in(Radians), 
+            IntakeConstants.Settings.Pivot.PIVOT_MOI.in(KilogramSquareMeters), 
+            IntakeConstants.Settings.Pivot.PIVOT_ARM_LENGTH.in(Meters), 
+            IntakeConstants.Settings.Pivot.PIVOT_MIN_ANGLE.in(Radians), 
+            IntakeConstants.Settings.Pivot.PIVOT_MAX_ANGLE.in(Radians), 
             true, 
-            IntakeConstants.Intake.PIVOT_STOW_ANGLE.in(Radians)
+            IntakeConstants.Settings.Pivot.PIVOT_STOW_ANGLE.in(Radians)
         ));
-        final TalonFXSimulation pivotMotor = new TalonFXSimulation(Ports.Intake.PIVOT, pivotGearRatio, pivotSim);
+        final TalonFXSimulation pivotMotor = new TalonFXSimulation(IntakeConstants.Ports.PIVOT_MOTOR, pivotGearRatio, pivotSim);
 
-        final double rollerGearRatio = IntakeConstants.Intake.ROLLER_GEAR_RATIO;
+        final double rollerGearRatio = IntakeConstants.Settings.Roller.ROLLER_GEAR_RATIO;
         final SystemSim<FlywheelSim> rollerSim = SystemSim.of(new FlywheelSim(Models.flywheelFromPhysicalConstants(
             DCMotor.getKrakenX60Foc(2),
-            IntakeConstants.Intake.ROLLER_MOI.in(KilogramSquareMeters),
+            IntakeConstants.Settings.Roller.ROLLER_MOI.in(KilogramSquareMeters),
             rollerGearRatio
         ), DCMotor.getKrakenX60Foc(2)));
-        final TalonFXSimulation rollerLeaderMotor = new TalonFXSimulation(Ports.Intake.ROLLER_LEADER, rollerGearRatio, rollerSim);
-        final TalonFXSimulation rollerFollowerMotor = new TalonFXSimulation(Ports.Intake.ROLLER_FOLLOWER, rollerGearRatio, rollerSim);
+        final TalonFXSimulation rollerLeaderMotor = new TalonFXSimulation(IntakeConstants.Ports.ROLLER_LEADER_MOTOR, rollerGearRatio, rollerSim);
+        final TalonFXSimulation rollerFollowerMotor = new TalonFXSimulation(IntakeConstants.Ports.ROLLER_FOLLOWER_MOTOR, rollerGearRatio, rollerSim);
 
         super(pivotMotor, rollerLeaderMotor, rollerFollowerMotor);
 

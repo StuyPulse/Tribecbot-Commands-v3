@@ -5,9 +5,9 @@ import com.stuypulse.robot.constants.Ports;
 
 public class IntakeIOTalonFX extends IntakeIOBase {
     public IntakeIOTalonFX() {
-        final TalonFX pivotMotor = new TalonFX(Ports.Intake.PIVOT, Ports.RIO);
-        final TalonFX rollerLeaderMotor = new TalonFX(Ports.Intake.ROLLER_LEADER, Ports.RIO);
-        final TalonFX rollerFollowerMotor = new TalonFX(Ports.Intake.ROLLER_FOLLOWER, Ports.RIO);
+        final TalonFX pivotMotor = new TalonFX(IntakeConstants.Ports.PIVOT_MOTOR, Ports.RIO);
+        final TalonFX rollerLeaderMotor = new TalonFX(IntakeConstants.Ports.ROLLER_LEADER_MOTOR, Ports.RIO);
+        final TalonFX rollerFollowerMotor = new TalonFX(IntakeConstants.Ports.ROLLER_FOLLOWER_MOTOR, Ports.RIO);
         super(pivotMotor, rollerLeaderMotor, rollerFollowerMotor);
     }
 }

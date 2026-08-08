@@ -12,8 +12,6 @@ import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.*;
-import com.stuypulse.robot.subsystems.intake.IntakeConstants;
-import com.stuypulse.robot.subsystems.spindexer.SpindexerConstants;
 
 /*-
  * File containing all of the configurations that different motors require.
@@ -26,58 +24,10 @@ import com.stuypulse.robot.subsystems.spindexer.SpindexerConstants;
  */
 public interface Motors {
     /** Classes to store all of the values a motor needs */
-    public interface Intake {
-        TalonFXConfig PIVOT_CONFIG = new Motors.TalonFXConfig()
-                .withInvertedValue(InvertedValue.Clockwise_Positive)
-                .withNeutralMode(NeutralModeValue.Brake)
-                .withSupplyCurrentLimit(10.0) // was 60 on practice day
-                .withStatorCurrentLimitEnabled(false)
-                .withRampRate(0.25)
-                .withPIDConstants(
-                        Gains.Intake.Pivot.kP.get(),
-                        Gains.Intake.Pivot.kI.get(),
-                        Gains.Intake.Pivot.kD.get(),
-                        0)
-                .withFFConstants(
-                        Gains.Intake.Pivot.kS.get(),
-                        Gains.Intake.Pivot.kV.get(),
-                        Gains.Intake.Pivot.kA.get(),
-                        Gains.Intake.Pivot.kG,
-                        0)
-                .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseVelocitySign, 0)
-                .withGravityType(GravityTypeValue.Arm_Cosine)
-                .withSensorToMechanismRatio(IntakeConstants.Intake.PIVOT_GEAR_RATIO);
-
-        TalonFXConfig ROLLER_CONFIG = new Motors.TalonFXConfig()
-                .withInvertedValue(InvertedValue.Clockwise_Positive)
-                .withNeutralMode(NeutralModeValue.Coast)
-                .withSupplyCurrentLimit(37.0)
-                .withStatorCurrentLimitEnabled(false)
-                .withRampRate(0.50);
-    }
-
-    public interface Handoff {
-        TalonFXConfig HANDOFF_CONFIG = new Motors.TalonFXConfig()
-                .withInvertedValue(InvertedValue.Clockwise_Positive)
-                .withNeutralMode(NeutralModeValue.Brake)
-                .withSupplyCurrentLimit(80.0)
-                .withStatorCurrentLimitEnabled(false)
-                .withRampRate(0.25);
-    }
-
-    public interface Spindexer {
-        TalonFXConfig SPINDEXER_CONFIG = new TalonFXConfig()
-                .withInvertedValue(InvertedValue.Clockwise_Positive)
-                .withNeutralMode(NeutralModeValue.Brake)
-                .withSupplyCurrentLimit(45)
-                .withStatorCurrentLimitEnabled(false)
-                .withRampRate(0.25)
-                .withSensorToMechanismRatio(SpindexerConstants.Spindexer.GEAR_RATIO);
-    }
 
     public interface Superstructure {
         public interface Shooter {
-            TalonFXConfig SHOOTER_CONFIG = new TalonFXConfig()
+            TalonFXConfig SHOOTER_MOTOR = new TalonFXConfig()
                     .withInvertedValue(InvertedValue.CounterClockwise_Positive)
                     .withNeutralMode(NeutralModeValue.Coast)
                     .withSupplyCurrentLimitEnabled(false)
@@ -101,7 +51,7 @@ public interface Motors {
         }
 
         public interface Hood {
-            TalonFXConfig HOOD_CONFIG = new TalonFXConfig()
+            TalonFXConfig HOOD_MOTOR = new TalonFXConfig()
                     .withInvertedValue(InvertedValue.Clockwise_Positive)
                     .withNeutralMode(NeutralModeValue.Brake)
                     .withSupplyCurrentLimit(80.0)

@@ -2,8 +2,14 @@ package com.stuypulse.robot.subsystems.handoff;
 
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
-public interface HandoffConstants {
-    public interface Handoff {
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.stuypulse.robot.constants.Motors.TalonFXConfig;
+
+public final class HandoffConstants {
+    private HandoffConstants() {}
+
+    public interface Settings {
         double GEAR_RATIO = 3.0 / 1.0;
 
         double HANDOFF_STOP = 0.0;
@@ -22,5 +28,21 @@ public interface HandoffConstants {
         LoggedNetworkNumber STALL_CURRENT_AMPS = new LoggedNetworkNumber(
                 "/Tuning/Handoff/Stall Current Limit for Reverse", 30.0);
         double STALL_DEBOUNCE_SEC = 0.5;
+    }
+
+    public interface Motors {
+        TalonFXConfig HANDOFF_MOTOR_CONFIG = new TalonFXConfig()
+                .withInvertedValue(InvertedValue.Clockwise_Positive)
+                .withNeutralMode(NeutralModeValue.Brake)
+                .withSupplyCurrentLimit(80.0)
+                .withStatorCurrentLimitEnabled(false)
+                .withRampRate(0.25);
+    }
+
+    public interface Gains {}
+
+    public interface Ports {
+        int LEADER_MOTOR = 43;
+        int FOLLOWER_MOTOR = 48;
     }
 }

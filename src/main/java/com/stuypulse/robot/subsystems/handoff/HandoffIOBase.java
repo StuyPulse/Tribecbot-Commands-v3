@@ -8,8 +8,6 @@ import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
-import com.stuypulse.robot.constants.Motors;
-import com.stuypulse.robot.constants.Ports;
 
 public abstract class HandoffIOBase implements HandoffIO {
     private final TalonFX handoffLeaderMotor;
@@ -34,11 +32,11 @@ public abstract class HandoffIOBase implements HandoffIO {
         this.handoffLeaderMotor = handoffLeaderMotor;
         this.handoffFollowerMotor = handoffFollowerMotor;
 
-        Motors.Handoff.HANDOFF_CONFIG.configure(handoffLeaderMotor);
-        Motors.Handoff.HANDOFF_CONFIG.configure(handoffFollowerMotor);
+        HandoffConstants.Motors.HANDOFF_MOTOR_CONFIG.configure(handoffLeaderMotor);
+        HandoffConstants.Motors.HANDOFF_MOTOR_CONFIG.configure(handoffFollowerMotor);
 
         controller = new DutyCycleOut(0).withEnableFOC(true);
-        follower = new Follower(Ports.Handoff.LEADER_MOTOR, MotorAlignmentValue.Opposed);
+        follower = new Follower(handoffLeaderMotor.getDeviceID(), MotorAlignmentValue.Opposed);
 
         handoffFollowerMotor.setControl(follower);
 

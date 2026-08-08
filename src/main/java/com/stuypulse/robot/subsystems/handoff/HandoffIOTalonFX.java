@@ -5,8 +5,8 @@ import com.stuypulse.robot.constants.Ports;
 
 public class HandoffIOTalonFX extends HandoffIOBase {
     public HandoffIOTalonFX() {
-        final TalonFX handoffLeaderMotor = new TalonFX(Ports.Handoff.LEADER_MOTOR, Ports.RIO);
-        final TalonFX handoffFollowerMotor = new TalonFX(Ports.Handoff.FOLLOWER_MOTOR, Ports.RIO);
+        final TalonFX handoffLeaderMotor = new TalonFX(HandoffConstants.Ports.LEADER_MOTOR, Ports.RIO);
+        final TalonFX handoffFollowerMotor = new TalonFX(HandoffConstants.Ports.FOLLOWER_MOTOR, Ports.RIO);
         super(handoffLeaderMotor, handoffFollowerMotor);
     }
 }

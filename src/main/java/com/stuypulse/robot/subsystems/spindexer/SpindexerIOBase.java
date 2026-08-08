@@ -6,7 +6,6 @@ import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
-import com.stuypulse.robot.constants.Motors;
 
 import org.wpilib.units.measure.*;
 
@@ -35,8 +34,8 @@ public abstract class SpindexerIOBase implements SpindexerIO {
         this.spindexerLeaderMotor = spindexerLeaderMotor;
         this.spindexerFollowerMotor = spindexerFollowerMotor;
 
-        Motors.Spindexer.SPINDEXER_CONFIG.configure(spindexerLeaderMotor);
-        Motors.Spindexer.SPINDEXER_CONFIG.configure(spindexerFollowerMotor);
+        SpindexerConstants.Motors.SPINDEXER_CONFIG.configure(spindexerLeaderMotor);
+        SpindexerConstants.Motors.SPINDEXER_CONFIG.configure(spindexerFollowerMotor);
 
         spindexerController = new DutyCycleOut(0);
         followerController = new Follower(spindexerLeaderMotor.getDeviceID(), MotorAlignmentValue.Aligned);

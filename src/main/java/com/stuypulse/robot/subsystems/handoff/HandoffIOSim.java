@@ -4,7 +4,6 @@ import org.wpilib.math.system.DCMotor;
 import org.wpilib.math.system.Models;
 import org.wpilib.simulation.FlywheelSim;
 
-import com.stuypulse.robot.constants.Ports;
 import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.util.Simulation.TalonFXSimulation.SystemSim;
 import com.stuypulse.robot.util.Simulation.TalonFXSimulation.TalonFXSimulation;
@@ -24,12 +23,12 @@ public class HandoffIOSim extends HandoffIOBase {
                         0.01));
 
         final TalonFXSimulation handoffLeaderMotor = new TalonFXSimulation(
-                Ports.Handoff.LEADER_MOTOR,
-                HandoffConstants.Handoff.GEAR_RATIO,
+                HandoffConstants.Ports.LEADER_MOTOR,
+                HandoffConstants.Settings.GEAR_RATIO,
                 handoffSim);
         final TalonFXSimulation handoffFollowerMotor = new TalonFXSimulation(
-                Ports.Handoff.FOLLOWER_MOTOR,
-                HandoffConstants.Handoff.GEAR_RATIO,
+                HandoffConstants.Ports.FOLLOWER_MOTOR,
+                HandoffConstants.Settings.GEAR_RATIO,
                 handoffSim);
 
         super(handoffLeaderMotor, handoffFollowerMotor);
