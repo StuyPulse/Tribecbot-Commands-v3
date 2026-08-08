@@ -8,7 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     # This must be updated depending on the year
-    container: systemcore-cross-debian:trixie
+    container: wpilib/systemcore-cross-debian:trixie
     steps:
     - uses: actions/checkout@v7
 
