@@ -1,3 +1,4 @@
 package com.stuypulse.robot.subsystems.leds;
 
-public class LEDIOSim {}
+public class LEDIOSim {
+}

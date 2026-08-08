@@ -17,16 +17,6 @@ public interface Ports {
     public CANBus RIO = new CANBus("rio");
     public CANBus CANIVORE = new CANBus("CANIVORE");
 
-    public interface LED {
-        int LED_PORT = 1;
-        int CANDLE_PORT = 61;
-    }
-
-    public interface Handoff {
-        int MOTOR_LEAD = 43;
-        int MOTOR_FOLLOW = 48;
-    }
-
     public interface Superstructure {
         public interface Hood {
             int MOTOR = 45;
@@ -43,16 +33,5 @@ public interface Ports {
             int ENCODER17T = 42;
             int ENCODER18T = 41;
         }
-    }
-
-    public interface Intake {
-        int PIVOT = 20;
-        int ROLLER_LEADER = 21;
-        int ROLLER_FOLLOWER = 22;
-    }
-
-    public interface Spindexer {
-        int LEADER = 30;
-        int FOLLOWER = 31; // TODO: follower port
     }
 }
