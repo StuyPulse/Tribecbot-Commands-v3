@@ -34,8 +34,8 @@ public abstract class SpindexerIOBase implements SpindexerIO {
         this.spindexerLeaderMotor = spindexerLeaderMotor;
         this.spindexerFollowerMotor = spindexerFollowerMotor;
 
-        SpindexerConstants.Motors.SPINDEXER_CONFIG.configure(spindexerLeaderMotor);
-        SpindexerConstants.Motors.SPINDEXER_CONFIG.configure(spindexerFollowerMotor);
+        SpindexerConstants.Motors.SPINDEXER_MOTOR_CONFIG.configure(spindexerLeaderMotor);
+        SpindexerConstants.Motors.SPINDEXER_MOTOR_CONFIG.configure(spindexerFollowerMotor);
 
         spindexerController = new DutyCycleOut(0);
         followerController = new Follower(spindexerLeaderMotor.getDeviceID(), MotorAlignmentValue.Aligned);

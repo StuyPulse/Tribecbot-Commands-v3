@@ -9,7 +9,6 @@ import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
-import com.stuypulse.robot.constants.Motors;
 import org.wpilib.units.measure.*;
 
 public abstract class IntakeIOBase implements IntakeIO {
@@ -49,9 +48,9 @@ public abstract class IntakeIOBase implements IntakeIO {
         this.rollerLeaderMotor = rollerLeaderMotor;
         this.rollerFollowerMotor = rollerFollowerMotor;
 
-        IntakeConstants.Motors.PIVOT_CONFIG.configure(pivotMotor);
-        IntakeConstants.Motors.ROLLER_CONFIG.configure(rollerLeaderMotor);
-        IntakeConstants.Motors.ROLLER_CONFIG.configure(rollerFollowerMotor);
+        IntakeConstants.Motors.PIVOT_MOTOR_CONFIG.configure(pivotMotor);
+        IntakeConstants.Motors.ROLLER_MOTOR_CONFIG.configure(rollerLeaderMotor);
+        IntakeConstants.Motors.ROLLER_MOTOR_CONFIG.configure(rollerFollowerMotor);
 
         rollerLeaderController = new DutyCycleOut(0).withEnableFOC(true);
         rollerFollowerController = new Follower(rollerLeaderMotor.getDeviceID(), MotorAlignmentValue.Opposed);

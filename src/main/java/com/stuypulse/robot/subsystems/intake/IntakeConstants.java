@@ -66,7 +66,7 @@ public final class IntakeConstants {
     }
 
     public interface Motors {
-        TalonFXConfig PIVOT_CONFIG = new TalonFXConfig()
+        TalonFXConfig PIVOT_MOTOR_CONFIG = new TalonFXConfig()
                 .withInvertedValue(InvertedValue.Clockwise_Positive)
                 .withNeutralMode(NeutralModeValue.Brake)
                 .withSupplyCurrentLimit(10.0) // was 60 on practice day
@@ -87,7 +87,7 @@ public final class IntakeConstants {
                 .withGravityType(GravityTypeValue.Arm_Cosine)
                 .withSensorToMechanismRatio(IntakeConstants.Settings.Pivot.PIVOT_GEAR_RATIO);
 
-        TalonFXConfig ROLLER_CONFIG = new TalonFXConfig()
+        TalonFXConfig ROLLER_MOTOR_CONFIG = new TalonFXConfig()
                 .withInvertedValue(InvertedValue.Clockwise_Positive)
                 .withNeutralMode(NeutralModeValue.Coast)
                 .withSupplyCurrentLimit(37.0)

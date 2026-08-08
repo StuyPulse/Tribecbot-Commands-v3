@@ -27,7 +27,7 @@ public final class SpindexerConstants {
     }
 
     public interface Motors {
-        TalonFXConfig SPINDEXER_CONFIG = new TalonFXConfig()
+        TalonFXConfig SPINDEXER_MOTOR_CONFIG = new TalonFXConfig()
                 .withInvertedValue(InvertedValue.Clockwise_Positive)
                 .withNeutralMode(NeutralModeValue.Brake)
                 .withSupplyCurrentLimit(45)
