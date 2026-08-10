@@ -7,6 +7,7 @@ import com.stuypulse.robot.Robot;
 import com.stuypulse.robot.RobotContainer;
 import com.stuypulse.robot.constants.Gains;
 import com.stuypulse.robot.constants.Settings;
+import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
 import com.stuypulse.robot.subsystems.superstructure.turret.TurretIO.TurretIOOutputMode;
 import com.stuypulse.robot.subsystems.superstructure.turret.TurretIO.TurretIOOutputs;
 import com.stuypulse.robot.util.superstructure.SOTMCalculator;
@@ -126,10 +127,10 @@ public class Turret extends Mechanism {
               delta += 360;
         }
 
-        if (current + delta > Settings.Superstructure.Turret.RANGE_CW) {
+        if (current + delta > SuperstructureConstants.Turret.Settings.RANGE_CW) {
             return delta - 360;
         }
-        if (current + delta < Settings.Superstructure.Turret.RANGE_CCW) {
+        if (current + delta < SuperstructureConstants.Turret.Settings.RANGE_CCW) {
             return delta + 360;
         }
 
@@ -159,9 +160,9 @@ public class Turret extends Mechanism {
       case SOTM -> runPosition(SOTMCalculator.calculateTurretAngleSOTM(), true);
       case FOTM -> runPosition(SOTMCalculator.calculateTurretAngleFOTM(), true);
       case FERRY -> runPosition(getFerryAngle(), OTM);
-      case LEFT_CORNER -> runPosition(Settings.Superstructure.Turret.LEFT_CORNER, OTM);
-      case RIGHT_CORNER -> runPosition(Settings.Superstructure.Turret.RIGHT_CORNER, OTM);
-      case KB -> runPosition(Settings.Superstructure.Turret.KB, OTM);
+      case LEFT_CORNER -> runPosition(SuperstructureConstants.Turret.Settings.LEFT_CORNER, OTM);
+      case RIGHT_CORNER -> runPosition(SuperstructureConstants.Turret.Settings.RIGHT_CORNER, OTM);
+      case KB -> runPosition(SuperstructureConstants.Turret.Settings.KB, OTM);
       case TESTING -> runPosition(driverInput, OTM);
     }
     ;
@@ -240,7 +241,7 @@ public class Turret extends Mechanism {
         double delta = actualTargetAngle - prevActualTargetAngle;
 
         boolean deltaIsSignificant =
-            Math.abs(delta) >= Settings.Superstructure.Turret.SETPOINT_FILTER_THRESHOLD_DEG;
+            Math.abs(delta) >= SuperstructureConstants.Turret.Settings.SETPOINT_FILTER_THRESHOLD_DEG;
 
         boolean driverIsMoving =
             Math.abs(RobotContainer.driver.getLeftX()) > DriverConstants.Driver.Drive.DEADBAND
@@ -254,11 +255,11 @@ public class Turret extends Mechanism {
         if (isWrapping) {
             isWrapping =
             Math.abs(getWrappedTargetAngle(position) - currentAngle)
-              > Settings.Superstructure.Turret.GAIN_SWITCHING_THRESHOLD_END.in(Degrees);
+              > SuperstructureConstants.Turret.Settings.GAIN_SWITCHING_THRESHOLD_END.in(Degrees);
         } else {
             isWrapping =
             Math.abs(getWrappedTargetAngle(position) - currentAngle)
-              > Settings.Superstructure.Turret.GAIN_SWITCHING_THRESHOLD_START.in(Degrees);
+              > SuperstructureConstants.Turret.Settings.GAIN_SWITCHING_THRESHOLD_START.in(Degrees);
         }
 
         int slot = 0;
@@ -292,17 +293,17 @@ public class Turret extends Mechanism {
                       .getTurretPose()
                       .getTranslation()
                       .getDistance(Field.HUB_CENTER.getTranslation())
-                  > Settings.Superstructure.Turret.SOTM_TOLERANCE_THRESHOLD_METERS.get()
-              ? Degrees.of(Settings.Superstructure.Turret.SOTM_TOLERANCE_CLOSE.get())
-              : Degrees.of(Settings.Superstructure.Turret.SOTM_TOLERANCE_FAR.get());
-          case FOTM -> Settings.Superstructure.Turret.FOTM_TOLERANCE;
-          default -> Settings.Superstructure.Turret.TOLERANCE;
+                  > SuperstructureConstants.Turret.Settings.SOTM_TOLERANCE_THRESHOLD_METERS.get()
+              ? Degrees.of(SuperstructureConstants.Turret.Settings.SOTM_TOLERANCE_CLOSE.get())
+              : Degrees.of(SuperstructureConstants.Turret.Settings.SOTM_TOLERANCE_FAR.get());
+          case FOTM -> SuperstructureConstants.Turret.Settings.FOTM_TOLERANCE;
+          default -> SuperstructureConstants.Turret.Settings.TOLERANCE;
         };
 
         atTolerance = error.abs(Degrees) < tolerance.in(Degrees);
         lagging =
             error.abs(Degrees)
-                >= Settings.Superstructure.Turret.GAIN_SWITCHING_THRESHOLD_START.in(Degrees);
+                >= SuperstructureConstants.Turret.Settings.GAIN_SWITCHING_THRESHOLD_START.in(Degrees);
     }
 
     public Command runFerry() {

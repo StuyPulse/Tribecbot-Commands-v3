@@ -9,6 +9,7 @@ import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.stuypulse.robot.constants.Motors.CANCoderConfig;
 import com.stuypulse.robot.constants.Ports;
 import com.stuypulse.robot.constants.Settings;
+import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
 
 import static org.wpilib.units.Units.Rotations;
 
@@ -44,12 +45,12 @@ public class TurretIOTalonFX implements TurretIO {
         encoder17tConfig =  
             new CANCoderConfig()
               .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive)
-              .withMagnetOffset(Settings.Superstructure.Turret.Encoder17t.OFFSET.in(Rotations))
+              .withMagnetOffset(SuperstructureConstants.Turret.Settings.Encoder17t.OFFSET.in(Rotations))
               .withAbsoluteSensorDiscontinuityPoint(1.0);
         encoder18tConfig = 
             new CANCoderConfig()
               .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive)
-              .withMagnetOffset(Settings.Superstructure.Turret.Encoder18t.OFFSET.in(Rotations))
+              .withMagnetOffset(SuperstructureConstants.Turret.Settings.Encoder18t.OFFSET.in(Rotations))
               .withAbsoluteSensorDiscontinuityPoint(1.0);
 
         turretMotorPosition = turretMotor.getPosition();

@@ -10,6 +10,7 @@ import com.stuypulse.robot.subsystems.superstructure.hood.HoodIO.HoodIOOutputMod
 import com.stuypulse.robot.subsystems.superstructure.hood.HoodIO.HoodIOOutputs;
 import com.stuypulse.robot.util.superstructure.InterpolationCalculator;
 import com.stuypulse.robot.util.superstructure.SOTMCalculator;
+import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
 
 import org.wpilib.command3.Command;
 import org.wpilib.command3.Mechanism;
@@ -64,7 +65,7 @@ public class Hood extends Mechanism {
         setState(HoodState.STOW);
 
         hoodStallingDebouncer =
-            new Debouncer(Settings.Superstructure.Hood.STALL_DEBOUNCE, DebounceType.kBoth);
+            new Debouncer(SuperstructureConstants.Hood.Settings.STALL_DEBOUNCE, DebounceType.kBoth);
         hoodAtToleranceDebouncer = new Debouncer(0.05, DebounceType.kBoth);
 
         this.atTolerance = false;
@@ -99,27 +100,27 @@ public class Hood extends Mechanism {
     switch (state) {
       case HOMING_UPPER -> {
         if (isStalling()) {
-          io.seedHoodPosition(Settings.Superstructure.Hood.MAX_FROM_HORIZON);
+          io.seedHoodPosition(SuperstructureConstants.Hood.Settings.MAX_FROM_HORIZON);
           setState(HoodState.STOW);
         } else {
-          runVoltage(Settings.Superstructure.Hood.HOOD_HOMING_VOLTAGE);
+          runVoltage(SuperstructureConstants.Hood.Settings.HOOD_HOMING_VOLTAGE);
         }
       }
       case HOMING_LOWER -> {
         if (isStalling()) {
-          io.seedHoodPosition(Settings.Superstructure.Hood.MIN_FROM_HORIZON);
+          io.seedHoodPosition(SuperstructureConstants.Hood.Settings.MIN_FROM_HORIZON);
           setState(HoodState.STOW);
         } else {
-          runVoltage(Settings.Superstructure.Hood.HOOD_HOMING_VOLTAGE.unaryMinus());
+          runVoltage(SuperstructureConstants.Hood.Settings.HOOD_HOMING_VOLTAGE.unaryMinus());
         }
       }
-      case STOW -> runPosition(Settings.Superstructure.Hood.Angles.STOW, OTM);
+      case STOW -> runPosition(SuperstructureConstants.Hood.Settings.Angles.STOW, OTM);
       //case FERRY -> runPosition(InterpolationCalculator.getInterpolatedFerryAngle());
       case MANUAL_OVERRIDE -> runPosition(
-          Degrees.of(Settings.Superstructure.Hood.Angles.MANUAL_OVERRIDE.get()), OTM);
-      case KB -> runPosition(Settings.Superstructure.Hood.Angles.KB, OTM);
-      case LEFT_CORNER -> runPosition(Settings.Superstructure.Hood.Angles.LEFT_CORNER, OTM);
-      case RIGHT_CORNER -> runPosition(Settings.Superstructure.Hood.Angles.RIGHT_CORNER, OTM);
+          Degrees.of(SuperstructureConstants.Hood.Settings.Angles.MANUAL_OVERRIDE.get()), OTM);
+      case KB -> runPosition(SuperstructureConstants.Hood.Settings.Angles.KB, OTM);
+      case LEFT_CORNER -> runPosition(SuperstructureConstants.Hood.Settings.Angles.LEFT_CORNER, OTM);
+      case RIGHT_CORNER -> runPosition(SuperstructureConstants.Hood.Settings.Angles.RIGHT_CORNER, OTM);
       //case INTERPOLATION -> runPosition(InterpolationCalculator.getInterpolatedShotAngle(), OTM);
       //case SOTM -> runPosition(SOTMCalculator.calculateHoodAngleSOTM(), OTM);
       //case FOTM -> runPosition(SOTMCalculator.calculateHoodAngleFOTM(), OTM);
@@ -145,12 +146,12 @@ public class Hood extends Mechanism {
 
         if (Robot.isReal()) {
             if (OTM) {
-                return error.abs(Degrees) < Settings.Superstructure.HOOD_SOTM_TOLERANCE.in(Degrees);
+                return error.abs(Degrees) < SuperstructureConstants.Settings.HOOD_SOTM_TOLERANCE.in(Degrees);
             } else {
-                return error.abs(Degrees) < Settings.Superstructure.HOOD_TOLERANCE.in(Degrees);
+                return error.abs(Degrees) < SuperstructureConstants.Settings.HOOD_TOLERANCE.in(Degrees);
             }
         } else {
-            return error.abs(Degrees) < Settings.Superstructure.HOOD_TOLERANCE.in(Degrees) + 5;
+            return error.abs(Degrees) < SuperstructureConstants.Settings.HOOD_TOLERANCE.in(Degrees) + 5;
         }
     }
 
@@ -167,9 +168,9 @@ public class Hood extends Mechanism {
         Angle error = inputs.hoodMotorPosition.minus(position);
 
         if (state == HoodState.SOTM || state == HoodState.FOTM) {
-            atTolerance = error.abs(Degrees) < Settings.Superstructure.HOOD_SOTM_TOLERANCE.in(Degrees);
+            atTolerance = error.abs(Degrees) < SuperstructureConstants.Settings.HOOD_SOTM_TOLERANCE.in(Degrees);
         } else {
-            atTolerance = error.abs(Degrees) < Settings.Superstructure.HOOD_TOLERANCE.in(Degrees);
+            atTolerance = error.abs(Degrees) < SuperstructureConstants.Settings.HOOD_TOLERANCE.in(Degrees);
         }
     }
 
@@ -179,15 +180,15 @@ public class Hood extends Mechanism {
     }
 
     private Angle hoodAnalogToInput(CommandGamepad gamepad) {
-        double hoodMin = Settings.Superstructure.Hood.Angles.MIN.in(Degrees);
-        double hoodMax = Settings.Superstructure.Hood.Angles.MAX.in(Degrees);
+        double hoodMin = SuperstructureConstants.Hood.Settings.Angles.MIN.in(Degrees);
+        double hoodMax = SuperstructureConstants.Hood.Settings.Angles.MAX.in(Degrees);
 
         return Degrees.of(hoodMin + (gamepad.getLeftX() + 1.0) * ((hoodMax - hoodMin) / 2));
     }
 
     private boolean isStalling() {
         return hoodStallingDebouncer.calculate(
-            inputs.hoodMotorStatorCurrent.gt(Settings.Superstructure.Hood.STALL_CURRENT_LIMIT));
+            inputs.hoodMotorStatorCurrent.gt(SuperstructureConstants.Hood.Settings.STALL_CURRENT_LIMIT));
     }
 
     private void setState(HoodState state) {
@@ -212,12 +213,12 @@ public class Hood extends Mechanism {
     }
 
     public Command seedRelativeEncoderAtUpperHardstop() {
-        return run(coroutine -> io.seedHoodPosition(Settings.Superstructure.Hood.MAX_FROM_HORIZON))
+        return run(coroutine -> io.seedHoodPosition(SuperstructureConstants.Hood.Settings.MAX_FROM_HORIZON))
         .named("Hood Seed Relative Encoder at Upper Hardstop");
     }
 
     public Command seedRelativeEncoderAtLowerHardstop() {
-        return run(coroutine -> io.seedHoodPosition(Settings.Superstructure.Hood.MIN_FROM_HORIZON))
+        return run(coroutine -> io.seedHoodPosition(SuperstructureConstants.Hood.Settings.MIN_FROM_HORIZON))
         .named("Hood Seed Relative Encoder at Lower Hardstop");
     }
 }

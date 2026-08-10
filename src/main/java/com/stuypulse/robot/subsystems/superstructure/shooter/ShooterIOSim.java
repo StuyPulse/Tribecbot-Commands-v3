@@ -14,9 +14,8 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
-import com.stuypulse.robot.constants.Motors;
 import com.stuypulse.robot.constants.Ports;
-import com.stuypulse.robot.constants.Settings;
+import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
 import com.stuypulse.robot.util.Simulation.TalonFXSimulation.SystemSim;
 import com.stuypulse.robot.util.Simulation.TalonFXSimulation.TalonFXSimulation;
 
@@ -54,23 +53,23 @@ public class ShooterIOSim implements ShooterIO {
             SystemSim.of(
                 new FlywheelSim(
                     Models.flywheelFromPhysicalConstants(
-                        DCMotor.getKrakenX44(2), 0.05, Settings.Superstructure.Shooter.GEAR_RATIO), 
-                        DCMotor.getKrakenX44(2), Settings.Superstructure.Shooter.GEAR_RATIO)
+                        DCMotor.getKrakenX44(2), 0.05, SuperstructureConstants.Shooter.Settings.GEAR_RATIO), 
+                        DCMotor.getKrakenX44(2), SuperstructureConstants.Shooter.Settings.GEAR_RATIO)
         );
 
         shooterLeaderSim = 
             new TalonFXSimulation(
                 Ports.Superstructure.Shooter.MOTOR_LEAD,
-                Settings.Superstructure.Shooter.GEAR_RATIO, 
+                SuperstructureConstants.Shooter.Settings.GEAR_RATIO, 
                 flywheelSim);
         shooterFollowerSim = 
             new TalonFXSimulation(
                 Ports.Superstructure.Shooter.MOTOR_FOLLOW, 
-                Settings.Superstructure.Shooter.GEAR_RATIO, 
+                SuperstructureConstants.Shooter.Settings.GEAR_RATIO, 
                 flywheelSim);
 
-        shooterLeaderSim.configure(Motors.Superstructure.Shooter.SHOOTER_CONFIG);
-        shooterFollowerSim.configure(Motors.Superstructure.Shooter.SHOOTER_CONFIG);
+        shooterLeaderSim.configure(SuperstructureConstants.Shooter.Motors.SHOOTER_CONFIG);
+        shooterFollowerSim.configure(SuperstructureConstants.Shooter.Motors.SHOOTER_CONFIG);
 
         shooterLeaderController = new VelocityTorqueCurrentFOC(0);
 

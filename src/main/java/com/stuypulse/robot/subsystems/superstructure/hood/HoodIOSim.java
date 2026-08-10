@@ -19,6 +19,7 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.stuypulse.robot.constants.Motors;
 import com.stuypulse.robot.constants.Ports;
 import com.stuypulse.robot.constants.Settings;
+import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
 import com.stuypulse.robot.util.Simulation.TalonFXSimulation.SystemSim;
 import com.stuypulse.robot.util.Simulation.TalonFXSimulation.TalonFXSimulation;
 
@@ -29,10 +30,10 @@ public class HoodIOSim implements HoodIO {
 
     private static final double MIN_HEIGHT =
       HOOD_ARM_LENGTH_METERS
-          * Math.sin((Settings.Superstructure.Hood.Angles.MIN.in(Radians)));
+          * Math.sin((SuperstructureConstants.Hood.Settings.Angles.MIN.in(Radians)));
     private static final double MAX_HEIGHT =
       HOOD_ARM_LENGTH_METERS
-          * Math.sin((Settings.Superstructure.Hood.Angles.MAX.in(Radians)));
+          * Math.sin((SuperstructureConstants.Hood.Settings.Angles.MAX.in(Radians)));
 
     private static final double DRUM_RADIUS = 0.01;
 
@@ -67,7 +68,7 @@ public class HoodIOSim implements HoodIO {
         positionController = new PositionVoltage(0).withEnableFOC(true);
         homingController = new VoltageOut(0).withIgnoreSoftwareLimits(true);
 
-        hoodMotor.configure(Motors.Superstructure.Hood.HOOD_CONFIG);
+        hoodMotor.configure(SuperstructureConstants.Hood.Motors.HOOD_CONFIG);
 
         hoodMotorPosition = hoodMotor.getPosition();
         hoodMotorSupplyCurrent = hoodMotor.getSupplyCurrent();

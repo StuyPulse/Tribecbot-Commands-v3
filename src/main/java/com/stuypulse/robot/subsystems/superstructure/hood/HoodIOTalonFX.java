@@ -8,6 +8,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.stuypulse.robot.constants.Motors;
 import com.stuypulse.robot.constants.Ports;
 import com.stuypulse.robot.constants.Settings;
+import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
 
 import org.wpilib.units.measure.*;
 
@@ -27,9 +28,9 @@ public class HoodIOTalonFX implements HoodIO {
     public HoodIOTalonFX() {
         hoodMotor = new TalonFX(Ports.Superstructure.Hood.MOTOR, Ports.RIO);
 
-        Motors.Superstructure.Hood.HOOD_CONFIG.configure(hoodMotor);
+        SuperstructureConstants.Hood.Motors.HOOD_CONFIG.configure(hoodMotor);
 
-        seedHoodPosition(Settings.Superstructure.Hood.Angles.STOW);
+        seedHoodPosition(SuperstructureConstants.Hood.Settings.Angles.STOW);
 
         positionController = new PositionVoltage(0).withEnableFOC(true);
         homingController = new VoltageOut(0).withIgnoreSoftwareLimits(true);

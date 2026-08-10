@@ -14,6 +14,7 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.stuypulse.robot.constants.Ports;
 import com.stuypulse.robot.constants.Settings;
+import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
 import com.stuypulse.robot.util.Simulation.TalonFXSimulation.SystemSim;
 import com.stuypulse.robot.util.Simulation.TalonFXSimulation.TalonFXSimulation;
 
@@ -35,7 +36,7 @@ public class TurretIOSim implements TurretIO {
             new FlywheelSim(
                 Models.flywheelFromPhysicalConstants(DCMotor.getKrakenX60(1), 
                 0, 
-                Settings.Superstructure.Turret.GEAR_RATIO_MOTOR_TO_MECH), 
+                SuperstructureConstants.Turret.Settings.GEAR_RATIO_MOTOR_TO_MECH), 
                 DCMotor.getKrakenX60(1), 
             2.8)
         );
@@ -43,7 +44,7 @@ public class TurretIOSim implements TurretIO {
         simMotor =
         new TalonFXSimulation(
             Ports.Superstructure.Turret.MOTOR,
-            Settings.Superstructure.Turret.GEAR_RATIO_MOTOR_TO_MECH,
+            SuperstructureConstants.Turret.Settings.GEAR_RATIO_MOTOR_TO_MECH,
             sim);
 
         controller = new PositionVoltage(0).withEnableFOC(true);

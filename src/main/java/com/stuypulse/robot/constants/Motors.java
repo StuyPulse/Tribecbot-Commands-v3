@@ -74,58 +74,6 @@ public interface Motors {
                 .withSensorToMechanismRatio(Settings.Spindexer.GEAR_RATIO);
     }
 
-    public interface Superstructure {
-        public interface Shooter {
-            TalonFXConfig SHOOTER_CONFIG = new TalonFXConfig()
-                    .withInvertedValue(InvertedValue.CounterClockwise_Positive)
-                    .withNeutralMode(NeutralModeValue.Coast)
-                    .withSupplyCurrentLimitEnabled(false)
-                    .withStatorCurrentLimitEnabled(false)
-                    .withPIDConstants(
-                            Gains.Superstructure.Shooter.kP.get(),
-                            Gains.Superstructure.Shooter.kI.get(),
-                            Gains.Superstructure.Shooter.kD.get(),
-                            0)
-                    .withFFConstants(
-                            Gains.Superstructure.Shooter.kS.get(),
-                            Gains.Superstructure.Shooter.kV.get(),
-                            Gains.Superstructure.Shooter.kA.get(),
-                            0)
-                    .withSensorToMechanismRatio(Settings.Superstructure.Shooter.GEAR_RATIO)
-                    .withStatorCurrentLimit(140)
-                    .withStatorCurrentLimitEnabled(false)
-                    .withSupplyCurrentLimit(100)
-                    .withSupplyCurrentLimitEnabled(true)
-                    .withLowerLimitSupplyCurrent(60, 1);
-        }
-
-        public interface Hood {
-            TalonFXConfig HOOD_CONFIG = new TalonFXConfig()
-                    .withInvertedValue(InvertedValue.Clockwise_Positive)
-                    .withNeutralMode(NeutralModeValue.Brake)
-                    .withSupplyCurrentLimit(80.0)
-                    .withStatorCurrentLimitEnabled(false)
-                    .withRampRate(0.25)
-                    .withPIDConstants(
-                            Gains.Superstructure.Hood.kP,
-                            Gains.Superstructure.Hood.kI,
-                            Gains.Superstructure.Hood.kD,
-                            0)
-                    .withFFConstants(
-                            Gains.Superstructure.Hood.kS,
-                            Gains.Superstructure.Hood.kV,
-                            Gains.Superstructure.Hood.kA,
-                            0)
-                    .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign, 0)
-                    .withSensorToMechanismRatio(Settings.Superstructure.Hood.GEAR_RATIO)
-                    .withSoftLimits(
-                            true,
-                            true,
-                            Settings.Superstructure.Hood.FORWARD_SOFT_LIMIT.in(Rotations),
-                            Settings.Superstructure.Hood.REVERSE_SOFT_LIMIT.in(Rotations));
-        }
-    }
-
     public static class CANCoderConfig {
         private final CANcoderConfiguration configuration = new CANcoderConfiguration();
         private final MagnetSensorConfigs magnetSensorConfigs = new MagnetSensorConfigs();
