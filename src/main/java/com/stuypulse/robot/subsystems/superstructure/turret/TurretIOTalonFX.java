@@ -3,13 +3,25 @@ package com.stuypulse.robot.subsystems.superstructure.turret;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
+import com.stuypulse.robot.constants.Motors.CANCoderConfig;
 import com.stuypulse.robot.constants.Ports;
+import com.stuypulse.robot.constants.Settings;
+
+import static org.wpilib.units.Units.Rotations;
 
 import org.wpilib.units.measure.*;
 
 public class TurretIOTalonFX implements TurretIO {
     private final TalonFX turretMotor;
+
+    private final CANcoder encoder17t;
+    private final CANcoder encoder18t;
+
+    private CANCoderConfig encoder17tConfig;
+    private CANCoderConfig encoder18tConfig;
 
     private final PositionVoltage positionController;
 
@@ -23,7 +35,22 @@ public class TurretIOTalonFX implements TurretIO {
     public TurretIOTalonFX() {
         turretMotor = new TalonFX(Ports.Superstructure.Turret.MOTOR, Ports.RIO);
 
+        encoder17t = new CANcoder(Ports.Superstructure.Turret.ENCODER17T, Ports.RIO);
+        encoder18t = new CANcoder(Ports.Superstructure.Turret.ENCODER18T, Ports.RIO);
+
         positionController = new PositionVoltage(0).withEnableFOC(true);
+
+        
+        encoder17tConfig =  
+            new CANCoderConfig()
+              .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive)
+              .withMagnetOffset(Settings.Superstructure.Turret.Encoder17t.OFFSET.in(Rotations))
+              .withAbsoluteSensorDiscontinuityPoint(1.0);
+        encoder18tConfig = 
+            new CANCoderConfig()
+              .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive)
+              .withMagnetOffset(Settings.Superstructure.Turret.Encoder18t.OFFSET.in(Rotations))
+              .withAbsoluteSensorDiscontinuityPoint(1.0);
 
         turretMotorPosition = turretMotor.getPosition();
         turretMotorSupplyCurrent = turretMotor.getSupplyCurrent();

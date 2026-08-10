@@ -40,6 +40,7 @@ public interface Settings {
         LoggedNetworkBoolean HANDOFF = new LoggedNetworkBoolean("Enabled Subsystems/Handoff", true);
         LoggedNetworkBoolean HOOD = new LoggedNetworkBoolean("Enabled Subsystems/Hood", true);
         LoggedNetworkBoolean SHOOTER = new LoggedNetworkBoolean("Enabled Subsystems/Shooter", true);
+        LoggedNetworkBoolean TURRET = new LoggedNetworkBoolean("Enabled Subsystems/Turret", true);
     }
 
     public interface Intake {
