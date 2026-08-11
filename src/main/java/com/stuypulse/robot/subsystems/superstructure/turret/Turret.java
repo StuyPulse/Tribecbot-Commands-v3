@@ -49,7 +49,6 @@ public class Turret extends Mechanism {
     @AutoLogOutput(key = "States/Turret")
     private TurretState state;
 
-    private boolean OTM;
     private boolean atTolerance;
     private boolean lagging;
     private boolean hasUsedAbsoluteEncoder;
@@ -70,7 +69,6 @@ public class Turret extends Mechanism {
         setState(TurretState.SCORE);
 
         readyToShootDebouncer = new Debouncer(0.5, DebounceType.kBoth);
-        OTM = false;
         atTolerance = false;
 
         prevActualTargetAngle = getScoringAngle().in(Degrees);
@@ -154,16 +152,16 @@ public class Turret extends Mechanism {
         }
 
     switch (state) {
-      case IDLE -> runPosition(inputs.turretMotorPosition, OTM);
-      case ZERO -> runPosition(Degrees.zero(), OTM);
-      case SCORE -> runPosition(getScoringAngle(), OTM);
-      case SOTM -> runPosition(SOTMCalculator.calculateTurretAngleSOTM(), true);
-      case FOTM -> runPosition(SOTMCalculator.calculateTurretAngleFOTM(), true);
-      case FERRY -> runPosition(getFerryAngle(), OTM);
-      case LEFT_CORNER -> runPosition(SuperstructureConstants.Turret.Settings.LEFT_CORNER, OTM);
-      case RIGHT_CORNER -> runPosition(SuperstructureConstants.Turret.Settings.RIGHT_CORNER, OTM);
-      case KB -> runPosition(SuperstructureConstants.Turret.Settings.KB, OTM);
-      case TESTING -> runPosition(driverInput, OTM);
+      case IDLE -> runPosition(inputs.turretMotorPosition);
+      case ZERO -> runPosition(Degrees.zero());
+      case SCORE -> runPosition(getScoringAngle());
+      case SOTM -> runPosition(SOTMCalculator.calculateTurretAngleSOTM());
+      case FOTM -> runPosition(SOTMCalculator.calculateTurretAngleFOTM());
+      case FERRY -> runPosition(getFerryAngle());
+      case LEFT_CORNER -> runPosition(SuperstructureConstants.Turret.Settings.LEFT_CORNER);
+      case RIGHT_CORNER -> runPosition(SuperstructureConstants.Turret.Settings.RIGHT_CORNER);
+      case KB -> runPosition(SuperstructureConstants.Turret.Settings.KB);
+      case TESTING -> runPosition(driverInput);
     }
     ;
     }
@@ -177,8 +175,8 @@ public class Turret extends Mechanism {
         return readyToShootDebouncer.calculate(atTolerance);
     }
 
-    public boolean turretReadyToShoot() {
-        return readyToShootDebouncer.calculate(atTolerance);
+    public boolean atTolerance() {
+        return atTolerance;
     }
 
     public Rotation2d getTurretYaw() {
@@ -189,7 +187,7 @@ public class Turret extends Mechanism {
         return isWrapping;
     }
 
-    public boolean isTargetLaggingFOTM(){
+    public boolean isTurretLaggingFOTM(){
         return lagging && state == TurretState.FOTM;
     }
 
@@ -201,7 +199,7 @@ public class Turret extends Mechanism {
         driverInput = Degrees.of(gamepad.getLeftX() * 180);
     }
 
-    private void setState(TurretState state){
+    public void setState(TurretState state){
         this.state = state;
     }
 
@@ -224,7 +222,7 @@ public class Turret extends Mechanism {
         io.reconfigureEncoderMagnetOffsets(newOffset17T, newOffset18T);        
     }
 
-    private void runPosition(Angle position, boolean OTM) {
+    private void runPosition(Angle position) {
         if(!hasUsedAbsoluteEncoder){
             seedTurret();
             hasUsedAbsoluteEncoder = true;
@@ -281,8 +279,6 @@ public class Turret extends Mechanism {
         outputs.turretPosition = Degrees.of(prevActualTargetAngle);
         outputs.gainSlot = slot;
         outputs.feedForward = omegaFF + translationFF;
-
-        this.OTM = OTM;
 
         Angle error = inputs.turretMotorPosition.minus(outputs.turretPosition);
         Drive swerve = Drive.getInstance();

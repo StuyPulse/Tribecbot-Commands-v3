@@ -42,9 +42,6 @@ public class Hood extends Mechanism {
     private final HoodIOInputsAutoLogged inputs;
     private final HoodIOOutputs outputs;
 
-    // Using SOTM or FOTM
-    private boolean OTM;
-
     @AutoLogOutput(key = "States/Intake")
     private HoodState state;
 
@@ -59,8 +56,6 @@ public class Hood extends Mechanism {
         this.io = io;
         inputs = new HoodIOInputsAutoLogged();
         outputs = new HoodIOOutputs();
-
-        OTM = false;
 
         setState(HoodState.STOW);
 
@@ -114,17 +109,17 @@ public class Hood extends Mechanism {
           runVoltage(SuperstructureConstants.Hood.Settings.HOOD_HOMING_VOLTAGE.unaryMinus());
         }
       }
-      case STOW -> runPosition(SuperstructureConstants.Hood.Settings.Angles.STOW, OTM);
+      case STOW -> runPosition(SuperstructureConstants.Hood.Settings.Angles.STOW);
       //case FERRY -> runPosition(InterpolationCalculator.getInterpolatedFerryAngle());
       case MANUAL_OVERRIDE -> runPosition(
-          Degrees.of(SuperstructureConstants.Hood.Settings.Angles.MANUAL_OVERRIDE.get()), OTM);
-      case KB -> runPosition(SuperstructureConstants.Hood.Settings.Angles.KB, OTM);
-      case LEFT_CORNER -> runPosition(SuperstructureConstants.Hood.Settings.Angles.LEFT_CORNER, OTM);
-      case RIGHT_CORNER -> runPosition(SuperstructureConstants.Hood.Settings.Angles.RIGHT_CORNER, OTM);
-      //case INTERPOLATION -> runPosition(InterpolationCalculator.getInterpolatedShotAngle(), OTM);
-      //case SOTM -> runPosition(SOTMCalculator.calculateHoodAngleSOTM(), OTM);
-      //case FOTM -> runPosition(SOTMCalculator.calculateHoodAngleFOTM(), OTM);
-      case ANALOG -> runPosition(driverInput, OTM);
+          Degrees.of(SuperstructureConstants.Hood.Settings.Angles.MANUAL_OVERRIDE.get()));
+      case KB -> runPosition(SuperstructureConstants.Hood.Settings.Angles.KB);
+      case LEFT_CORNER -> runPosition(SuperstructureConstants.Hood.Settings.Angles.LEFT_CORNER);
+      case RIGHT_CORNER -> runPosition(SuperstructureConstants.Hood.Settings.Angles.RIGHT_CORNER);
+      //case INTERPOLATION -> runPosition(InterpolationCalculator.getInterpolatedShotAngle());
+      //case SOTM -> runPosition(SOTMCalculator.calculateHoodAngleSOTM());
+      //case FOTM -> runPosition(SOTMCalculator.calculateHoodAngleFOTM());
+      case ANALOG -> runPosition(driverInput);
       case IDLE -> stop();
     }
     }
@@ -142,26 +137,14 @@ public class Hood extends Mechanism {
     }
 
     public boolean atTolerance() {
-        Angle error = inputs.hoodMotorPosition.minus(outputs.position);
-
-        if (Robot.isReal()) {
-            if (OTM) {
-                return error.abs(Degrees) < SuperstructureConstants.Settings.HOOD_SOTM_TOLERANCE.in(Degrees);
-            } else {
-                return error.abs(Degrees) < SuperstructureConstants.Settings.HOOD_TOLERANCE.in(Degrees);
-            }
-        } else {
-            return error.abs(Degrees) < SuperstructureConstants.Settings.HOOD_TOLERANCE.in(Degrees) + 5;
-        }
+        return atTolerance;
     }
 
     public Angle getHoodAngle() {
         return inputs.hoodMotorPosition;
     }
 
-    private void runPosition(Angle position, boolean OTM) {
-        this.OTM = OTM;
-
+    private void runPosition(Angle position) {
         outputs.outputMode = HoodIOOutputMode.POSITION;
         outputs.position = position;
 
@@ -191,7 +174,7 @@ public class Hood extends Mechanism {
             inputs.hoodMotorStatorCurrent.gt(SuperstructureConstants.Hood.Settings.STALL_CURRENT_LIMIT));
     }
 
-    private void setState(HoodState state) {
+    public void setState(HoodState state) {
         this.state = state;
     }
     public Command runHomingUpper() {
