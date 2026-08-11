@@ -1,6 +1,5 @@
 package com.stuypulse.robot.subsystems.swerve;
 
-import static org.wpilib.units.Units.Meters;
 import static org.wpilib.units.Units.MetersPerSecond;
 import static org.wpilib.units.Units.Milliseconds;
 
@@ -9,14 +8,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-import org.wpilib.command3.Command;
 import org.wpilib.command3.Mechanism;
 import org.wpilib.driverstation.Alert;
-import org.wpilib.driverstation.Alliance;
-import org.wpilib.driverstation.DriverStation;
-import org.wpilib.driverstation.MatchState;
 import org.wpilib.driverstation.RobotState;
-import org.wpilib.hardware.hal.HAL;
 import org.wpilib.math.estimator.SwerveDrivePoseEstimator;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
@@ -29,19 +23,9 @@ import org.wpilib.math.kinematics.SwerveModuleVelocity;
 import org.wpilib.math.linalg.Matrix;
 import org.wpilib.math.numbers.N1;
 import org.wpilib.math.numbers.N3;
-import org.wpilib.math.system.DCMotor;
 
-import com.google.flatbuffers.Constants;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.pathfinding.Pathfinding;
-import com.pathplanner.lib.util.PathPlannerLogging;
 import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.constants.Settings.Mode;
-import com.stuypulse.robot.util.swerve.LocalADStarAK;
-import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 public class Drive extends Mechanism {
      // TunerConstants doesn't include these constants, so they are declared locally
@@ -195,7 +179,7 @@ public class Drive extends Mechanism {
     // Calculate module setpoints
     ChassisVelocities discreteSpeeds = speeds.discretize(Settings.DT.in(Milliseconds));
     SwerveModuleVelocity[] setpointStates = kinematics.toSwerveModuleVelocities(discreteSpeeds);
-    SwerveDriveKinematics.desaturateWheelVelocities(setpointStates, TunerConstants.kSpeedAt12Volts);
+    var desaturatedStates = SwerveDriveKinematics.desaturateWheelVelocities(setpointStates, TunerConstants.kSpeedAt12Volts);
 
     // Log unoptimized setpoints and setpoint speeds
     Logger.recordOutput("SwerveStates/Setpoints", setpointStates);

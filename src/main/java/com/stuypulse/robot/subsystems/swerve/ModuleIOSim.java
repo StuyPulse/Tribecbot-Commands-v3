@@ -12,13 +12,9 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.stuypulse.robot.util.DCMotorUtil;
 
-import org.wpilib.math.*;
 import org.wpilib.math.controller.PIDController;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.system.DCMotor;
-import org.wpilib.math.system.LinearSystem;
-import org.wpilib.math.system.Models;
-import org.wpilib.math.util.MathUtil;
 import org.wpilib.math.util.Units;
 import org.wpilib.simulation.DCMotorSim;
 import org.wpilib.system.Timer;
