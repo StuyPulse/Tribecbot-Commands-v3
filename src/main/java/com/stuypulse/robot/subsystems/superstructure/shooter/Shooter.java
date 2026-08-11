@@ -130,13 +130,17 @@ public class Shooter extends Mechanism {
         return readyToShootDebouncer.calculate(atTolerance);
     }
 
+    public boolean atTolerance() {
+        return atTolerance;
+    }
+
     public boolean isShooting() {
         return currentlyShootingDebouncer.calculate(
             inputs.shooterLeaderMotorStatorCurrent.gt(
             SuperstructureConstants.Shooter.Settings.IS_SHOOTING_CURRENT));
     }
 
-    private void setState(ShooterState state) {
+    public void setState(ShooterState state) {
         this.state = state;
     }
 }

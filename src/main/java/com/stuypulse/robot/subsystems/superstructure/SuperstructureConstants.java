@@ -306,6 +306,51 @@ public final class SuperstructureConstants {
             }
         }
 
+        public interface Motors {
+            TalonFXConfig TURRET_CONFIG =
+                new TalonFXConfig()
+                .withInvertedValue(InvertedValue.Clockwise_Positive)
+                .withNeutralMode(NeutralModeValue.Brake)
+                .withSupplyCurrentLimit(80)
+                .withStatorCurrentLimitEnabled(false)
+                .withRampRate(0.0)
+                .withPIDConstants(
+                  Gains.slot0.kP,
+                  Gains.slot0.kI,
+                  Gains.slot0.kD,
+                  0)
+                .withFFConstants(
+                  Gains.slot0.kS,
+                  Gains.slot0.kV,
+                  Gains.slot0.kA,
+                  0)
+                .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign, 0)
+                .withPIDConstants(0, 0, 10.0, 2)
+                .withFFConstants(
+                  Gains.slot0.kS,
+                  Gains.slot0.kV,
+                  Gains.slot0.kA,
+                  2)
+              .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign, 2)
+              .withPIDConstants(
+                  Gains.slot1.kP.get(),
+                  Gains.slot1.kI.get(),
+                  Gains.slot1.kD.get(),
+                  1)
+              .withFFConstants(
+                  Gains.slot1.kS.get(),
+                  Gains.slot1.kV.get(),
+                  Gains.slot1.kA.get(),
+                  1)
+              .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign, 1)
+              .withSensorToMechanismRatio(SuperstructureConstants.Turret.Settings.GEAR_RATIO_MOTOR_TO_MECH)
+              .withSoftLimits(
+                  false,
+                  false,
+                  SuperstructureConstants.Turret.Settings.SoftwareLimit.FORWARD_MAX_ROTATIONS,
+                  SuperstructureConstants.Turret.Settings.SoftwareLimit.BACKWARDS_MAX_ROTATIONS);
+    }
+
         public interface Ports {
             int MOTOR = 40;
             int ENCODER17T = 42;
