@@ -15,6 +15,7 @@ import com.stuypulse.robot.util.DCMotorUtil;
 import org.wpilib.math.controller.PIDController;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.system.DCMotor;
+import org.wpilib.math.system.Models;
 import org.wpilib.math.util.Units;
 import org.wpilib.simulation.DCMotorSim;
 import org.wpilib.system.Timer;
@@ -54,12 +55,12 @@ public class ModuleIOSim implements ModuleIO {
     // Create drive and turn sim models
     driveSim =
         new DCMotorSim(
-            DCMotorUtil.createDCMotorSystem(
+            Models.singleJointedArmFromPhysicalConstants(
                 DRIVE_GEARBOX, constants.DriveInertia, constants.DriveMotorGearRatio),
             DRIVE_GEARBOX);
     turnSim =
         new DCMotorSim(
-            DCMotorUtil.createDCMotorSystem(
+            Models.singleJointedArmFromPhysicalConstants(
                 TURN_GEARBOX, constants.SteerInertia, constants.SteerMotorGearRatio),
             TURN_GEARBOX);
 

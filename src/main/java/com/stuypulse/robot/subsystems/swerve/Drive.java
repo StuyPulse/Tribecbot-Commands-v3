@@ -28,8 +28,52 @@ import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.constants.Settings.Mode;
 
 public class Drive extends Mechanism {
+  private static final Drive instance;
+
+  static {
+    switch (Settings.currentMode) {
+        case REAL -> {
+            instance = 
+                new Drive(
+                    new GyroIOPigeon2(),
+                    new ModuleIOTalonFX(TunerConstants.FrontLeft),
+                    new ModuleIOTalonFX(TunerConstants.FrontRight),
+                    new ModuleIOTalonFX(TunerConstants.BackLeft),
+                    new ModuleIOTalonFX(TunerConstants.BackRight)
+                );
+            }
+        
+        case SIM -> {
+            instance =
+                new Drive(
+                    new GyroIO() {},
+                    new ModuleIOSim(TunerConstants.FrontLeft),
+                    new ModuleIOSim(TunerConstants.FrontRight),
+                    new ModuleIOSim(TunerConstants.BackLeft),
+                    new ModuleIOSim(TunerConstants.BackRight)
+                );
+            }
+        
+        default -> {
+            instance =
+                new Drive(
+                    new GyroIO() {},
+                    new ModuleIO() {},
+                    new ModuleIO() {},
+                    new ModuleIO() {},
+                    new ModuleIO() {}
+                );
+            }
+        }
+    }
+
+    public static Drive getInstance() {
+        return instance;
+    }
+    
      // TunerConstants doesn't include these constants, so they are declared locally
   static final double ODOMETRY_FREQUENCY = TunerConstants.kCANBus.isNetworkFD() ? 250.0 : 100.0;
+  static final double ODOMETRY_VELOCITY_FREQUENCY = 50.0;
   public static final double DRIVE_BASE_RADIUS =
       Math.max(
           Math.max(
@@ -187,7 +231,7 @@ public class Drive extends Mechanism {
 
     // Send setpoints to modules
     for (int i = 0; i < 4; i++) {
-      modules[i].runSetpoint(setpointStates[i]);
+      modules[i].runSetpoint(desaturatedStates[i]);
     }
 
     // Log optimized setpoints (runSetpoint mutates each state)
