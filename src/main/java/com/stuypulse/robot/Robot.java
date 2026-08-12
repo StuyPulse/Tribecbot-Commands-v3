@@ -16,6 +16,8 @@ import org.wpilib.command3.Scheduler;
 import org.wpilib.driverstation.Alliance;
 import org.wpilib.driverstation.MatchState;
 
+import com.stuypulse.robot.util.FullSubsystem;
+
 import java.util.Optional;
 
 /**
@@ -68,6 +70,8 @@ public class Robot extends LoggedRobot {
     @Override
     public void robotPeriodic() {
         defaultScheduler.run();
+
+        FullSubsystem.runAllPeriodicAfterScheduler();
     }
 
     /*********************/
