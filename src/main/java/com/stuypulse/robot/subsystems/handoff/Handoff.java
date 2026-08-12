@@ -3,6 +3,8 @@ package com.stuypulse.robot.subsystems.handoff;
 import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.subsystems.handoff.HandoffIO.HandoffIOOutputMode;
 import com.stuypulse.robot.subsystems.handoff.HandoffIO.HandoffIOOutputs;
+import com.stuypulse.robot.util.FullSubsystem;
+
 import org.wpilib.command3.*;
 
 import static org.wpilib.units.Units.Amps;
@@ -10,11 +12,10 @@ import static org.wpilib.units.Units.Seconds;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-import org.wpilib.command3.Mechanism;
 import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.filter.Debouncer.DebounceType;
 
-public class Handoff extends Mechanism {
+public class Handoff extends FullSubsystem {
     private static final Handoff instance;
 
     static {
@@ -56,6 +57,7 @@ public class Handoff extends Mechanism {
         STOP
     }
 
+    @Override
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("Handoff", inputs);
@@ -73,6 +75,7 @@ public class Handoff extends Mechanism {
         }
     }
 
+    @Override
     public void periodicAfterScheduler() {
         io.applyOutputs(outputs);
     }

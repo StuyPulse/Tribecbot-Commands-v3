@@ -5,16 +5,17 @@ import static org.wpilib.units.Units.*;
 import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.subsystems.intake.IntakeIO.IntakeIOOutputs;
 import com.stuypulse.robot.util.DualDebouncer;
+import com.stuypulse.robot.util.FullSubsystem;
+
 import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.filter.Debouncer.DebounceType;
 import org.wpilib.units.measure.*;
 import org.wpilib.command3.Command;
-import org.wpilib.command3.Mechanism;
 import org.wpilib.driverstation.RobotState;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class Intake extends Mechanism {
+public class Intake extends FullSubsystem {
     private static final Intake instance;
 
     static {
@@ -68,6 +69,7 @@ public class Intake extends Mechanism {
         STOP;
     }
 
+    @Override
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("Intake", inputs);
@@ -116,6 +118,7 @@ public class Intake extends Mechanism {
         }
     }
 
+    @Override
     public void periodicAfterScheduler() {
         io.applyOutputs(outputs);
     }

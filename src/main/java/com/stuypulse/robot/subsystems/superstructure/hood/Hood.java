@@ -7,15 +7,15 @@ import com.stuypulse.robot.Robot;
 import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.subsystems.superstructure.hood.HoodIO.HoodIOOutputMode;
 import com.stuypulse.robot.subsystems.superstructure.hood.HoodIO.HoodIOOutputs;
+import com.stuypulse.robot.util.FullSubsystem;
 
 import org.wpilib.command3.Command;
-import org.wpilib.command3.Mechanism;
 import org.wpilib.command3.button.CommandGamepad;
 import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.filter.Debouncer.DebounceType;
 import org.littletonrobotics.junction.Logger;
 
-public class Hood extends Mechanism {
+public class Hood extends FullSubsystem {
     private static final Hood instance;
 
     static {
@@ -52,11 +52,13 @@ public class Hood extends Mechanism {
         hoodStallingDebouncer = new Debouncer(Settings.Superstructure.Hood.STALL_DEBOUNCE, DebounceType.kBoth);
     }
 
+    @Override
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("Hood", inputs);
     }
 
+    @Override
     public void periodicAfterScheduler() {
         Logger.recordOutput("Hood/Output Mode", outputs.outputMode);
         Logger.recordOutput("Hood/Position Setpoint", outputs.position);

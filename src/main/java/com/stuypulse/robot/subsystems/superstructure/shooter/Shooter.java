@@ -5,15 +5,15 @@ import org.wpilib.units.measure.*;
 
 import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.subsystems.superstructure.shooter.ShooterIO.ShooterIOOutputs;
+import com.stuypulse.robot.util.FullSubsystem;
 
 import org.wpilib.command3.Command;
-import org.wpilib.command3.Mechanism;
 import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.filter.Debouncer.DebounceType;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
-public class Shooter extends Mechanism {
+public class Shooter extends FullSubsystem {
     private static final Shooter instance;
 
     static {
@@ -47,11 +47,13 @@ public class Shooter extends Mechanism {
         atTolerance = false;
     }
 
+    @Override
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("Shooter", inputs);
     }
 
+    @Override
     public void periodicAfterScheduler() {
         Logger.recordOutput("Shooter/Velocity Setpoint", outputs.shooterVelocity);
         io.applyOutputs(outputs);
