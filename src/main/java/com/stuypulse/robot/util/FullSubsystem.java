@@ -16,7 +16,7 @@ import org.wpilib.command3.Scheduler;
  * A standard subsystem that includes an extra periodic callback which runs after the command
  * scheduler. Allows outputs to be published after all other periodic code has finished.
  */
-public class FullSubsystem extends Mechanism {
+public abstract class FullSubsystem extends Mechanism {
   private static List<FullSubsystem> instances = new ArrayList<>();
 
   public FullSubsystem() {
