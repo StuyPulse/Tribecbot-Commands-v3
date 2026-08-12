@@ -6,9 +6,9 @@ import org.wpilib.units.measure.*;
 import com.stuypulse.robot.Robot;
 import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.subsystems.superstructure.turret.TurretIO.TurretIOOutputs;
+import com.stuypulse.robot.util.FullSubsystem;
 
 import org.wpilib.command3.Command;
-import org.wpilib.command3.Mechanism;
 import org.wpilib.command3.button.CommandGamepad;
 import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.filter.Debouncer.DebounceType;
@@ -16,7 +16,7 @@ import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.geometry.Translation2d;
 import org.littletonrobotics.junction.Logger;
 
-public class Turret extends Mechanism {
+public class Turret extends FullSubsystem {
     private static final Turret instance;
     private Translation2d driverInput;
 
@@ -56,11 +56,13 @@ public class Turret extends Mechanism {
         atTolerance = false;
     }
 
+    @Override
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("Turret", inputs);
     }
 
+    @Override
     public void periodicAfterScheduler() {
         io.applyOutputs(outputs);
     }

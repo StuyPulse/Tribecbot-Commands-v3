@@ -2,11 +2,11 @@ package com.stuypulse.robot.subsystems.leds;
 
 import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.subsystems.leds.LEDIO.LEDIOOutputs;
+import com.stuypulse.robot.util.FullSubsystem;
 
 import org.littletonrobotics.junction.Logger;
-import org.wpilib.command3.Mechanism;
 
-public class LEDController extends Mechanism {
+public class LEDController extends FullSubsystem {
     private static final LEDController instance; // LED instance
 
     static {
@@ -34,11 +34,13 @@ public class LEDController extends Mechanism {
         this.outputs = new LEDIOOutputs();
     }
 
+    @Override
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("LEDs", inputs);
     }
 
+    @Override
     public void periodicAfterScheduler() {
         io.applyOutputs(outputs);
     }
