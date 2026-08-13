@@ -169,8 +169,17 @@ public class Drive extends Mechanism {
     if (RobotState.isDisabled()) {
       for (var module : modules) {
         module.stop();
-      }
+      } 
     }
+
+    if (!Settings.EnabledSubsystems.SWERVE.get()) {
+      	for (var module : modules) {
+        	module.stop();
+      	}
+
+      	return;
+    }
+	
 
     // Log empty setpoint states when disabled
     if (RobotState.isDisabled()) {
@@ -220,6 +229,7 @@ public class Drive extends Mechanism {
    * @param speeds Speeds in meters/sec
    */
   public void runVelocity(ChassisVelocities speeds) {
+    
     // Calculate module setpoints
     ChassisVelocities discreteSpeeds = speeds.discretize(Settings.DT.in(Milliseconds));
     SwerveModuleVelocity[] setpointStates = kinematics.toSwerveModuleVelocities(discreteSpeeds);
