@@ -110,15 +110,15 @@ public class Hood extends Mechanism {
         }
       }
       case STOW -> runPosition(SuperstructureConstants.Hood.Settings.Angles.STOW);
-      //case FERRY -> runPosition(InterpolationCalculator.getInterpolatedFerryAngle());
+      case FERRY -> runPosition(InterpolationCalculator.getInterpolatedFerryAngle());
       case MANUAL_OVERRIDE -> runPosition(
           Degrees.of(SuperstructureConstants.Hood.Settings.Angles.MANUAL_OVERRIDE.get()));
       case KB -> runPosition(SuperstructureConstants.Hood.Settings.Angles.KB);
       case LEFT_CORNER -> runPosition(SuperstructureConstants.Hood.Settings.Angles.LEFT_CORNER);
       case RIGHT_CORNER -> runPosition(SuperstructureConstants.Hood.Settings.Angles.RIGHT_CORNER);
-      //case INTERPOLATION -> runPosition(InterpolationCalculator.getInterpolatedShotAngle());
-      //case SOTM -> runPosition(SOTMCalculator.calculateHoodAngleSOTM());
-      //case FOTM -> runPosition(SOTMCalculator.calculateHoodAngleFOTM());
+      case INTERPOLATION -> runPosition(InterpolationCalculator.getInterpolatedShotAngle());
+      case SOTM -> runPosition(SOTMCalculator.calculateHoodAngleSOTM());
+      case FOTM -> runPosition(SOTMCalculator.calculateHoodAngleFOTM());
       case ANALOG -> runPosition(driverInput);
       case IDLE -> stop();
     }

@@ -11,6 +11,7 @@ import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
 import com.stuypulse.robot.subsystems.superstructure.turret.TurretIO.TurretIOOutputMode;
 import com.stuypulse.robot.subsystems.superstructure.turret.TurretIO.TurretIOOutputs;
 import com.stuypulse.robot.util.superstructure.SOTMCalculator;
+import com.stuypulse.robot.util.superstructure.TurretAngleCalculator;
 
 import org.wpilib.command3.Command;
 import org.wpilib.command3.Mechanism;
@@ -93,22 +94,22 @@ public class Turret extends Mechanism {
     }
 
     private Angle getScoringAngle(){
-        // Drive swerve = Drive.getInstance();
+        Drive swerve = Drive.getInstance();
 
-        // Translation2d target = Field.HUB_CENTER.getTranslation();
-        // Translation2d turret = swerve.getTurretPose().getTranslation();
+        Translation2d target = Field.HUB_CENTER.getTranslation();
+        Translation2d turret = swerve.getTurretPose().getTranslation();
 
-        // return TurretAngleCalculator.getPointAtTargetAngle(target, turret, robot.getRotation());
+        return TurretAngleCalculator.getPointAtTargetAngle(target, turret, robot.getRotation());
     }
 
     private Angle getFerryAngle(){
-        // Drive swerve = Drive.getInstance();
+        Drive swerve = Drive.getInstance();
 
-        // Pose2d robot = swerve.getInstance();
-        // Translation2d target = Field.getFerryZonePose(robot.getTranslation()).getTranslation();
-        // Translation2d turret = swerve.getTurretPose().getTranslation();
+        Pose2d robot = swerve.getInstance();
+        Translation2d target = Field.getFerryZonePose(robot.getTranslation()).getTranslation();
+        Translation2d turret = swerve.getTurretPose().getTranslation();
 
-        // return TurretAngleCalculator.getPointAtTargetAngle(target, turret, robot.getRotation());
+        return TurretAngleCalculator.getPointAtTargetAngle(target, turret, robot.getRotation());
     }
 
     private double getWrappedTargetAngle(Angle targetAngle){
@@ -137,8 +138,8 @@ public class Turret extends Mechanism {
 
     @AutoLogOutput(key = "Superstructure/Turret/Absolute Angle")
     private Angle getVectorSpaceAngle() {
-        // return TurretAngleCalculator.getAbsoluteAngle(
-        //     inputs.encoder17tPosition.in(Degrees), inputs.encoder18tPosition.in(Degrees));
+        return TurretAngleCalculator.getAbsoluteAngle(
+            inputs.encoder17tPosition.in(Degrees), inputs.encoder18tPosition.in(Degrees));
     }
 
     public void periodic() {

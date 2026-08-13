@@ -238,7 +238,7 @@ public class Superstructure extends Mechanism {
         return run(coroutine -> setStateCommand(SuperstructureState.STOW)).named("Superstructure Stow");
     }
 
-    public BooleanSupplier calculateCachedStateIdle(CommandGamepad driver) {
+    private BooleanSupplier calculateCachedStateIdle(CommandGamepad driver) {
         Translation2d driverInputAsVelocity =
             DriveCommands.getLinearVelocityFromJoysticks(
                 -driver.getLeftY(), -driver.getLeftX());
@@ -249,17 +249,16 @@ public class Superstructure extends Mechanism {
     }
 
     public Command cacheState(CommandGamepad driver) {
-
-        Command getDriver = run(
+        Command getDrive = run(
             coroutine -> {
               this.cachedState = state;
               setState(SuperstructureState.INTERPOLATION);
               Drive.getInstance().stopWithX();
-            }).named("Set Cached State");
+            }).named("Get drive");
 
         Command setState = run(coroutine -> setState(cachedState)).named("Set State");
 
-        ParallelGroup cache = getDriver.alongWith(setState).named("Cache");
+        ParallelGroup cache = getDrive.alongWith(setState).named("Cache");
 
         return run(
             coroutine -> 

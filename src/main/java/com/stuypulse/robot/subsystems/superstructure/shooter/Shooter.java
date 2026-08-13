@@ -6,6 +6,8 @@ import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
 import com.stuypulse.robot.subsystems.superstructure.shooter.ShooterIO.ShooterIOOutputMode;
 import com.stuypulse.robot.subsystems.superstructure.shooter.ShooterIO.ShooterIOOutputs;
+import com.stuypulse.robot.util.superstructure.InterpolationCalculator;
+import com.stuypulse.robot.util.superstructure.SOTMCalculator;
 
 import org.wpilib.command3.Mechanism;
 import org.wpilib.math.filter.Debouncer;
@@ -81,14 +83,14 @@ public class Shooter extends Mechanism {
       case STOP -> stopShooter();
       case MANUAL_OVERRIDE -> runVelocity(
           RPM.of(SuperstructureConstants.Shooter.Settings.RPM.MANUAL_OVERRIDE.get()));
-      //case FERRY -> runVelocity(InterpolationCalculator.getInterpolatedFerryRPM());
+      case FERRY -> runVelocity(InterpolationCalculator.getInterpolatedFerryRPM());
       case REVERSE -> runVelocity(SuperstructureConstants.Shooter.Settings.RPM.REVERSE);
       case KB -> runVelocity(SuperstructureConstants.Shooter.Settings.RPM.KB);
       case LEFT_CORNER -> runVelocity(SuperstructureConstants.Shooter.Settings.RPM.LEFT_CORNER);
       case RIGHT_CORNER -> runVelocity(SuperstructureConstants.Shooter.Settings.RPM.RIGHT_CORNER);
-      //case INTERPOLATION -> runVelocity(InterpolationCalculator.getInterpolatedShotRPM());
-      //case SOTM -> runVelocity(SOTMCalculator.calculateShooterRPMSOTM());
-      //case FOTM -> runVelocity(SOTMCalculator.calculateShooterRPMFOTM());
+      case INTERPOLATION -> runVelocity(InterpolationCalculator.getInterpolatedShotRPM());
+      case SOTM -> runVelocity(SOTMCalculator.calculateShooterRPMSOTM());
+      case FOTM -> runVelocity(SOTMCalculator.calculateShooterRPMFOTM());
     }
     }
 
