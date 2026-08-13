@@ -181,7 +181,7 @@ public class Drive extends Mechanism {
 	
 
     // Log empty setpoint states when disabled
-    if (RobotState.isDisabled() || !Settings.EnabledSubsystems.SWERVE.get()) {
+    if (!Settings.EnabledSubsystems.SWERVE.get()) {
       Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleVelocity[] {});
       Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleVelocity[] {});
     }
