@@ -13,9 +13,9 @@ import com.stuypulse.robot.subsystems.superstructure.turret.TurretIO.TurretIOOut
 import com.stuypulse.robot.subsystems.superstructure.turret.TurretIO.TurretIOOutputs;
 import com.stuypulse.robot.util.superstructure.SOTMCalculator;
 import com.stuypulse.robot.util.superstructure.TurretAngleCalculator;
+import com.stuypulse.robot.util.FullSubsystem;
 
 import org.wpilib.command3.Command;
-import org.wpilib.command3.Mechanism;
 import org.wpilib.command3.button.CommandGamepad;
 import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.filter.Debouncer.DebounceType;
@@ -25,7 +25,7 @@ import org.wpilib.math.geometry.Translation2d;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class Turret extends Mechanism {
+public class Turret extends FullSubsystem {
     private static final Turret instance;
     private Angle driverInput;
 
@@ -143,6 +143,7 @@ public class Turret extends Mechanism {
             inputs.encoder17tPosition.in(Degrees), inputs.encoder18tPosition.in(Degrees));
     }
 
+    @Override
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("Turret", inputs);
@@ -168,6 +169,7 @@ public class Turret extends Mechanism {
     ;
     }
 
+    @Override
     public void periodicAfterScheduler() {
         io.applyOutputs(outputs);
     }

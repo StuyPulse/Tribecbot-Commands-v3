@@ -5,6 +5,9 @@
 package com.stuypulse.robot.constants;
 
 import org.wpilib.framework.RobotBase;
+import org.wpilib.math.geometry.Translation2d;
+
+import org.wpilib.math.util.Units;
 import org.wpilib.units.measure.*;
 import static org.wpilib.units.Units.*;
 
@@ -18,6 +21,7 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
  * dashboards.
  */
 public interface Settings {
+    public static final Time DT = Milliseconds.of(20);
     public static final Mode simMode = Mode.SIM;
     public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 

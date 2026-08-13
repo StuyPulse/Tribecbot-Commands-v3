@@ -9,15 +9,16 @@ import com.stuypulse.robot.subsystems.superstructure.shooter.ShooterIO.ShooterIO
 import com.stuypulse.robot.util.superstructure.InterpolationCalculator;
 import com.stuypulse.robot.util.superstructure.SOTMCalculator;
 
-import org.wpilib.command3.Mechanism;
+import com.stuypulse.robot.util.FullSubsystem;
+
+import org.wpilib.command3.Command;
 import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.filter.Debouncer.DebounceType;
 import org.wpilib.units.measure.AngularVelocity;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-
-public class Shooter extends Mechanism {
+public class Shooter extends FullSubsystem {
     private static final Shooter instance;
 
     static {
@@ -94,6 +95,7 @@ public class Shooter extends Mechanism {
     }
     }
 
+    @Override
     public void periodicAfterScheduler() {
         io.applyOutputs(outputs);
     }

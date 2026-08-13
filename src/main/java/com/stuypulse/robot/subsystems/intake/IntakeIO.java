@@ -4,6 +4,7 @@ import static org.wpilib.units.Units.*;
 import org.wpilib.units.measure.*;
 
 import org.littletonrobotics.junction.AutoLog;
+import org.littletonrobotics.junction.AutoLogOutput;
 
 public interface IntakeIO {
     @AutoLog
@@ -30,22 +31,39 @@ public interface IntakeIO {
         public AngularVelocity rollerFollowerMotorVelocity = DegreesPerSecond.zero();
     }
 
+    public default void updateInputs(IntakeIOInputs inputs) {
+    }
+
     public static enum PivotIOOutputMode {
         POSITION,
         TORQUE_CURRENT,
-        VOLTAGE
+        VOLTAGE,
+        STOP
+    }
+
+    public static enum RollerIOOutputMode {
+        DUTY_CYCLE,
+        STOP
     }
 
     public static class IntakeIOOutputs {
-        public PivotIOOutputMode pivotOutputMode = PivotIOOutputMode.POSITION;
-        public Angle pivotPosition = Degrees.zero();
-        public Current pivotTorqueCurrent = Amps.zero();
-        public Voltage pivotVoltage = Volts.zero();
+        @AutoLogOutput(key = "Intake/Pivot/Output Mode")
+        public PivotIOOutputMode pivotMode = PivotIOOutputMode.POSITION;
 
-        public double rollerDutyCycle = 0.0;
-    }
+        @AutoLogOutput(key = "Intake/Pivot/Target Position")
+        public Angle pivotTargetPosition = Degrees.zero();
 
-    public default void updateInputs(IntakeIOInputs inputs) {
+        @AutoLogOutput(key = "Intake/Pivot/Target Torque Current")
+        public Current pivotTargetTorqueCurrent = Amps.zero();
+
+        @AutoLogOutput(key = "Intake/Pivot/Target Voltage")
+        public Voltage pivotTargetVoltage = Volts.zero();
+
+        @AutoLogOutput(key = "Intake/Rollers/Output Mode")
+        public RollerIOOutputMode rollerMode = RollerIOOutputMode.DUTY_CYCLE;
+
+        @AutoLogOutput(key = "Intake/Rollers/Target Duty Cycle")
+        public double rollerTargetDutyCycle = 0.0;
     }
 
     public default void applyOutputs(IntakeIOOutputs outputs) {

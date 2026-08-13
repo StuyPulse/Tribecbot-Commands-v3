@@ -1,20 +1,19 @@
 package com.stuypulse.robot.subsystems.leds;
 
-import com.stuypulse.robot.Robot;
+import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.subsystems.leds.LEDIO.LEDIOOutputs;
-import org.littletonrobotics.junction.Logger;
-import org.wpilib.command3.Mechanism;
+import com.stuypulse.robot.util.FullSubsystem;
 
-public class LEDController extends Mechanism {
+import org.littletonrobotics.junction.Logger;
+
+public class LEDController extends FullSubsystem {
     private static final LEDController instance; // LED instance
 
     static {
-        if (Robot.isReal() || Robot.isSimulation()) {
-            instance = new LEDController(new LEDIOCANdle() {
-            });
-        } else {
-            instance = new LEDController(new LEDIO() {
-            });
+        switch (Settings.currentMode) {
+            case REAL, SIM -> instance = new LEDController(new LEDIOCANdle() {});
+
+            default -> instance = new LEDController(new LEDIO() {});
         }
     }
 
@@ -35,11 +34,13 @@ public class LEDController extends Mechanism {
         this.outputs = new LEDIOOutputs();
     }
 
+    @Override
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("LEDs", inputs);
     }
 
+    @Override
     public void periodicAfterScheduler() {
         io.applyOutputs(outputs);
     }

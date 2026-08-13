@@ -11,16 +11,16 @@ import com.stuypulse.robot.subsystems.superstructure.hood.HoodIO.HoodIOOutputs;
 import com.stuypulse.robot.util.superstructure.InterpolationCalculator;
 import com.stuypulse.robot.util.superstructure.SOTMCalculator;
 import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
+import com.stuypulse.robot.util.FullSubsystem;
 
 import org.wpilib.command3.Command;
-import org.wpilib.command3.Mechanism;
 import org.wpilib.command3.button.CommandGamepad;
 import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.filter.Debouncer.DebounceType;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class Hood extends Mechanism {
+public class Hood extends FullSubsystem {
     private static final Hood instance;
 
     static {
@@ -82,6 +82,7 @@ public class Hood extends Mechanism {
         IDLE;
     }
 
+    @Override
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("Hood", inputs);

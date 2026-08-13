@@ -7,11 +7,14 @@ import com.ctre.phoenix6.signals.RGBWColor;
 import org.wpilib.math.util.Units;
 import org.wpilib.util.Color;
 
-public class LEDConstants {
-    
-    public static interface LED {
-        public SolidColor solidColorRequest = new SolidColor(0, LEDConstants.LED.LED_LENGTH - 1).withColor(new RGBWColor(Color.RED));
-        public RainbowAnimation rainbowRequest = new RainbowAnimation(0, LEDConstants.LED.LED_LENGTH - 1).withFrameRate(60).withSlot(0);
+public final class LEDConstants {
+    private LEDConstants() {}
+
+    public static interface Settings {
+        public SolidColor solidColorRequest = new SolidColor(0, LEDConstants.Settings.LED_LENGTH - 1)
+                .withColor(new RGBWColor(Color.RED));
+        public RainbowAnimation rainbowRequest = new RainbowAnimation(0, LEDConstants.Settings.LED_LENGTH - 1)
+                .withFrameRate(60).withSlot(0);
 
         public static RGBWColor rgbwConverter(Color color) {
             return new RGBWColor(color);
@@ -55,12 +58,9 @@ public class LEDConstants {
 
         RGBWColor LLDEAD = rgbwConverter(Color.WHITE);
 
-        SolidColor RIGHT_DEAD_STRIP =
-            new SolidColor(LEDConstants.LED.LED_LENGTH - 6, LEDConstants.LED.LED_LENGTH - 2);
-        SolidColor BACK_DEAD_STRIP =
-            new SolidColor(LEDConstants.LED.LED_LENGTH - 13, LEDConstants.LED.LED_LENGTH - 9);
-        SolidColor LEFT_DEAD_STRIP =
-            new SolidColor(LEDConstants.LED.LED_LENGTH - 20, LEDConstants.LED.LED_LENGTH - 16);
+        SolidColor RIGHT_DEAD_STRIP = new SolidColor(LEDConstants.Settings.LED_LENGTH - 6, LEDConstants.Settings.LED_LENGTH - 2);
+        SolidColor BACK_DEAD_STRIP = new SolidColor(LEDConstants.Settings.LED_LENGTH - 13, LEDConstants.Settings.LED_LENGTH - 9);
+        SolidColor LEFT_DEAD_STRIP = new SolidColor(LEDConstants.Settings.LED_LENGTH - 20, LEDConstants.Settings.LED_LENGTH - 16);
         SolidColor CANDLE_DEAD_STRIP = new SolidColor(0, 7);
 
         // RGBWColor.gradient(GradientType.kDiscontinuous, Color.kRed,
@@ -68,8 +68,12 @@ public class LEDConstants {
 
         public final int DESIRED_TAGS_WHEN_DISABLED = 2;
 
-        public double APRIL_TAG_DISTANCE_THRESHOLD =
-            Units.feetToMeters(
+        public double APRIL_TAG_DISTANCE_THRESHOLD = Units.feetToMeters(
                 2); // TODO: update because comparing Translation2d, so make sure it is 2 feet
+    }
+
+    public interface Ports {
+        int LED_PORT = 1;
+        int CANDLE_PORT = 61;
     }
 }

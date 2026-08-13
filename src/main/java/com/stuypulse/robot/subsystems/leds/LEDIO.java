@@ -24,11 +24,15 @@ public interface LEDIO {
         public RGBWColor color;
     }
 
-    public default void updateInputs(LEDIOInputs inputs) {}
+    public default void updateInputs(LEDIOInputs inputs) {
+    }
 
-    public default void applyOutputs(LEDIOOutputs outputs) {}
+    public default void applyOutputs(LEDIOOutputs outputs) {
+    }
 
-    default void setControl(ControlRequest request) {}
+    default void setControl(ControlRequest request) {
+    }
 
-    default void clearAllAnimations() {}
+    default void clearAllAnimations() {
+    }
 }
