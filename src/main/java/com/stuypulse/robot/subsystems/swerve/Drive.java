@@ -167,12 +167,6 @@ public class Drive extends Mechanism {
     odometryLock.unlock();
 
     // Stop moving when disabled
-    if (RobotState.isDisabled()) {
-      for (var module : modules) {
-        module.stop();
-      } 
-    }
-
     if (!Settings.EnabledSubsystems.SWERVE.get()) {
       	for (var module : modules) {
         	module.stop();
