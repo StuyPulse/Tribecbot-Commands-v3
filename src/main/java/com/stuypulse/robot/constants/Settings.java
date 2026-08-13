@@ -41,6 +41,7 @@ public interface Settings {
         LoggedNetworkBoolean INTAKE = new LoggedNetworkBoolean("Enabled Subsystems/Intake", true);
         LoggedNetworkBoolean HANDOFF = new LoggedNetworkBoolean("Enabled Subsystems/Handoff", true);
         LoggedNetworkBoolean SPINDEXER = new LoggedNetworkBoolean("Enabled Subsystems/Spindexer", true);
+        LoggedNetworkBoolean SWERVE = new LoggedNetworkBoolean("Enabled Subsystems/Swerve", true);
     }
 
     public interface Superstructure {
