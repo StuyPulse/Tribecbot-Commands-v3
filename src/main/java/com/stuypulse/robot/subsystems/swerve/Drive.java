@@ -2,6 +2,7 @@ package com.stuypulse.robot.subsystems.swerve;
 
 import static org.wpilib.units.Units.MetersPerSecond;
 import static org.wpilib.units.Units.Milliseconds;
+import static org.wpilib.units.Units.Seconds;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -229,7 +230,7 @@ public class Drive extends Mechanism {
   public void runVelocity(ChassisVelocities speeds) {
     
     // Calculate module setpoints
-    ChassisVelocities discreteSpeeds = speeds.discretize(Settings.DT.in(Milliseconds));
+    ChassisVelocities discreteSpeeds = speeds.discretize(Settings.DT.in(Seconds));
     SwerveModuleVelocity[] setpointStates = kinematics.toSwerveModuleVelocities(discreteSpeeds);
     var desaturatedStates = SwerveDriveKinematics.desaturateWheelVelocities(setpointStates, TunerConstants.kSpeedAt12Volts);
 
@@ -243,7 +244,7 @@ public class Drive extends Mechanism {
     }
 
     // Log optimized setpoints (runSetpoint mutates each state)
-    Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
+    Logger.recordOutput("SwerveStates/SetpointsOptimized", desaturatedStates);
   }
 
   /** Runs the drive in a straight line with the specified drive output. */
