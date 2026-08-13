@@ -15,8 +15,8 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.stuypulse.robot.constants.Ports;
 import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
-import com.stuypulse.robot.util.Simulation.TalonFXSimulation.SystemSim;
-import com.stuypulse.robot.util.Simulation.TalonFXSimulation.TalonFXSimulation;
+import com.stuypulse.robot.util.talonfx.sim.SystemSim;
+import com.stuypulse.robot.util.talonfx.sim.TalonFXSimulation;;
 
 public class TurretIOSim implements TurretIO {
 

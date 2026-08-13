@@ -100,7 +100,7 @@ public class Turret extends FullSubsystem {
         Translation2d target = Field.HUB_CENTER.getTranslation();
         Translation2d turret = swerve.getTurretPose().getTranslation();
 
-        return TurretAngleCalculator.getPointAtTargetAngle(target, turret, robot.getRotation());
+        return TurretAngleCalculator.getPointAtTargetAngle(target, turret, swerve.getRotation());
     }
 
     private Angle getFerryAngle(){
