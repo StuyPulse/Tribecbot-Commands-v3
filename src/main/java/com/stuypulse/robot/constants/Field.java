@@ -5,6 +5,8 @@
 /** ************************************************************ */
 package com.stuypulse.robot.constants;
 
+import static org.wpilib.units.Units.Inches;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +19,7 @@ import org.wpilib.math.geometry.Translation3d;
 import org.wpilib.math.util.Units;
 import org.wpilib.smartdashboard.Field2d;
 import org.wpilib.smartdashboard.FieldObject2d;
+import org.wpilib.units.measure.Distance;
 import org.wpilib.vision.apriltag.AprilTag;
 
 import com.stuypulse.robot.Robot;
@@ -29,26 +32,27 @@ public interface Field {
 
     public static final Field2d FIELD2D = new Field2d();
 
-    double WIDTH = Units.inchesToMeters(317.000);
-    double LENGTH = Units.inchesToMeters(651.200);
+    public static Distance WIDTH = Inches.of(317.000);
+    public static Distance LENGTH = Inches.of(651.200);
 
-    public static final double TRENCH_HOOD_TOLERANCE = Units.inchesToMeters(20);
+    public static final Distance TRENCH_HOOD_TOLERANCE = Inches.of(20);
 
     // Alliance relative hub center coordinates
-    public static final Pose2d HUB_CENTER = new Pose2d(Units.inchesToMeters(182.11), WIDTH / 2.0, new Rotation2d());
-    public static final Pose2d HUB_FAR_RIGHT_CORNER = new Pose2d(Units.inchesToMeters(205.6),
-            WIDTH / 2.0 - Units.inchesToMeters(47 / 2.0), Rotation2d.kZero);
-    public static final Pose2d HUB_FAR_LEFT_CORNER = new Pose2d(Units.inchesToMeters(205.6),
-            WIDTH / 2.0 + Units.inchesToMeters(47 / 2.0), Rotation2d.kZero);
+    public static final Pose2d HUB_CENTER =
+      new Pose2d(Inches.of(182.11), WIDTH.div(2), new Rotation2d());
+    public static final Pose2d HUB_FAR_RIGHT_CORNER =
+      new Pose2d(Inches.of(205.6), WIDTH.div(2).plus(Inches.of(47 / 2.0)), Rotation2d.kZero);
+    public static final Pose2d HUB_FAR_LEFT_CORNER =
+      new Pose2d(Inches.of(205.6), WIDTH.div(2).plus(Inches.of(47 / 2.0)), Rotation2d.kZero);
 
-    public static final double HUB_RADIUS = Units.inchesToMeters(41.7 / 2.0);
+    public static final Distance HUB_RADIUS = Inches.of(41.7 / 2.0);
 
-    public static final double OPPONENT_ZONE_X = LENGTH - Units.inchesToMeters(158.6);
+    public static final Distance OPPONENT_ZONE_X = LENGTH.minus(Inches.of(158.6));
 
-    public static final double OPPONENT_HUB_DS_X = LENGTH - HUB_FAR_LEFT_CORNER.getX() + 2.0 * HUB_RADIUS;
+    public static final Distance OPPONENT_HUB_DS_X = LENGTH.minus(HUB_FAR_LEFT_CORNER.getMeasureX()).plus(HUB_RADIUS.times(2.0));
 
-    public static final double BEHIND_HUB_TOLERANCE_X = Units.inchesToMeters(144); // To extend the triangle vertex
-    public static final double BEHIND_HUB_TOLERANCE_Y = Units.inchesToMeters(12) + Units.inchesToMeters(2); // To extend
+    public static final Distance BEHIND_HUB_TOLERANCE_X = Inches.of(144); // To extend the triangle vertex
+    public static final Distance BEHIND_HUB_TOLERANCE_Y = Inches.of(12).plus(Inches.of(2)); // To extend
                                                                                                             // base of
                                                                                                             // triangle
                                                                                                             // (colinear
@@ -56,7 +60,7 @@ public interface Field {
                                                                                                             // hub)
 
     public static final Pose2d BEHIND_HUB_TRIANGLE_VERTEX = new Pose2d(
-            Units.inchesToMeters(182.11) + Field.BEHIND_HUB_TOLERANCE_X, WIDTH / 2.0, new Rotation2d());
+            Inches.of(182.11).plus(BEHIND_HUB_TOLERANCE_X), WIDTH.div(2.0), new Rotation2d());
 
     public static Pose2d getHubPose() {
         return HUB_CENTER;
@@ -79,18 +83,18 @@ public interface Field {
     }
 
     public final Pose2d INNER_LEFT_FERRY_ZONE = new Pose2d(
-            Units.inchesToMeters(31.5),
-            WIDTH - Units.inchesToMeters(34.5) - Units.inchesToMeters(48),
+            Inches.of(31.5),
+            WIDTH.minus(Inches.of(34.5)).minus(Inches.of(48)),
             new Rotation2d());
 
     public final Pose2d INNER_RIGHT_FERRY_ZONE = new Pose2d(
-            Units.inchesToMeters(20.75),
-            Units.inchesToMeters(76) + Units.inchesToMeters(48),
+            Inches.of(20.75),
+            Inches.of(76).plus(Inches.of(48)),
             new Rotation2d());
 
     public final Pose2d OUTER_LEFT_FERRY_ZONE = new Pose2d(
-            Units.inchesToMeters(31.5),
-            WIDTH - Units.inchesToMeters(34.5),
+            Inches.of(31.5),
+            WIDTH.minus(Inches.of(34.5)),
             new Rotation2d());
 
     public final Pose2d OUTER_RIGHT_FERRY_ZONE = new Pose2d(
@@ -98,19 +102,19 @@ public interface Field {
             Units.inchesToMeters(76),
             new Rotation2d());
 
-    public final double FERRY_SWITCH_TRIGGER_METERS_FROM_EDGE = Units.inchesToMeters(75);
+    public final Distance FERRY_SWITCH_TRIGGER_METERS_FROM_EDGE = Inches.of(75);
 
     public static Pose2d getFerryZonePose(Translation2d robot) {
-        double fieldMidY = WIDTH / 2.0;
+        Distance fieldMidY = WIDTH.div(2);
 
-        if (robot.getY() > fieldMidY) {
-            if (robot.getY() > WIDTH - FERRY_SWITCH_TRIGGER_METERS_FROM_EDGE) {
+        if (robot.getMeasureY().gt(fieldMidY)) {
+            if (robot.getMeasureY().gt(WIDTH.minus(FERRY_SWITCH_TRIGGER_METERS_FROM_EDGE))) {
                 return INNER_LEFT_FERRY_ZONE;
             } else {
                 return OUTER_LEFT_FERRY_ZONE;
             }
         } else {
-            if (robot.getY() < FERRY_SWITCH_TRIGGER_METERS_FROM_EDGE) {
+            if (robot.getMeasureY().lt(FERRY_SWITCH_TRIGGER_METERS_FROM_EDGE)) {
                 return INNER_RIGHT_FERRY_ZONE;
             } else {
                 return OUTER_RIGHT_FERRY_ZONE;
@@ -123,9 +127,9 @@ public interface Field {
      */
     public interface AllianceLeftTrench {
 
-        public static final Pose2d leftEdge = new Pose2d(Units.inchesToMeters(182.11), WIDTH, new Rotation2d());
-        public static final Pose2d rightEdge = new Pose2d(Units.inchesToMeters(182.11),
-                WIDTH - Units.inchesToMeters(50.59), new Rotation2d());
+        public static final Pose2d leftEdge = new Pose2d(Inches.of(182.11), WIDTH, new Rotation2d());
+        public static final Pose2d rightEdge = new Pose2d(Inches.of(182.11),
+                WIDTH.minus(Inches.of(50.59)), new Rotation2d());
     }
 
     public interface AllianceRightTrench {
@@ -139,19 +143,19 @@ public interface Field {
     // OPPONENT SIDE, BUT LEFT/RIGHT RELATIVE TO YOUR ALLIANCE POV
     public interface OpponentLeftTrench {
 
-        public static final Pose2d leftEdge = new Pose2d(LENGTH - Units.inchesToMeters(182.11), WIDTH,
+        public static final Pose2d leftEdge = new Pose2d(LENGTH.minus(Inches.of(182.11)), WIDTH,
                 new Rotation2d());
-        public static final Pose2d rightEdge = new Pose2d(LENGTH - Units.inchesToMeters(182.11),
-                WIDTH - Units.inchesToMeters(50.59), new Rotation2d());
+        public static final Pose2d rightEdge = new Pose2d(LENGTH.minus(Inches.of(182.11)),
+                WIDTH.minus(Inches.of(50.59)), new Rotation2d());
     }
 
     // OPPONENT SIDE, BUT LEFT/RIGHT RELATIVE TO YOUR ALLIANCE POV
     public interface OpponentRightTrench {
 
-        public static final Pose2d leftEdge = new Pose2d(LENGTH - Units.inchesToMeters(182.11),
-                Units.inchesToMeters(50.59), new Rotation2d());
-        public static final Pose2d rightEdge = new Pose2d(LENGTH - Units.inchesToMeters(182.11),
-                Units.inchesToMeters(0), new Rotation2d());
+        public static final Pose2d leftEdge = new Pose2d(LENGTH.minus(Inches.of(182.11)),
+                Inches.of(50.59), new Rotation2d());
+        public static final Pose2d rightEdge = new Pose2d(LENGTH.minus(Inches.of(182.11)),
+                Inches.of(0), new Rotation2d());
     }
 
     /**
@@ -374,7 +378,7 @@ public interface Field {
         Pose3d rotated = pose.rotateBy(new Rotation3d(0, 0, Math.PI));
 
         return new Pose3d(
-                rotated.getTranslation().plus(new Translation3d(LENGTH, WIDTH, 0)),
+                rotated.getTranslation().plus(new Translation3d(LENGTH.magnitude(), WIDTH.magnitude(), 0)),
                 rotated.getRotation());
     }
 
@@ -386,7 +390,7 @@ public interface Field {
     }
 
     public static Translation2d transformToOppositeAlliance(Translation2d translation) {
-        return new Translation2d(LENGTH - translation.getX(), WIDTH - translation.getY());
+        return new Translation2d(LENGTH.minus(translation.getMeasureX()), WIDTH.minus(translation.getMeasureY()));
     }
 
     public static List<Pose2d> transformToOppositeAlliance(List<Pose2d> poses) {
