@@ -78,8 +78,12 @@ public class Spindexer extends FullSubsystem {
         outputs.spindexerMode = SpindexerIO.SpindexerIOOutputMode.STOP;
     }
 
-    private void setState(SpindexerState state) {
+    public void setState(SpindexerState state) {
         this.state = state;
+    }
+
+    public SpindexerState getState() {
+        return state;
     }
 
     public Command runSpindexerForward() {

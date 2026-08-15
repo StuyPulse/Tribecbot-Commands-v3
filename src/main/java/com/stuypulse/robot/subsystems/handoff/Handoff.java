@@ -94,8 +94,12 @@ public class Handoff extends FullSubsystem {
                 inputs.motorLeadSupplyCurrent.abs(Amps) > HandoffConstants.Settings.STALL_CURRENT_AMPS.get());
     }
 
-    private void setState(HandoffState state) {
+    public void setState(HandoffState state) {
         this.state = state;
+    }
+
+    public HandoffState getState() {
+        return state;
     }
 
     public Command runHandoffForward() {

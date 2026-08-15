@@ -25,6 +25,7 @@ import com.stuypulse.robot.subsystems.superstructure.shooter.Shooter;
 import com.stuypulse.robot.subsystems.superstructure.shooter.Shooter.ShooterState;
 import com.stuypulse.robot.subsystems.superstructure.turret.Turret;
 import com.stuypulse.robot.subsystems.superstructure.turret.Turret.TurretState;
+import com.stuypulse.robot.subsystems.swerve.Drive;
 
 public class Superstructure extends Mechanism {
     private static final Superstructure instance;
@@ -132,7 +133,7 @@ public class Superstructure extends Mechanism {
 
         boolean shouldStop =
         isSpindexerStopState
-            || isHandOffStopState
+            || isHandoffStopState
             || (isBehindHubWhileFerrying && !inManualState)
             || isBtwnOppHubAndWall
             || turretLaggingSOTM

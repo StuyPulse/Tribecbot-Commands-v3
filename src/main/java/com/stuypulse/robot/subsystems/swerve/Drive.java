@@ -15,6 +15,7 @@ import org.wpilib.driverstation.RobotState;
 import org.wpilib.math.estimator.SwerveDrivePoseEstimator;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Transform2d;
 import org.wpilib.math.geometry.Translation2d;
 import org.wpilib.math.geometry.Twist2d;
 import org.wpilib.math.kinematics.ChassisVelocities;
@@ -27,6 +28,8 @@ import org.wpilib.math.numbers.N3;
 
 import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.constants.Settings.Mode;
+import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
+import com.stuypulse.robot.subsystems.superstructure.turret.Turret;
 
 public class Drive extends Mechanism {
   private static final Drive instance;
@@ -71,6 +74,16 @@ public class Drive extends Mechanism {
     public static Drive getInstance() {
         return instance;
     }
+
+    @AutoLogOutput(key = "Turret/Turret Pose")
+    public Pose2d getTurretPose() {
+      Turret turret = Turret.getInstance();
+
+      Transform2d turretTransform =
+        new Transform2d(SuperstructureConstants.Turret.Settings.TURRET_OFFSET, turret.getTurretYaw());
+
+      return getPose().transformBy(turretTransform);
+  }
     
      // TunerConstants doesn't include these constants, so they are declared locally
   static final double ODOMETRY_FREQUENCY = TunerConstants.kCANBus.isNetworkFD() ? 250.0 : 100.0;
@@ -299,7 +312,7 @@ public class Drive extends Mechanism {
 
   /** Returns the measured chassis speeds of the robot. */
   @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
-  private ChassisVelocities getChassisSpeeds() {
+  public ChassisVelocities getChassisSpeeds() {
     return kinematics.toChassisVelocities(getModuleStates());
   }
 

@@ -14,6 +14,7 @@ import com.stuypulse.robot.subsystems.superstructure.Superstructure.Superstructu
 import com.stuypulse.robot.subsystems.superstructure.hood.Hood;
 import com.stuypulse.robot.subsystems.superstructure.shooter.Shooter;
 import com.stuypulse.robot.subsystems.superstructure.turret.Turret;
+import com.stuypulse.robot.subsystems.swerve.Drive;
 import com.stuypulse.robot.util.superstructure.InterpolationCalculator.InterpolatedFerryInfo;
 import com.stuypulse.robot.util.superstructure.InterpolationCalculator.InterpolatedShotInfo;
 import org.wpilib.math.geometry.Pose2d;
@@ -153,9 +154,9 @@ public class SOTMCalculator {
         virtualTranslation.getX() - turretTranslation.getX()
     );
 
-    Rotation2d targetTurretAngle = Robot.isReal() ?
-        Rotation2d.fromRadians(-yaw).plus(robotPose.getRotation()) :
-        Rotation2d.fromRadians(yaw).minus(robotPose.getRotation());
+    // Rotation2d targetTurretAngle = Robot.isReal() ?
+    //     Rotation2d.fromRadians(-yaw).plus(robotPose.getRotation()) :
+    //     Rotation2d.fromRadians(yaw).minus(robotPose.getRotation());
 
     return new MoveSolution(
         sol.targetHoodAngle(),
@@ -234,9 +235,9 @@ public class SOTMCalculator {
     ChassisVelocities fieldRelativeSpeeds =
         robotRelativeSpeeds.toRobotRelative(robotPose.getRotation());
 
-    Pigeon2 pigeon = drive.getPigeon2();
-    double ax = pigeon.getAccelerationX().getValueAsDouble() * g;
-    double ay = pigeon.getAccelerationY().getValueAsDouble() * g;
+    // Pigeon2 pigeon = drive.getPigeon2();
+    // double ax = pigeon.getAccelerationX().getValueAsDouble() * g;
+    // double ay = pigeon.getAccelerationY().getValueAsDouble() * g;
 
     Transform2d robotToTurret = turretPose.minus(robotPose);
     double omega = robotRelativeSpeeds.omega;
@@ -278,13 +279,13 @@ public class SOTMCalculator {
     double vTurretX = fieldRelativeSpeeds.vx - omega * r.getY();
     double vTurretY = fieldRelativeSpeeds.vy + omega * r.getX();
 
-    if (accountForAccel.get()) {
-        Translation2d fieldAccel = new Translation2d(ax, ay)
-            .rotateBy(robotPose.getRotation());
+    // if (accountForAccel.get()) {
+    //     Translation2d fieldAccel = new Translation2d(ax, ay)
+    //         .rotateBy(robotPose.getRotation());
 
-        vTurretX += fieldAccel.getX() * t;
-        vTurretY += fieldAccel.getY() * t;
-    }
+    //     vTurretX += fieldAccel.getX() * t;
+    //     vTurretY += fieldAccel.getY() * t;
+    // }
 
     /*
     this part simply shifts where we're aiming from the hub's center to the corresponding rim of the hub

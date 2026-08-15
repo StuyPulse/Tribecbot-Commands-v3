@@ -11,6 +11,7 @@ import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
 import com.stuypulse.robot.subsystems.superstructure.turret.TurretIO.TurretIOOutputMode;
 import com.stuypulse.robot.subsystems.superstructure.turret.TurretIO.TurretIOOutputs;
+import com.stuypulse.robot.subsystems.swerve.Drive;
 import com.stuypulse.robot.util.superstructure.SOTMCalculator;
 import com.stuypulse.robot.util.superstructure.TurretAngleCalculator;
 import com.stuypulse.robot.util.FullSubsystem;
@@ -106,7 +107,7 @@ public class Turret extends FullSubsystem {
     private Angle getFerryAngle(){
         Drive swerve = Drive.getInstance();
 
-        Pose2d robot = swerve.getInstance();
+        Pose2d robot = swerve.getPose();
         Translation2d target = Field.getFerryZonePose(robot.getTranslation()).getTranslation();
         Translation2d turret = swerve.getTurretPose().getTranslation();
 
@@ -270,7 +271,7 @@ public class Turret extends FullSubsystem {
             slot = 1;
         }
 
-        double omega = Drive.getInstance().getChassisSpeeds().omegaRadiansPerSecond;
+        double omega = Drive.getInstance().getChassisSpeeds().omega;
         double omegaFF = Gains.Superstructure.Turret.kOmega.get() * omega;
         double setpointVelocityRPS = delta / (360 * 0.02);
 
