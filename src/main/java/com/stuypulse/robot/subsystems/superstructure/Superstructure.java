@@ -14,6 +14,7 @@ import org.wpilib.math.geometry.Translation2d;
 import org.wpilib.system.Timer;
 
 import com.stuypulse.robot.Robot;
+import com.stuypulse.robot.constants.DriverConstants;
 import com.stuypulse.robot.subsystems.handoff.Handoff;
 import com.stuypulse.robot.subsystems.handoff.Handoff.HandoffState;
 import com.stuypulse.robot.subsystems.spindexer.Spindexer;
@@ -246,9 +247,9 @@ public class Superstructure extends Mechanism {
             DriveCommands.getLinearVelocityFromJoysticks(
                 -driver.getLeftY(), -driver.getLeftX());
 
-        return cachedStateIdleDebouncer.calculate(
-            driverInputAsVelocity.getNorm() <= Driver.Drive.DEADBAND
-                && Math.abs(driver.getRightX()) <= Turn.DEADBAND);
+        return () -> cachedStateIdleDebouncer.calculate(
+            driverInputAsVelocity.getNorm() <= DriverConstants.Driver.Drive.DEADBAND
+                && Math.abs(driver.getRightX()) <= DriverConstants.Driver.Turn.DEADBAND);
     }
 
     public Command cacheState(CommandGamepad driver) {
