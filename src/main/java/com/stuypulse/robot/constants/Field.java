@@ -23,6 +23,7 @@ import org.wpilib.units.measure.Distance;
 import org.wpilib.vision.apriltag.AprilTag;
 
 import com.stuypulse.robot.Robot;
+import com.stuypulse.robot.subsystems.swerve.Drive;
 import com.stuypulse.robot.util.vision.Apriltag;
 
 /**
@@ -79,7 +80,7 @@ public interface Field {
                                                                       // y-cord from the rung
 
     public static boolean closerToTop() {
-        return CommandSwerveDrivetrain.getInstance().getPose().getY() >= Field.TOWER_FAR_CENTER.getY();
+        return Drive.getInstance().getPose().getY() >= Field.TOWER_FAR_CENTER.getY();
     }
 
     public final Pose2d INNER_LEFT_FERRY_ZONE = new Pose2d(
