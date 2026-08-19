@@ -8,163 +8,145 @@ package com.stuypulse.robot.util.superstructure;
 import static org.wpilib.units.Units.RPM;
 import static org.wpilib.units.Units.Radians;
 
-import java.util.Optional;
-
-import org.wpilib.math.geometry.Rotation3d;
-import org.wpilib.math.geometry.Rotation2d;
-import org.wpilib.math.interpolation.InterpolatingDoubleTreeMap;
 import org.wpilib.units.measure.Angle;
 import org.wpilib.units.measure.AngularVelocity;
-import org.wpilib.math.geometry.Translation2d;
-import org.wpilib.math.geometry.Pose2d;
 
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Translation2d;
+import org.wpilib.math.interpolation.InterpolatingDoubleTreeMap;
 
 import com.stuypulse.robot.constants.Field;
-import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
 import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants.Settings.AngleInterpolation;
+import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants.Settings.FerryRPMInterpolation;
+import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants.Settings.FerryTOFInterpolation;
 import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants.Settings.RPMInterpolation;
 import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants.Settings.TOFInterpolation;
 import com.stuypulse.robot.subsystems.swerve.Drive;
-import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants.Settings.FerryRPMInterpolation;
-import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants.Settings.FerryTOFInterpolation;
 
 import dev.doglog.DogLog;
+import java.util.Optional;
 
 public class InterpolationCalculator {
 
-    public static InterpolatingDoubleTreeMap distanceAngleInterpolator;
-    public static InterpolatingDoubleTreeMap distanceRPMInterpolator;
-    public static InterpolatingDoubleTreeMap distanceTOFInterpolator;
+  public static InterpolatingDoubleTreeMap distanceAngleInterpolator;
+  public static InterpolatingDoubleTreeMap distanceRPMInterpolator;
+  public static InterpolatingDoubleTreeMap distanceTOFInterpolator;
 
-    public static InterpolatingDoubleTreeMap ferryingDistanceRPMInterpolator;
-    public static InterpolatingDoubleTreeMap ferryingDistanceTOFInterpolator;
+  public static InterpolatingDoubleTreeMap ferryingDistanceRPMInterpolator;
+  public static InterpolatingDoubleTreeMap ferryingDistanceTOFInterpolator;
 
-    private static Optional<InterpolatedShotInfo> cachedInterpolatedShotInfo = Optional.empty();
-    private static Optional<InterpolatedFerryInfo> cachedInterpolatedFerryInfo = Optional.empty();
+  private static Optional<InterpolatedShotInfo> cachedInterpolatedShotInfo = Optional.empty();
+  private static Optional<InterpolatedFerryInfo> cachedInterpolatedFerryInfo = Optional.empty();
 
-    public static void clearMemoized() {
-        cachedInterpolatedShotInfo = Optional.empty();
-        cachedInterpolatedFerryInfo = Optional.empty();
+  public static void clearMemoized() {
+    cachedInterpolatedShotInfo = Optional.empty();
+    cachedInterpolatedFerryInfo = Optional.empty();
+  }
+
+  public static AngularVelocity getInterpolatedShotRPM() {
+    if (cachedInterpolatedShotInfo.isEmpty()) {
+      cachedInterpolatedShotInfo = Optional.of(interpolateShotInfo());
+    }
+    return cachedInterpolatedShotInfo.get().targetRPM();
+  }
+
+  public static Angle getInterpolatedShotAngle() {
+    if (cachedInterpolatedShotInfo.isEmpty()) {
+      cachedInterpolatedShotInfo = Optional.of(interpolateShotInfo());
+    }
+    return cachedInterpolatedShotInfo.get().targetHoodAngle();
+  }
+
+  public static AngularVelocity getInterpolatedFerryRPM() {
+    if (cachedInterpolatedFerryInfo.isEmpty()) {
+      cachedInterpolatedFerryInfo = Optional.of(interpolateFerryingInfo());
+    }
+    return cachedInterpolatedFerryInfo.get().targetRPM();
+  }
+
+  public static Angle getInterpolatedFerryAngle() {
+    if (cachedInterpolatedFerryInfo.isEmpty()) {
+      cachedInterpolatedFerryInfo = Optional.of(interpolateFerryingInfo());
+    }
+    return cachedInterpolatedFerryInfo.get().targetHoodAngle();
+  }
+
+  public record InterpolatedShotInfo(
+      Angle targetHoodAngle, AngularVelocity targetRPM, double flightTimeSeconds) {}
+
+  public record InterpolatedFerryInfo(
+      Angle targetHoodAngle, AngularVelocity targetRPM, double flightTimeSeconds) {}
+
+  static {
+    distanceAngleInterpolator = new InterpolatingDoubleTreeMap();
+    for (double[] pair : AngleInterpolation.distanceAngleInterpolationValues) {
+      distanceAngleInterpolator.put(pair[0], pair[1]);
     }
 
-    public static AngularVelocity getInterpolatedShotRPM() {
-        if (cachedInterpolatedShotInfo.isEmpty()) {
-            cachedInterpolatedShotInfo = Optional.of(interpolateShotInfo());
-        }
-        return cachedInterpolatedShotInfo.get().targetRPM();
+    distanceRPMInterpolator = new InterpolatingDoubleTreeMap();
+    for (double[] pair : RPMInterpolation.distanceRPMInterpolationValues) {
+      distanceRPMInterpolator.put(pair[0], pair[1]);
     }
 
-    public static Angle getInterpolatedShotAngle() {
-        if (cachedInterpolatedShotInfo.isEmpty()) {
-            cachedInterpolatedShotInfo = Optional.of(interpolateShotInfo());
-        }
-        return cachedInterpolatedShotInfo.get().targetHoodAngle();
+    distanceTOFInterpolator = new InterpolatingDoubleTreeMap();
+    for (double[] pair : TOFInterpolation.distanceTOFInterpolationValues) {
+      distanceTOFInterpolator.put(pair[0], pair[1]);
     }
 
-    public static AngularVelocity getInterpolatedFerryRPM() {
-        if (cachedInterpolatedFerryInfo.isEmpty()) {
-            cachedInterpolatedFerryInfo = Optional.of(interpolateFerryingInfo());
-        }
-        return cachedInterpolatedFerryInfo.get().targetRPM();
+    ferryingDistanceRPMInterpolator = new InterpolatingDoubleTreeMap();
+    for (double[] pair : FerryRPMInterpolation.ferryDistanceRPMInterpolation) {
+      ferryingDistanceRPMInterpolator.put(pair[0], pair[1]);
     }
 
-    public static Angle getInterpolatedFerryAngle() {
-        if (cachedInterpolatedFerryInfo.isEmpty()) {
-            cachedInterpolatedFerryInfo = Optional.of(interpolateFerryingInfo());
-        }
-        return cachedInterpolatedFerryInfo.get().targetHoodAngle();
+    ferryingDistanceTOFInterpolator = new InterpolatingDoubleTreeMap();
+    for (double[] pair : FerryTOFInterpolation.FerryTOFInterpolationInterpolation) {
+      ferryingDistanceTOFInterpolator.put(pair[0], pair[1]);
     }
+  }
 
-    public record InterpolatedShotInfo(
-            Angle targetHoodAngle,
-            AngularVelocity targetRPM,
-            double flightTimeSeconds) {
-    }
+  public static InterpolatedShotInfo interpolateShotInfo() {
+    Drive drive = Drive.getInstance();
 
-    public record InterpolatedFerryInfo(
-            Angle targetHoodAngle,
-            AngularVelocity targetRPM,
-            double flightTimeSeconds) {
-    }
+    return interpolateShotInfo(drive.getTurretPose(), Field.HUB_CENTER);
+  }
 
-    static {
-        distanceAngleInterpolator = new InterpolatingDoubleTreeMap();
-        for (double[] pair : AngleInterpolation.distanceAngleInterpolationValues) {
-            distanceAngleInterpolator.put(pair[0], pair[1]);
-        }
+  public static InterpolatedShotInfo interpolateShotInfo(Pose2d turretPose, Pose2d targetPose) {
+    Translation2d hubPose = targetPose.getTranslation();
+    Translation2d currentPose = turretPose.getTranslation();
 
-        distanceRPMInterpolator = new InterpolatingDoubleTreeMap();
-        for (double[] pair : RPMInterpolation.distanceRPMInterpolationValues) {
-            distanceRPMInterpolator.put(pair[0], pair[1]);
-        }
+    double distanceMeters = currentPose.getDistance(hubPose);
 
-        distanceTOFInterpolator = new InterpolatingDoubleTreeMap();
-        for (double[] pair : TOFInterpolation.distanceTOFInterpolationValues) {
-            distanceTOFInterpolator.put(pair[0], pair[1]);
-        }
+    Angle targetAngle = Radians.of(distanceAngleInterpolator.get(distanceMeters));
+    AngularVelocity targetRPM = RPM.of(distanceRPMInterpolator.get(distanceMeters));
+    double flightTime = distanceTOFInterpolator.get(distanceMeters);
 
-        ferryingDistanceRPMInterpolator = new InterpolatingDoubleTreeMap();
-        for (double[] pair : FerryRPMInterpolation.ferryDistanceRPMInterpolation) {
-            ferryingDistanceRPMInterpolator.put(pair[0], pair[1]);
-        }
+    return new InterpolatedShotInfo(targetAngle, targetRPM, flightTime);
+  }
 
-        ferryingDistanceTOFInterpolator = new InterpolatingDoubleTreeMap();
-        for (double[] pair : FerryTOFInterpolation.FerryTOFInterpolationInterpolation) {
-            ferryingDistanceTOFInterpolator.put(pair[0], pair[1]);
-        }
+  public static InterpolatedFerryInfo interpolateFerryingInfo() {
+    Drive drive = Drive.getInstance();
+    Pose2d turretPose = drive.getTurretPose();
+    Pose2d ferryPose = Field.getFerryZonePose(turretPose.getTranslation());
 
-    }
+    return interpolateFerryingInfo(turretPose, ferryPose);
+  }
 
-    public static InterpolatedShotInfo interpolateShotInfo() {
-        Drive drive = Drive.getInstance();
+  public static InterpolatedFerryInfo interpolateFerryingInfo(
+      Pose2d turretPose, Pose2d targetPose) {
+    Translation2d currentPose = turretPose.getTranslation();
+    Translation2d ferryPose = targetPose.getTranslation();
 
-        return interpolateShotInfo(drive.getTurretPose(), Field.getHubPose());
-    }
+    double distanceMeters = currentPose.getDistance(ferryPose);
 
-    public static InterpolatedShotInfo interpolateShotInfo(Pose2d turretPose, Pose2d targetPose) {
-        Translation2d hubPose = targetPose.getTranslation();
-        Translation2d currentPose = turretPose.getTranslation();
+    Angle targetAngle = SuperstructureConstants.Hood.Settings.Angles.FERRY_ANGLE;
+    AngularVelocity targetRPM = RPM.of(ferryingDistanceRPMInterpolator.get(distanceMeters));
+    double flightTime = ferryingDistanceTOFInterpolator.get(distanceMeters);
 
-        double distanceMeters = currentPose.getDistance(hubPose);
+    DogLog.log("Superstructure/Interpolated Ferry Target Angle", targetAngle);
+    DogLog.log("Superstructure/Interpolated Ferry RPM", targetRPM);
+    DogLog.log("Superstructure/Interpolated Ferry TOF", flightTime);
 
-        Angle targetAngle = Radians.of(distanceAngleInterpolator.get(distanceMeters));
-        AngularVelocity targetRPM = RPM.of(distanceRPMInterpolator.get(distanceMeters));
-        double flightTime = distanceTOFInterpolator.get(distanceMeters);
-
-        return new InterpolatedShotInfo(
-                targetAngle,
-                targetRPM,
-                flightTime);
-    }
-
-    public static InterpolatedFerryInfo interpolateFerryingInfo() {
-        Drive drive = Drive.getInstance();
-        Pose2d turretPose = drive.getTurretPose();
-        Pose2d ferryPose = Field.getFerryZonePose(turretPose.getTranslation());
-
-        return interpolateFerryingInfo(
-                turretPose,
-                ferryPose);
-    }
-
-    public static InterpolatedFerryInfo interpolateFerryingInfo(Pose2d turretPose, Pose2d targetPose) {
-        Translation2d currentPose = turretPose.getTranslation();
-        Translation2d ferryPose = targetPose.getTranslation();
-
-        double distanceMeters = currentPose.getDistance(ferryPose);
-
-        Angle targetAngle = SuperstructureConstants.Hood.Settings.Angles.FERRY_ANGLE;
-        AngularVelocity targetRPM = RPM.of(ferryingDistanceRPMInterpolator.get(distanceMeters));
-        double flightTime = ferryingDistanceTOFInterpolator.get(distanceMeters);
-
-        DogLog.log("Superstructure/Interpolated Ferry Target Angle", targetAngle);
-        DogLog.log("Superstructure/Interpolated Ferry RPM", targetRPM);
-        DogLog.log("Superstructure/Interpolated Ferry TOF", flightTime);
-
-        return new InterpolatedFerryInfo(
-                targetAngle,
-                targetRPM,
-                flightTime);
-    }
+    return new InterpolatedFerryInfo(targetAngle, targetRPM, flightTime);
+  }
 }

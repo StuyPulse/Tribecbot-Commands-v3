@@ -13,6 +13,7 @@ import org.wpilib.math.geometry.Translation2d;
 import org.wpilib.math.util.Units;
 
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 /**
  * File containing tunable settings for every subsystem on the robot.
@@ -46,6 +47,9 @@ public interface Settings {
   public interface EnabledSubsystems {
     LoggedNetworkBoolean INTAKE = new LoggedNetworkBoolean("Enabled Subsystems/Intake", true);
     LoggedNetworkBoolean HANDOFF = new LoggedNetworkBoolean("Enabled Subsystems/Handoff", true);
+    LoggedNetworkBoolean HOOD = new LoggedNetworkBoolean("Enabled Subsystems/Hood", true);
+    LoggedNetworkBoolean SHOOTER = new LoggedNetworkBoolean("Enabled Subsystems/Shooter", true);
+    LoggedNetworkBoolean TURRET = new LoggedNetworkBoolean("Enabled Subsystems/Turret", true);
     LoggedNetworkBoolean SPINDEXER = new LoggedNetworkBoolean("Enabled Subsystems/Spindexer", true);
     LoggedNetworkBoolean SWERVE = new LoggedNetworkBoolean("Enabled Subsystems/Swerve", true);
   }
