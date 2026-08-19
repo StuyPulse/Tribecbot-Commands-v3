@@ -175,9 +175,14 @@ public class Hood extends FullSubsystem {
             inputs.hoodMotorStatorCurrent.gt(SuperstructureConstants.Hood.Settings.STALL_CURRENT_LIMIT));
     }
 
-    public void setState(HoodState state) {
+    private void setState(HoodState state) {
         this.state = state;
     }
+
+    public void setStateCommand(HoodState state) {
+        setState(state);
+    }
+
     public Command runHomingUpper() {
         return run(coroutine -> setState(HoodState.HOMING_UPPER)).named("Run Homing Upper");
     }

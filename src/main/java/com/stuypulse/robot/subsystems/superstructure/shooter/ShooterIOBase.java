@@ -62,7 +62,7 @@ public abstract class ShooterIOBase implements ShooterIO {
         shooterFollowerVelocity = shooterFollower.getVelocity();
     }
 
-        @Override
+    @Override
     public void updateInputs(ShooterIOInputs inputs) {
         BaseStatusSignal.refreshAll(
                 shooterLeaderPosition,

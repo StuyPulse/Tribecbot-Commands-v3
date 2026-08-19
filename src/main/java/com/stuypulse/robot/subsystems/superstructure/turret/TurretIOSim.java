@@ -2,76 +2,49 @@ package com.stuypulse.robot.subsystems.superstructure.turret;
 
 import org.wpilib.math.system.DCMotor;
 import org.wpilib.math.system.Models;
-import org.wpilib.simulation.FlywheelSim;
-import org.wpilib.units.measure.Angle;
-import org.wpilib.units.measure.AngularVelocity;
-import org.wpilib.units.measure.Current;
-import org.wpilib.units.measure.Temperature;
-import org.wpilib.units.measure.Voltage;
+import org.wpilib.simulation.DCMotorSim;
 
-import com.ctre.phoenix6.BaseStatusSignal;
-import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.stuypulse.robot.constants.Ports;
-import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
 import com.stuypulse.robot.util.talonfx.sim.SystemSim;
 import com.stuypulse.robot.util.talonfx.sim.TalonFXSimulation;;
 
-public class TurretIOSim implements TurretIO {
+public class TurretIOSim extends TurretIOBase {
 
-    private SystemSim<FlywheelSim> sim;
+    private SystemSim<DCMotorSim> sim;
     private PositionVoltage controller;
     private TalonFXSimulation simMotor;
 
-    private StatusSignal<Current> turretSimMotorSupplyCurrent;
-    private StatusSignal<Current> turretSimMotorStatorCurrent;
-    private StatusSignal<Temperature> turretSimMotorTemperature;
-    private StatusSignal<Angle> turretSimMotorPosition;
-    private StatusSignal<Voltage> turretSimMotorAppliedVoltage;
-    private StatusSignal<AngularVelocity> turretSimMotorVelocity;
-
     public TurretIOSim(){
-        sim = SystemSim.of(
-            new FlywheelSim(
-                Models.flywheelFromPhysicalConstants(DCMotor.getKrakenX60(1), 
+        final SystemSim<DCMotorSim> sim = SystemSim.of(
+            new DCMotorSim(
+                Models.singleJointedArmFromPhysicalConstants(DCMotor.getKrakenX60(1), 
                 0, 
                 SuperstructureConstants.Turret.Settings.GEAR_RATIO_MOTOR_TO_MECH), 
                 DCMotor.getKrakenX60(1), 
             2.8)
         );
 
-        simMotor =
+        final TalonFXSimulation simMotor =
         new TalonFXSimulation(
             Ports.Superstructure.Turret.MOTOR,
             SuperstructureConstants.Turret.Settings.GEAR_RATIO_MOTOR_TO_MECH,
             sim);
-
+        
         controller = new PositionVoltage(0).withEnableFOC(true);
 
-        turretSimMotorPosition = simMotor.getPosition();
-        turretSimMotorSupplyCurrent = simMotor.getSupplyCurrent();
-        turretSimMotorStatorCurrent = simMotor.getStatorCurrent();
-        turretSimMotorTemperature = simMotor.getDeviceTemp();
-        turretSimMotorAppliedVoltage = simMotor.getMotorVoltage();
-        turretSimMotorVelocity = simMotor.getVelocity();
+        super(simMotor, null, null);
+
+        this.simMotor = simMotor;
+        this.sim = sim;
     }
 
     @Override
   public void updateInputs(TurretIOInputs inputs) {
-    BaseStatusSignal.refreshAll(
-        turretSimMotorPosition,
-        turretSimMotorSupplyCurrent,
-        turretSimMotorStatorCurrent,
-        turretSimMotorTemperature,
-        turretSimMotorAppliedVoltage,
-        turretSimMotorVelocity);
-    inputs.turretMotorPosition = turretSimMotorPosition.getValue();
-    inputs.turretMotorSupplyCurrent = turretSimMotorSupplyCurrent.getValue();
-    inputs.turretMotorStatorCurrent = turretSimMotorStatorCurrent.getValue();
-    inputs.turretMotorTemperature = turretSimMotorTemperature.getValue();
-    inputs.turretMotorAppliedVoltage = turretSimMotorAppliedVoltage.getValue();
-    inputs.turretMotorVelocity = turretSimMotorVelocity.getValue();
+    simMotor.refresh();
+
+    super.updateInputs(inputs);
   }
 
   @Override

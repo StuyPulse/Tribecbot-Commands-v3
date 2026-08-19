@@ -7,11 +7,7 @@ package com.stuypulse.robot.util.vision;
 
 import org.wpilib.math.geometry.Pose3d;
 
-public class Apriltag {
-
-    private final int id;
-    private final Pose3d location;
-
+public record Apriltag(int id, Pose3d location) {
     public Apriltag(int id, Pose3d location) {
         this.id = id;
         this.location = location;
@@ -24,5 +20,4 @@ public class Apriltag {
     public Pose3d getLocation() {
         return location;
     }
-
 }

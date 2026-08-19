@@ -97,11 +97,11 @@ public class Superstructure extends Mechanism {
         }
     }
 
-    public void setState(SuperstructureState state) {
+    private void setState(SuperstructureState state) {
         this.state = state;
-        hood.setState(state.getHoodState());
-        shooter.setState(state.getShooterState());
-        turret.setState(state.getTurretState());
+        hood.setStateCommand(state.getHoodState());
+        shooter.setStateCommand(state.getShooterState());
+        turret.setStateCommand(state.getTurretState());
     }
 
     public SuperstructureState getState() {
@@ -186,8 +186,8 @@ public class Superstructure extends Mechanism {
             .isAutonomous()) { // allows us to start SOTM earlier in auto, but currently not desired
       // in teleop
             setState(SuperstructureState.STOW);
-            Spindexer.getInstance().setState(SpindexerState.STOP);
-            Handoff.getInstance().setState(HandoffState.STOP);
+            Spindexer.getInstance().setStateCommand(SpindexerState.STOP);
+            Handoff.getInstance().setStateCommand(HandoffState.STOP);
         }
   }
 

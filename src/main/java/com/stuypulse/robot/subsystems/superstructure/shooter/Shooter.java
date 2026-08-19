@@ -144,7 +144,11 @@ public class Shooter extends FullSubsystem {
             SuperstructureConstants.Shooter.Settings.IS_SHOOTING_CURRENT));
     }
 
-    public void setState(ShooterState state) {
+    private void setState(ShooterState state) {
         this.state = state;
+    }
+
+    public void setStateCommand(ShooterState state) {
+        setState(state);
     }
 }

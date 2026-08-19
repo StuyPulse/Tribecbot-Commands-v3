@@ -4,6 +4,7 @@ import static org.wpilib.units.Units.Amps;
 import static org.wpilib.units.Units.Degrees;
 import static org.wpilib.units.Units.Inches;
 import static org.wpilib.units.Units.RPM;
+import static org.wpilib.units.Units.Radians;
 import static org.wpilib.units.Units.Rotations;
 import static org.wpilib.units.Units.Volts;
 
@@ -193,6 +194,17 @@ public final class SuperstructureConstants {
 
             public final Current STALL_CURRENT_LIMIT = Amps.of(0.55);
             public final double STALL_DEBOUNCE = 0.5;
+
+            public final double HOOD_ARM_LENGTH_METERS = 0.3;
+
+            public final double MIN_HEIGHT =
+                HOOD_ARM_LENGTH_METERS
+                    * Math.sin((SuperstructureConstants.Hood.Settings.Angles.MIN.in(Radians)));
+            public final double MAX_HEIGHT =
+                HOOD_ARM_LENGTH_METERS
+                    * Math.sin((SuperstructureConstants.Hood.Settings.Angles.MAX.in(Radians)));
+
+            public final double DRUM_RADIUS = 0.01;
 
             public interface Angles {
                 public final LoggedNetworkNumber MANUAL_OVERRIDE = new LoggedNetworkNumber(
