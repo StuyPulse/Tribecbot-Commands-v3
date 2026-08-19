@@ -8,7 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     # This must be updated depending on the year
-    container: wpilib/roborio-cross-ubuntu:2026-22.04-py314
+    container: wpilib/systemcore-cross-debian:trixie
     steps:
     - uses: actions/checkout@v7
 
@@ -19,7 +19,7 @@ jobs:
       run: chmod +x gradlew
 
     - name: Set up JDK
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
         java-version: '25'
@@ -39,4 +39,3 @@ jobs:
               text:
                 type: mrkdwn
                 text: "${{ job.status == 'success' && ':white_check_mark:' || ':x:' }} Build *${{ job.status }}* for `${{ github.repository }}` on `${{ github.ref_name }}` — <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|view run>"
-
