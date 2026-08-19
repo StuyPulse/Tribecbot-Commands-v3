@@ -1,9 +1,12 @@
 package com.stuypulse.robot.subsystems.swerve;
 
+import static org.wpilib.units.Units.Meters;
 import static org.wpilib.units.Units.MetersPerSecond;
 import static org.wpilib.units.Units.Milliseconds;
 import static org.wpilib.units.Units.Seconds;
 
+import java.lang.classfile.ClassFile.Option;
+import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -15,6 +18,7 @@ import org.wpilib.driverstation.RobotState;
 import org.wpilib.math.estimator.SwerveDrivePoseEstimator;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Transform2d;
 import org.wpilib.math.geometry.Translation2d;
 import org.wpilib.math.geometry.Twist2d;
 import org.wpilib.math.kinematics.ChassisVelocities;
@@ -25,11 +29,21 @@ import org.wpilib.math.linalg.Matrix;
 import org.wpilib.math.numbers.N1;
 import org.wpilib.math.numbers.N3;
 
+import com.stuypulse.robot.constants.Field;
 import com.stuypulse.robot.constants.Settings;
 import com.stuypulse.robot.constants.Settings.Mode;
+import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
+import com.stuypulse.robot.subsystems.superstructure.turret.Turret;
 
 public class Drive extends Mechanism {
   private static final Drive instance;
+
+  private Optional<Boolean> isBehindHub = Optional.empty();
+  private Optional<Boolean> isOutsideAllianceZone = Optional.empty();
+  private Optional<Boolean> isInOpponentZone = Optional.empty();
+  private Optional<Boolean> isUnderTrench = Optional.empty();
+  private Optional<Boolean> isBehindTower = Optional.empty();
+  private Optional<Boolean> isBtwnOppHubAndWall = Optional.empty();
 
   static {
     switch (Settings.currentMode) {
@@ -71,6 +85,195 @@ public class Drive extends Mechanism {
     public static Drive getInstance() {
         return instance;
     }
+
+    @AutoLogOutput(key = "Turret/Turret Pose")
+    public Pose2d getTurretPose() {
+      Turret turret = Turret.getInstance();
+
+      Transform2d turretTransform =
+        new Transform2d(SuperstructureConstants.Turret.Settings.TURRET_OFFSET, turret.getTurretYaw());
+
+      return getPose().transformBy(turretTransform);
+  }
+
+  public boolean isUnderTrench() {
+        if (isUnderTrench.isEmpty()) {
+      Translation2d turretTranslation = getTurretPose().getTranslation();
+
+      boolean isBetweenRightTrenchesY =
+          Field.AllianceRightTrench.rightEdge.getY() < turretTranslation.getY()
+              && Field.AllianceRightTrench.leftEdge.getY() > turretTranslation.getY();
+
+      boolean isBetweenLeftTrenchesY =
+          Field.AllianceLeftTrench.rightEdge.getY() < turretTranslation.getY()
+              && Field.AllianceLeftTrench.leftEdge.getY() > turretTranslation.getY();
+
+      boolean isUnderAllianceTrenchX =
+          Math.abs(turretTranslation.getX() - Field.AllianceRightTrench.rightEdge.getX())
+              < Field.TRENCH_HOOD_TOLERANCE.in(Meters);
+
+      boolean isUnderOpponentTrenchX =
+          Math.abs(turretTranslation.getX() - Field.OpponentRightTrench.rightEdge.getX())
+              < Field.TRENCH_HOOD_TOLERANCE.in(Meters);
+
+      boolean isUnderTrench =
+          (isBetweenRightTrenchesY || isBetweenLeftTrenchesY)
+              && (isUnderAllianceTrenchX || isUnderOpponentTrenchX);
+
+      this.isUnderTrench = Optional.of(isUnderTrench);
+    }
+
+    return isUnderTrench.get();
+  }
+
+  public boolean isInOpponentZone() {
+    if (isInOpponentZone.isEmpty()){
+      Translation2d turretTranslation = getTurretPose().getTranslation();
+      isInOpponentZone = Optional.of(turretTranslation.getMeasureX().gt(Field.OPPONENT_ZONE_X));
+    }
+    return isInOpponentZone.get();
+  }
+
+  public boolean isBehindTower() {
+    if (isBehindTower.isEmpty()) {
+      boolean withinTowerX = getPose().getTranslation().getX() < Field.TOWER_FAR_CENTER.getX();
+      boolean withinTowerY =
+          Field.TOWER_FAR_RIGHT.getY() < getTurretPose().getTranslation().getY()
+              && getTurretPose().getTranslation().getY() < Field.TOWER_FAR_LEFT.getY();
+      isBehindTower = Optional.of(withinTowerX && withinTowerY);
+    }
+
+    return isBehindTower.get();
+  }
+
+  public boolean isBehindHub() {
+    if (isBehindHub.isEmpty()) {
+      // === TRIANGLE === (CUSTOM VERTEX)
+      Translation2d turretTranslation = getTurretPose().getTranslation();
+
+      boolean behindHubX = Field.HUB_FAR_LEFT_CORNER.getX() < turretTranslation.getX();
+      // && turretTranslation.getX() < Field.hubFarLeftCorner.getX() + Field.hubToleranceX; // With
+      // this line the triangle will be cut to more like a trapezoid.
+
+      Pose2d hubFarLeftCornerWithTolerance =
+          new Pose2d(
+              Field.HUB_FAR_LEFT_CORNER.getMeasureX(),
+              Field.HUB_FAR_LEFT_CORNER.getMeasureY().plus(Field.BEHIND_HUB_TOLERANCE_Y),
+              new Rotation2d());
+      Pose2d hubFarRightCornerWithTolerance =
+          new Pose2d(
+              Field.HUB_FAR_RIGHT_CORNER.getMeasureX(),
+              Field.HUB_FAR_RIGHT_CORNER.getMeasureY().minus(Field.BEHIND_HUB_TOLERANCE_Y),
+              new Rotation2d());
+
+      // Find point on triangle using the point-slope formula (of the line constructed by the hub
+      // corner pose and ferry pose)
+      // y = (slope)(robotX - hubCornerX) + (hubCornerY)
+      // where the slope = (hubCornerY - vertexY)/(hubCornerX - vertexX)
+      double leftY =
+          ((hubFarLeftCornerWithTolerance.getY() - Field.BEHIND_HUB_TRIANGLE_VERTEX.getY())
+                      / (hubFarLeftCornerWithTolerance.getX()
+                          - Field.BEHIND_HUB_TRIANGLE_VERTEX.getX())) // (Slope)
+                  * (turretTranslation.getX() - hubFarLeftCornerWithTolerance.getX())
+              + hubFarLeftCornerWithTolerance.getY(); // *(robotX - hubCornerX) + (hubCornerY)
+      double rightY =
+          ((hubFarRightCornerWithTolerance.getY() - Field.BEHIND_HUB_TRIANGLE_VERTEX.getY())
+                      / (hubFarRightCornerWithTolerance.getX()
+                          - Field.BEHIND_HUB_TRIANGLE_VERTEX.getX())) // (Slope)
+                  * (turretTranslation.getX() - hubFarRightCornerWithTolerance.getX())
+              + hubFarRightCornerWithTolerance.getY(); // *(robotX - hubCornerX) + (hubCornerY)
+
+      // Debug:
+      // leftBehindHubYPlublisher.set(new Pose2d(getTurretPose().getX(), leftY, new Rotation2d()));
+      // rightBehindHubYPlublisher.set(new Pose2d(getTurretPose().getX(), rightY, new
+      // Rotation2d()));
+      // vertexBehindHubPublisher.set(Field.BEHIND_HUB_TRIANGLE_VERTEX);
+
+      boolean withinHubY = rightY < getTurretPose().getY() && getTurretPose().getY() < leftY;
+
+      isBehindHub = Optional.of(behindHubX && withinHubY);
+
+      // === TRIANGLE === (FROM FERRY ZONES):
+      // Translation2d turretTranslation = getTurretPose().getTranslation();
+      // boolean behindHubX = Field.hubFarLeftCorner.getX() < turretTranslation.getX();
+      // 		// && turretTranslation.getX() < Field.hubFarLeftCorner.getX() + Field.hubToleranceX; //
+      // With this line the triangle will be cut to more like a trapezoid.
+      // // Find point on triangle using the point-slope formula (of the line constructed by the hub
+      // corner pose and ferry pose)
+      // // y = (slope)(robotX - hubCornerX) + (hubCornerY)
+      // // where the slope = (hubCornerY - ferryY)/(hubCornerX - ferryX)
+      // double leftY = ((Field.hubFarLeftCorner.getY() -
+      // Field.leftFerryZone.getY())/(Field.hubFarLeftCorner.getX() - Field.leftFerryZone.getX()))
+      // // (Slope)
+      // 				* (turretTranslation.getX() - Field.hubFarLeftCorner.getX()) +
+      // Field.hubFarLeftCorner.getY(); // *(robotX - hubCornerX) + (hubCornerY)
+      // double rightY = ((Field.hubFarRightCorner.getY() -
+      // Field.rightFerryZone.getY())/(Field.hubFarRightCorner.getX() -
+      // Field.rightFerryZone.getX())) // (Slope)
+      // 				* (turretTranslation.getX() - Field.hubFarRightCorner.getX()) +
+      // Field.hubFarRightCorner.getY(); // *(robotX - hubCornerX) + (hubCornerY)
+      // leftBehindHubYPlublisher.set(new Pose2d(getTurretPose().getX(), leftY -
+      // Field.hubToleranceY, new Rotation2d()));
+      // rightBehindHubYPlublisher.set(new Pose2d(getTurretPose().getX(), rightY +
+      // Field.hubToleranceY, new Rotation2d()));
+      // boolean withinHubY = rightY + Field.hubToleranceY < getTurretPose().getY()
+      // 					&& getTurretPose().getY() < leftY - Field.hubToleranceY;
+      // return behindHubX && withinHubY;
+      // === RECTANGLE ===:
+      // Translation2d turretTranslation = getTurretPose().getTranslation();
+      // boolean behindHubX = Field.hubFarLeftCorner.getX() < turretTranslation.getX()
+      // 		&& turretTranslation.getX() < Field.hubFarLeftCorner.getX() + Field.hubToleranceX;
+      // boolean withinHubY = Field.hubFarRightCorner.getY() + Field.hubToleranceY <
+      // getTurretPose().getY()
+      // 		&& getTurretPose().getY() < Field.hubFarLeftCorner.getY() - Field.hubToleranceY;
+      // return behindHubX && withinHubY;
+    }
+
+    return isBehindHub.get();
+  }
+
+  public boolean isOutsideAllianceZone() {
+    if (isOutsideAllianceZone.isEmpty()) {
+      isOutsideAllianceZone =
+          Optional.of(
+              getPose()
+                  .getMeasureX()
+                  .lt(
+                      Field.AllianceRightTrench.rightEdge
+                          .getMeasureX()
+                          .plus(Field.TRENCH_HOOD_TOLERANCE)));
+    }
+
+    return isOutsideAllianceZone.get();
+  }
+
+  public boolean isBtwnOppHubAndWall() {
+    if (!isBtwnOppHubAndWall.isEmpty()) {
+      return isBtwnOppHubAndWall.get();
+    }
+
+    Translation2d turretTranslation = getTurretPose().getTranslation();
+
+    boolean btwnOppHubAndWallX =
+        turretTranslation.getMeasureX().lt(Field.LENGTH)
+            && turretTranslation.getMeasureX().gt(Field.OPPONENT_HUB_DS_X);
+    boolean btwnOppHubAndWallY =
+        turretTranslation.getY() < Field.HUB_FAR_LEFT_CORNER.getY()
+            && turretTranslation.getY() > Field.HUB_FAR_RIGHT_CORNER.getY();
+
+    isBtwnOppHubAndWall = Optional.of(btwnOppHubAndWallX && btwnOppHubAndWallY);
+
+    return isBtwnOppHubAndWall.get();
+  }
+
+  public void clearMemoized() {
+    isBehindHub = Optional.empty();
+    isOutsideAllianceZone = Optional.empty();
+    isInOpponentZone = Optional.empty();
+    isUnderTrench = Optional.empty();
+    isBehindTower = Optional.empty();
+    isBtwnOppHubAndWall = Optional.empty();
+  }
     
      // TunerConstants doesn't include these constants, so they are declared locally
   static final double ODOMETRY_FREQUENCY = TunerConstants.kCANBus.isNetworkFD() ? 250.0 : 100.0;
@@ -299,7 +502,7 @@ public class Drive extends Mechanism {
 
   /** Returns the measured chassis speeds of the robot. */
   @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
-  private ChassisVelocities getChassisSpeeds() {
+  public ChassisVelocities getChassisSpeeds() {
     return kinematics.toChassisVelocities(getModuleStates());
   }
 

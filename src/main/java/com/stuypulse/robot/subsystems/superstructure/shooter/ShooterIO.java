@@ -4,6 +4,7 @@ import static org.wpilib.units.Units.*;
 import org.wpilib.units.measure.*;
 
 import org.littletonrobotics.junction.AutoLog;
+import org.littletonrobotics.junction.AutoLogOutput;
 
 public interface ShooterIO {
     @AutoLog
@@ -22,9 +23,17 @@ public interface ShooterIO {
         public Voltage shooterFollowerMotorAppliedVoltage = Volts.zero();
         public AngularVelocity shooterFollowerMotorVelocity = DegreesPerSecond.zero();
     }
+    public static enum ShooterIOOutputMode{
+        VELOCITY,
+        STOP
+    }
 
     class ShooterIOOutputs {
-        public AngularVelocity shooterVelocity = RPM.zero();
+        @AutoLogOutput(key = "Superstructure/Shooter/Output Mode")
+        public ShooterIOOutputMode shooterMode = ShooterIOOutputMode.VELOCITY;
+
+        @AutoLogOutput(key = "Superstructure/Shooter/Target Velocity")
+        public AngularVelocity shooterVelocity = RPM.zero();    
     }
 
     public default void updateInputs(ShooterIOInputs inputs) {

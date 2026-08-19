@@ -13,7 +13,6 @@ import org.wpilib.math.geometry.Translation2d;
 import org.wpilib.math.util.Units;
 
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
-import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 /**
  * File containing tunable settings for every subsystem on the robot.

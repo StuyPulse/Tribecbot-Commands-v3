@@ -18,9 +18,9 @@ import dev.doglog.DogLogOptions;
 public class RobotContainer {
 
     // Gamepads
-    public final CommandNiDsXboxController driver =
+    public final static CommandNiDsXboxController driver =
             new CommandNiDsXboxController(Ports.Gamepad.DRIVER);
-    public final CommandNiDsXboxController operator =
+    public final static CommandNiDsXboxController operator =
             new CommandNiDsXboxController(Ports.Gamepad.OPERATOR);
 
     // Subsystem

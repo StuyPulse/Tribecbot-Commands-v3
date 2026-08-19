@@ -82,6 +82,14 @@ public class Spindexer extends FullSubsystem {
         this.state = state;
     }
 
+    public SpindexerState getState() {
+        return state;
+    }
+
+    public void setStateCommand(SpindexerState state) {
+        setState(state);
+    }
+
     public Command runSpindexerForward() {
         return run(coroutine -> setState(SpindexerState.FORWARD)).named("Spindexer Forward");
     }
