@@ -4,10 +4,10 @@
 /**************************************************************/
 package com.stuypulse.robot.subsystems.vision;
 
-import static com.stuypulse.robot.subsystems.vision.VisionConstants.aprilTagLayout;
-
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Transform3d;
+
+import com.stuypulse.robot.constants.Field;
 
 import java.util.function.Supplier;
 import org.photonvision.simulation.PhotonCameraSim;
@@ -35,7 +35,7 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
     // Initialize vision sim
     if (visionSim == null) {
       visionSim = new VisionSystemSim("main");
-      visionSim.addAprilTags(aprilTagLayout);
+      visionSim.addAprilTags(Field.APRIL_TAG_LAYOUT);
     }
 
     // Add sim camera

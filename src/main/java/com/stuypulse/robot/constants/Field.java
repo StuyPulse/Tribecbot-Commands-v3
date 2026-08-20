@@ -7,13 +7,15 @@ package com.stuypulse.robot.constants;
 import static org.wpilib.units.Units.Inches;
 
 import org.wpilib.units.measure.Distance;
-
+import org.wpilib.vision.apriltag.AprilTagFieldLayout;
+import org.wpilib.vision.apriltag.AprilTagFields;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.geometry.Translation2d;
 import org.wpilib.smartdashboard.Field2d;
 
 public interface Field {
+  AprilTagFieldLayout APRIL_TAG_LAYOUT = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
   public static final Field2d FIELD2D = new Field2d();
 
   public static final Distance TRENCH_HOOD_TOLERANCE = Inches.of(20);

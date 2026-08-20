@@ -1,7 +1,8 @@
-/************************ PROJECT SSSS ************************/
-/* Copyright (c) 2026 StuyPulse Robotics. All rights reserved.*/
-/* This work is licensed under the terms of the MIT license.  */
-/**************************************************************/
+/************************ PROJECT TRIBECBOT *************************/
+/* Copyright (c) 2026 StuyPulse Robotics. All rights reserved. */
+/* Use of this source code is governed by an MIT-style license */
+/* that can be found in the repository LICENSE file.           */
+/***************************************************************/
 package com.stuypulse.robot.constants;
 
 import static org.wpilib.units.Units.*;
@@ -52,6 +53,7 @@ public interface Settings {
     LoggedNetworkBoolean TURRET = new LoggedNetworkBoolean("Enabled Subsystems/Turret", true);
     LoggedNetworkBoolean SPINDEXER = new LoggedNetworkBoolean("Enabled Subsystems/Spindexer", true);
     LoggedNetworkBoolean SWERVE = new LoggedNetworkBoolean("Enabled Subsystems/Swerve", true);
+    LoggedNetworkBoolean VISION = new LoggedNetworkBoolean("Enabled Subsystems/Vision", true);
   }
 
   public interface Superstructure {
