@@ -17,7 +17,6 @@ import com.ctre.phoenix6.signals.RGBWColor;
 import java.util.ArrayList;
 import java.util.List;
 import org.littletonrobotics.junction.AutoLog;
-import org.littletonrobotics.junction.AutoLogOutput;
 
 public interface LEDIO {
   @AutoLog
@@ -36,7 +35,6 @@ public interface LEDIO {
   public static class LEDIOOutputs {
     public RGBWColor color;
 
-    @AutoLogOutput(key = "LEDs/Pattern")
     public final List<LEDPattern> patterns = new ArrayList<>();
   }
 
