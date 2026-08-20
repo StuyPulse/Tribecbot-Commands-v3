@@ -11,11 +11,8 @@ import static org.wpilib.units.Units.Volts;
 
 import org.wpilib.hardware.led.AddressableLED;
 import org.wpilib.hardware.led.AddressableLEDBuffer;
-import org.wpilib.util.Color;
 
 import com.ctre.phoenix6.signals.RGBWColor;
-
-import org.littletonrobotics.junction.Logger;
 
 public class LEDIOSim implements LEDIO {
   private final AddressableLED led;
@@ -52,15 +49,6 @@ public class LEDIOSim implements LEDIO {
       for (int i = start; i < end; i++) {
         buffer.setRGB(i, color.Red, color.Green, color.Blue);
       }
-    }
-  }
-
-  public void periodicAfterScheduler(LEDIOOutputs outputs) {
-    for (LEDPattern pattern : outputs.patterns) {
-      RGBWColor color = pattern.color();
-      Logger.recordOutput(
-          "LEDs/Pattern" + pattern.start() + "-" + pattern.end(),
-          new Color(color.Red, color.Green, color.Blue));
     }
   }
 }
