@@ -1,20 +1,16 @@
+/************************ PROJECT TRIBECBOT *************************/
+/* Copyright (c) 2026 StuyPulse Robotics. All rights reserved. */
+/* Use of this source code is governed by an MIT-style license */
+/* that can be found in the repository LICENSE file.           */
+/***************************************************************/
 package com.stuypulse.robot.subsystems.swerve;
 
 import static org.wpilib.units.Units.Meters;
 import static org.wpilib.units.Units.MetersPerSecond;
-import static org.wpilib.units.Units.Milliseconds;
 import static org.wpilib.units.Units.Seconds;
 
-import java.lang.classfile.ClassFile.Option;
-import java.util.Optional;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
 import org.wpilib.command3.Mechanism;
 import org.wpilib.driverstation.Alert;
-import org.wpilib.driverstation.RobotState;
 import org.wpilib.math.estimator.SwerveDrivePoseEstimator;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
@@ -35,6 +31,12 @@ import com.stuypulse.robot.constants.Settings.Mode;
 import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
 import com.stuypulse.robot.subsystems.superstructure.turret.Turret;
 
+import java.util.Optional;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
+
 public class Drive extends Mechanism {
   private static final Drive instance;
 
@@ -47,57 +49,55 @@ public class Drive extends Mechanism {
 
   static {
     switch (Settings.currentMode) {
-        case REAL -> {
-            instance = 
-                new Drive(
-                    new GyroIOPigeon2(),
-                    new ModuleIOTalonFX(TunerConstants.FrontLeft),
-                    new ModuleIOTalonFX(TunerConstants.FrontRight),
-                    new ModuleIOTalonFX(TunerConstants.BackLeft),
-                    new ModuleIOTalonFX(TunerConstants.BackRight)
-                );
-            }
-        
-        case SIM -> {
-            instance =
-                new Drive(
-                    new GyroIO() {},
-                    new ModuleIOSim(TunerConstants.FrontLeft),
-                    new ModuleIOSim(TunerConstants.FrontRight),
-                    new ModuleIOSim(TunerConstants.BackLeft),
-                    new ModuleIOSim(TunerConstants.BackRight)
-                );
-            }
-        
-        default -> {
-            instance =
-                new Drive(
-                    new GyroIO() {},
-                    new ModuleIO() {},
-                    new ModuleIO() {},
-                    new ModuleIO() {},
-                    new ModuleIO() {}
-                );
-            }
-        }
+      case REAL -> {
+        instance =
+            new Drive(
+                new GyroIOPigeon2(),
+                new ModuleIOTalonFX(TunerConstants.FrontLeft),
+                new ModuleIOTalonFX(TunerConstants.FrontRight),
+                new ModuleIOTalonFX(TunerConstants.BackLeft),
+                new ModuleIOTalonFX(TunerConstants.BackRight));
+      }
+
+      case SIM -> {
+        instance =
+            new Drive(
+                new GyroIO() {},
+                new ModuleIOSim(TunerConstants.FrontLeft),
+                new ModuleIOSim(TunerConstants.FrontRight),
+                new ModuleIOSim(TunerConstants.BackLeft),
+                new ModuleIOSim(TunerConstants.BackRight));
+      }
+
+      default -> {
+        instance =
+            new Drive(
+                new GyroIO() {},
+                new ModuleIO() {},
+                new ModuleIO() {},
+                new ModuleIO() {},
+                new ModuleIO() {});
+      }
     }
+  }
 
-    public static Drive getInstance() {
-        return instance;
-    }
+  public static Drive getInstance() {
+    return instance;
+  }
 
-    @AutoLogOutput(key = "Turret/Turret Pose")
-    public Pose2d getTurretPose() {
-      Turret turret = Turret.getInstance();
+  @AutoLogOutput(key = "Turret/Turret Pose")
+  public Pose2d getTurretPose() {
+    Turret turret = Turret.getInstance();
 
-      Transform2d turretTransform =
-        new Transform2d(SuperstructureConstants.Turret.Settings.TURRET_OFFSET, turret.getTurretYaw());
+    Transform2d turretTransform =
+        new Transform2d(
+            SuperstructureConstants.Turret.Settings.TURRET_OFFSET, turret.getTurretYaw());
 
-      return getPose().transformBy(turretTransform);
+    return getPose().transformBy(turretTransform);
   }
 
   public boolean isUnderTrench() {
-        if (isUnderTrench.isEmpty()) {
+    if (isUnderTrench.isEmpty()) {
       Translation2d turretTranslation = getTurretPose().getTranslation();
 
       boolean isBetweenRightTrenchesY =
@@ -127,7 +127,7 @@ public class Drive extends Mechanism {
   }
 
   public boolean isInOpponentZone() {
-    if (isInOpponentZone.isEmpty()){
+    if (isInOpponentZone.isEmpty()) {
       Translation2d turretTranslation = getTurretPose().getTranslation();
       isInOpponentZone = Optional.of(turretTranslation.getMeasureX().gt(Field.OPPONENT_ZONE_X));
     }
@@ -274,8 +274,8 @@ public class Drive extends Mechanism {
     isBehindTower = Optional.empty();
     isBtwnOppHubAndWall = Optional.empty();
   }
-    
-     // TunerConstants doesn't include these constants, so they are declared locally
+
+  // TunerConstants doesn't include these constants, so they are declared locally
   static final double ODOMETRY_FREQUENCY = TunerConstants.kCANBus.isNetworkFD() ? 250.0 : 100.0;
   static final double ODOMETRY_VELOCITY_FREQUENCY = 50.0;
   public static final double DRIVE_BASE_RADIUS =
@@ -296,7 +296,7 @@ public class Drive extends Mechanism {
   private final GyroIO gyroIO;
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
-//   private final SysIdRoutine sysId;
+  //   private final SysIdRoutine sysId;
   private final Alert gyroDisconnectedAlert =
       new Alert("Disconnected gyro, using kinematics as fallback.", Alert.Level.HIGH);
 
@@ -347,7 +347,7 @@ public class Drive extends Mechanism {
     //     (targetPose) -> {
     //       Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
     //     });
-    
+
     // Configure SysId
     // sysId =
     //     new SysIdRoutine(
@@ -371,11 +371,10 @@ public class Drive extends Mechanism {
 
     // Stop moving when disabled
     if (!Settings.EnabledSubsystems.SWERVE.get()) {
-      	for (var module : modules) {
-        	module.stop();
-      	}
+      for (var module : modules) {
+        module.stop();
+      }
     }
-	
 
     // Log empty setpoint states when disabled
     if (!Settings.EnabledSubsystems.SWERVE.get()) {
@@ -395,8 +394,7 @@ public class Drive extends Mechanism {
         modulePositions[moduleIndex] = modules[moduleIndex].getOdometryPositions()[i];
         moduleDeltas[moduleIndex] =
             new SwerveModulePosition(
-                modulePositions[moduleIndex].distance
-                    - lastModulePositions[moduleIndex].distance,
+                modulePositions[moduleIndex].distance - lastModulePositions[moduleIndex].distance,
                 modulePositions[moduleIndex].angle);
         lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
       }
@@ -425,11 +423,13 @@ public class Drive extends Mechanism {
    * @param speeds Speeds in meters/sec
    */
   public void runVelocity(ChassisVelocities speeds) {
-    
+
     // Calculate module setpoints
     ChassisVelocities discreteSpeeds = speeds.discretize(Settings.DT.in(Seconds));
     SwerveModuleVelocity[] setpointStates = kinematics.toSwerveModuleVelocities(discreteSpeeds);
-    var desaturatedStates = SwerveDriveKinematics.desaturateWheelVelocities(setpointStates, TunerConstants.kSpeedAt12Volts);
+    var desaturatedStates =
+        SwerveDriveKinematics.desaturateWheelVelocities(
+            setpointStates, TunerConstants.kSpeedAt12Volts);
 
     // Log unoptimized setpoints and setpoint speeds
     Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
@@ -470,16 +470,17 @@ public class Drive extends Mechanism {
   }
 
   /** Returns a command to run a quasistatic test in the specified direction. */
-//   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-//     return run(() -> runCharacterization(0.0))
-//         .withTimeout(1.0)
-//         .andThen(sysId.quasistatic(direction));
-//   }
+  //   public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+  //     return run(() -> runCharacterization(0.0))
+  //         .withTimeout(1.0)
+  //         .andThen(sysId.quasistatic(direction));
+  //   }
 
-//   /** Returns a command to run a dynamic test in the specified direction. */
-//   public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-//     return run(() -> runCharacterization(0.0)).withTimeout(1.0).andThen(sysId.dynamic(direction));
-//   }
+  //   /** Returns a command to run a dynamic test in the specified direction. */
+  //   public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+  //     return run(() ->
+  // runCharacterization(0.0)).withTimeout(1.0).andThen(sysId.dynamic(direction));
+  //   }
 
   /** Returns the module states (turn angles and drive velocities) for all of the modules. */
   @AutoLogOutput(key = "SwerveStates/Measured")

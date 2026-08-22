@@ -9,8 +9,9 @@ import static org.wpilib.units.Units.Degrees;
 import static org.wpilib.units.Units.Radians;
 
 import org.wpilib.units.measure.Angle;
-import org.wpilib.math.geometry.Translation2d;
+
 import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Translation2d;
 
 import com.stuypulse.robot.Robot;
 import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;

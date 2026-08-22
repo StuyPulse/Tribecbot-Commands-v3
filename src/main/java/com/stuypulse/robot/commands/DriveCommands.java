@@ -1,23 +1,14 @@
-// Copyright 2021-2025 FRC 6328
-// http://github.com/Mechanical-Advantage
-//
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// version 3 as published by the Free Software Foundation or
-// available in the root directory of this project.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
+/************************ PROJECT TRIBECBOT *************************/
+/* Copyright (c) 2026 StuyPulse Robotics. All rights reserved. */
+/* Use of this source code is governed by an MIT-style license */
+/* that can be found in the repository LICENSE file.           */
+/***************************************************************/
 package com.stuypulse.robot.commands;
 
-import com.stuypulse.robot.subsystems.swerve.Drive;
+import static org.wpilib.units.Units.Seconds;
 
 import org.wpilib.command3.*;
 import org.wpilib.driverstation.Alliance;
-import org.wpilib.driverstation.DriverStation;
 import org.wpilib.driverstation.MatchState;
 import org.wpilib.math.controller.ProfiledPIDController;
 import org.wpilib.math.filter.SlewRateLimiter;
@@ -31,7 +22,7 @@ import org.wpilib.math.util.MathUtil;
 import org.wpilib.math.util.Units;
 import org.wpilib.system.Timer;
 
-import static org.wpilib.units.Units.Seconds;
+import com.stuypulse.robot.subsystems.swerve.Drive;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -40,7 +31,7 @@ import java.util.List;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-public class DriveCommands extends Mechanism{
+public class DriveCommands extends Mechanism {
   private static final double DEADBAND = 0.1;
   private static final double ANGLE_KP = 5.0;
   private static final double ANGLE_KD = 0.4;
@@ -75,33 +66,35 @@ public class DriveCommands extends Mechanism{
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
       DoubleSupplier omegaSupplier) {
-    return drive.run(
-        coroutine -> {
-          // Get linear velocity
-          Translation2d linearVelocity =
-              getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+    return drive
+        .run(
+            coroutine -> {
+              // Get linear velocity
+              Translation2d linearVelocity =
+                  getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
-          // Apply rotation deadband
-          double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
+              // Apply rotation deadband
+              double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
 
-          // Square rotation value for more precise control
-          omega = Math.copySign(omega * omega, omega);
+              // Square rotation value for more precise control
+              omega = Math.copySign(omega * omega, omega);
 
-          // Convert to field relative speeds & send command
-          ChassisVelocities speeds =
-              new ChassisVelocities(
-                  linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                  linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                  omega * drive.getMaxAngularSpeedRadPerSec());
-          boolean isFlipped =
-              MatchState.getAlliance().isPresent()
-                  && MatchState.getAlliance().get() == Alliance.RED;
-          drive.runVelocity(
-              speeds.toFieldRelative(
-                  isFlipped
-                      ? drive.getRotation().plus(new Rotation2d(Math.PI))
-                      : drive.getRotation()));
-        }).named("Joystick Drive");
+              // Convert to field relative speeds & send command
+              ChassisVelocities speeds =
+                  new ChassisVelocities(
+                      linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                      linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                      omega * drive.getMaxAngularSpeedRadPerSec());
+              boolean isFlipped =
+                  MatchState.getAlliance().isPresent()
+                      && MatchState.getAlliance().get() == Alliance.RED;
+              drive.runVelocity(
+                  speeds.toFieldRelative(
+                      isFlipped
+                          ? drive.getRotation().plus(new Rotation2d(Math.PI))
+                          : drive.getRotation()));
+            })
+        .named("Joystick Drive");
   }
 
   /**
@@ -124,38 +117,46 @@ public class DriveCommands extends Mechanism{
     angleController.enableContinuousInput(-Math.PI, Math.PI);
 
     // Construct command
-    Command joystickDrive = drive.run(
-            coroutine -> {
-              // Get linear velocity
-              Translation2d linearVelocity =
-                  getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+    Command joystickDrive =
+        drive
+            .run(
+                coroutine -> {
+                  // Get linear velocity
+                  Translation2d linearVelocity =
+                      getLinearVelocityFromJoysticks(
+                          xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
-              // Calculate angular speed
-              double omega =
-                  angleController.calculate(
-                      drive.getRotation().getRadians(), rotationSupplier.get().getRadians());
+                  // Calculate angular speed
+                  double omega =
+                      angleController.calculate(
+                          drive.getRotation().getRadians(), rotationSupplier.get().getRadians());
 
-              // Convert to field relative speeds & send command
-              ChassisVelocities speeds =
-                  new ChassisVelocities(
-                      linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                      linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                      omega);
-              boolean isFlipped =
-                  MatchState.getAlliance().isPresent()
-                      && MatchState.getAlliance().get() == Alliance.RED;
-              drive.runVelocity(
-                  speeds.toFieldRelative(
-                      isFlipped
-                          ? drive.getRotation().plus(new Rotation2d(Math.PI))
-                          : drive.getRotation()));
-            }).named("Joystick Drive at Angle");
+                  // Convert to field relative speeds & send command
+                  ChassisVelocities speeds =
+                      new ChassisVelocities(
+                          linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                          linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                          omega);
+                  boolean isFlipped =
+                      MatchState.getAlliance().isPresent()
+                          && MatchState.getAlliance().get() == Alliance.RED;
+                  drive.runVelocity(
+                      speeds.toFieldRelative(
+                          isFlipped
+                              ? drive.getRotation().plus(new Rotation2d(Math.PI))
+                              : drive.getRotation()));
+                })
+            .named("Joystick Drive at Angle");
 
-        // Reset PID controller when command starts
-        Command resetAngleController = drive.run(
-            coroutine -> angleController.reset(drive.getRotation().getRadians())).named("Reset angle controller");
+    // Reset PID controller when command starts
+    Command resetAngleController =
+        drive
+            .run(coroutine -> angleController.reset(drive.getRotation().getRadians()))
+            .named("Reset angle controller");
 
-        return drive.run(coroutine -> resetAngleController.andThen(joystickDrive)).named("Joystick Drive at Angle");
+    return drive
+        .run(coroutine -> resetAngleController.andThen(joystickDrive))
+        .named("Joystick Drive at Angle");
   }
 
   /**
@@ -168,49 +169,65 @@ public class DriveCommands extends Mechanism{
     List<Double> voltageSamples = new LinkedList<>();
     Timer timer = new Timer();
 
-    Command resetData = drive.run(
-            coroutine -> {
-              velocitySamples.clear();
-              voltageSamples.clear();
-            }).named("Reset data");
+    Command resetData =
+        drive
+            .run(
+                coroutine -> {
+                  velocitySamples.clear();
+                  voltageSamples.clear();
+                })
+            .named("Reset data");
 
-    Command orientModules = drive.run(coroutine -> 
-        drive.runCharacterization(0.0)).named("Orient modules").withTimeout(Seconds.of(FF_START_DELAY));
+    Command orientModules =
+        drive
+            .run(coroutine -> drive.runCharacterization(0.0))
+            .named("Orient modules")
+            .withTimeout(Seconds.of(FF_START_DELAY));
 
     Command startTimer = drive.run(coroutine -> timer.restart()).named("Start timer");
 
-    Command accelerateAndGatherData = drive.run(
-            coroutine -> {
-              double voltage = timer.get() * FF_RAMP_RATE;
-              drive.runCharacterization(voltage);
-              velocitySamples.add(drive.getFFCharacterizationVelocity());
-              voltageSamples.add(voltage);
-            }).named("Accelerate and gather data");
+    Command accelerateAndGatherData =
+        drive
+            .run(
+                coroutine -> {
+                  double voltage = timer.get() * FF_RAMP_RATE;
+                  drive.runCharacterization(voltage);
+                  velocitySamples.add(drive.getFFCharacterizationVelocity());
+                  voltageSamples.add(voltage);
+                })
+            .named("Accelerate and gather data");
 
-    Command calculate = drive.run(
-            coroutine -> {
-              int n = velocitySamples.size();
-              double sumX = 0.0;
-              double sumY = 0.0;
-              double sumXY = 0.0;
-              double sumX2 = 0.0;
-              for (int i = 0; i < n; i++) {
-                sumX += velocitySamples.get(i);
-                sumY += voltageSamples.get(i);
-                sumXY += velocitySamples.get(i) * voltageSamples.get(i);
-                sumX2 += velocitySamples.get(i) * velocitySamples.get(i);
-              }
-              double kS = (sumY * sumX2 - sumX * sumXY) / (n * sumX2 - sumX * sumX);
-              double kV = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+    Command calculate =
+        drive
+            .run(
+                coroutine -> {
+                  int n = velocitySamples.size();
+                  double sumX = 0.0;
+                  double sumY = 0.0;
+                  double sumXY = 0.0;
+                  double sumX2 = 0.0;
+                  for (int i = 0; i < n; i++) {
+                    sumX += velocitySamples.get(i);
+                    sumY += voltageSamples.get(i);
+                    sumXY += velocitySamples.get(i) * voltageSamples.get(i);
+                    sumX2 += velocitySamples.get(i) * velocitySamples.get(i);
+                  }
+                  double kS = (sumY * sumX2 - sumX * sumXY) / (n * sumX2 - sumX * sumX);
+                  double kV = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
 
-              NumberFormat formatter = new DecimalFormat("#0.00000");
-              System.out.println("********** Drive FF Characterization Results **********");
-              System.out.println("\tkS: " + formatter.format(kS));
-              System.out.println("\tkV: " + formatter.format(kV));
-            }).named("Calculate results");
+                  NumberFormat formatter = new DecimalFormat("#0.00000");
+                  System.out.println("********** Drive FF Characterization Results **********");
+                  System.out.println("\tkS: " + formatter.format(kS));
+                  System.out.println("\tkV: " + formatter.format(kV));
+                })
+            .named("Calculate results");
 
-    return resetData.andThen(orientModules).andThen(startTimer)
-        .andThen(accelerateAndGatherData).andThen(calculate).named("Joystick Drive Angle");
+    return resetData
+        .andThen(orientModules)
+        .andThen(startTimer)
+        .andThen(accelerateAndGatherData)
+        .andThen(calculate)
+        .named("Joystick Drive Angle");
   }
 
   /** Measures the robot's wheel radius by spinning in a circle. */
@@ -220,48 +237,69 @@ public class DriveCommands extends Mechanism{
 
     Command resetLimiter = drive.run(coroutine -> limiter.reset(0.0)).named("Reset limiter");
 
-    Command accelerate = drive.run(coroutine -> {
-      double speed = limiter.calculate(WHEEL_RADIUS_MAX_VELOCITY);
-      drive.runVelocity(new ChassisVelocities(0.0, 0.0, speed));
-    }).named("Accelerate");
+    Command accelerate =
+        drive
+            .run(
+                coroutine -> {
+                  double speed = limiter.calculate(WHEEL_RADIUS_MAX_VELOCITY);
+                  drive.runVelocity(new ChassisVelocities(0.0, 0.0, speed));
+                })
+            .named("Accelerate");
 
-    Command recordStartingMeasurement = drive.run(coroutine -> {
-      state.positions = drive.getWheelRadiusCharacterizationPositions();
-      state.lastAngle = drive.getRotation();
-      state.gyroDelta = 0.0;
-    }).named("Record starting measurement");
+    Command recordStartingMeasurement =
+        drive
+            .run(
+                coroutine -> {
+                  state.positions = drive.getWheelRadiusCharacterizationPositions();
+                  state.lastAngle = drive.getRotation();
+                  state.gyroDelta = 0.0;
+                })
+            .named("Record starting measurement");
 
-    Command updateGyroDelta = drive.run(coroutine -> {
-      var rotation = drive.getRotation();
-      state.gyroDelta += Math.abs(rotation.minus(state.lastAngle).getRadians());
-      state.lastAngle = rotation;
-    }).named("Update gyro delta");
+    Command updateGyroDelta =
+        drive
+            .run(
+                coroutine -> {
+                  var rotation = drive.getRotation();
+                  state.gyroDelta += Math.abs(rotation.minus(state.lastAngle).getRadians());
+                  state.lastAngle = rotation;
+                })
+            .named("Update gyro delta");
 
-    Command calculate = drive.run(coroutine -> {
-      double[] positions = drive.getWheelRadiusCharacterizationPositions();
-      double wheelDelta = 0.0;
-      for (int i = 0; i < 4; i++) {
-        wheelDelta += Math.abs(positions[i] - state.positions[i]) / 4.0;
-      }
-      double wheelRadius = (state.gyroDelta * Drive.DRIVE_BASE_RADIUS) / wheelDelta;
+    Command calculate =
+        drive
+            .run(
+                coroutine -> {
+                  double[] positions = drive.getWheelRadiusCharacterizationPositions();
+                  double wheelDelta = 0.0;
+                  for (int i = 0; i < 4; i++) {
+                    wheelDelta += Math.abs(positions[i] - state.positions[i]) / 4.0;
+                  }
+                  double wheelRadius = (state.gyroDelta * Drive.DRIVE_BASE_RADIUS) / wheelDelta;
 
-      NumberFormat formatter = new DecimalFormat("#0.000");
-      System.out.println("********** Wheel Radius Characterization Results **********");
-      System.out.println("\tWheel Delta: " + formatter.format(wheelDelta) + " radians");
-      System.out.println("\tGyro Delta: " + formatter.format(state.gyroDelta) + " radians");
-      System.out.println(
-          "\tWheel Radius: "
-              + formatter.format(wheelRadius)
-              + " meters, "
-              + formatter.format(Units.metersToInches(wheelRadius))
-              + " inches");
-    }).named("Calculate results");
+                  NumberFormat formatter = new DecimalFormat("#0.000");
+                  System.out.println("********** Wheel Radius Characterization Results **********");
+                  System.out.println("\tWheel Delta: " + formatter.format(wheelDelta) + " radians");
+                  System.out.println(
+                      "\tGyro Delta: " + formatter.format(state.gyroDelta) + " radians");
+                  System.out.println(
+                      "\tWheel Radius: "
+                          + formatter.format(wheelRadius)
+                          + " meters, "
+                          + formatter.format(Units.metersToInches(wheelRadius))
+                          + " inches");
+                })
+            .named("Calculate results");
 
     Command driveControl = resetLimiter.andThen(accelerate).named("Drive control");
-    Command measurement = Command.waitFor(Seconds.of(1.0)).named("Wait 1 sec")
-        .andThen(recordStartingMeasurement).andThen(updateGyroDelta).named("Measurement");
-	
-	Command wheel = driveControl.alongWith(measurement).named("Control and measure");
+    Command measurement =
+        Command.waitFor(Seconds.of(1.0))
+            .named("Wait 1 sec")
+            .andThen(recordStartingMeasurement)
+            .andThen(updateGyroDelta)
+            .named("Measurement");
+
+    Command wheel = driveControl.alongWith(measurement).named("Control and measure");
 
     return wheel.andThen(calculate).named("Wheel radius characterization");
   }

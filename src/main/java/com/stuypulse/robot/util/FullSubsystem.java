@@ -1,16 +1,15 @@
-// Copyright (c) 2025-2026 Littleton Robotics
-// http://github.com/Mechanical-Advantage
-//
-// Use of this source code is governed by an MIT-style
-// license that can be found in the LICENSE file at
-// the root directory of this project.
+/************************ PROJECT TRIBECBOT *************************/
+/* Copyright (c) 2026 StuyPulse Robotics. All rights reserved. */
+/* Use of this source code is governed by an MIT-style license */
+/* that can be found in the repository LICENSE file.           */
+/***************************************************************/
 package com.stuypulse.robot.util;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import org.wpilib.command3.Mechanism;
 import org.wpilib.command3.Scheduler;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A standard subsystem that includes an extra periodic callback which runs after the command
@@ -32,16 +31,18 @@ public abstract class FullSubsystem extends Mechanism {
   }
 
   /**
-   * This method is called periodically before scheduled commands, and should be overriden 
-   * for updating inputs.
+   * This method is called periodically before scheduled commands, and should be overriden for
+   * updating inputs.
    */
-  public void periodic() {};
+  public void periodic() {}
+  ;
 
   /**
-   * This method is called periodically after the command scheduler, and should be overriden 
-   * for applying outputs.
+   * This method is called periodically after the command scheduler, and should be overriden for
+   * applying outputs.
    */
-  public void periodicAfterScheduler() {};
+  public void periodicAfterScheduler() {}
+  ;
 
   /** Run the "after periodic" methods for all subsystems. */
   public static void runAllPeriodicAfterScheduler() {

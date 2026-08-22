@@ -1,11 +1,12 @@
-// Copyright (c) 2021-2026 Littleton Robotics
-// http://github.com/Mechanical-Advantage
-//
-// Use of this source code is governed by a BSD
-// license that can be found in the LICENSE file
-// at the root directory of this project.
-
+/************************ PROJECT TRIBECBOT *************************/
+/* Copyright (c) 2026 StuyPulse Robotics. All rights reserved. */
+/* Use of this source code is governed by an MIT-style license */
+/* that can be found in the repository LICENSE file.           */
+/***************************************************************/
 package com.stuypulse.robot.util.swerve;
+
+import org.wpilib.math.geometry.Translation2d;
+import org.wpilib.math.util.Pair;
 
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
@@ -19,8 +20,6 @@ import java.util.List;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
-import org.wpilib.math.geometry.Translation2d;
-import org.wpilib.math.util.Pair;
 
 // NOTE: This file is available at
 // https://gist.github.com/mjansen4857/a8024b55eb427184dbd10ae8923bd57d

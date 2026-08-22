@@ -1,14 +1,13 @@
-// Copyright (c) 2021-2026 Littleton Robotics
-// http://github.com/Mechanical-Advantage
-//
-// Use of this source code is governed by a BSD
-// license that can be found in the LICENSE file
-// at the root directory of this project.
-
+/************************ PROJECT TRIBECBOT *************************/
+/* Copyright (c) 2026 StuyPulse Robotics. All rights reserved. */
+/* Use of this source code is governed by an MIT-style license */
+/* that can be found in the repository LICENSE file.           */
+/***************************************************************/
 package com.stuypulse.robot.subsystems.swerve;
 
-import org.littletonrobotics.junction.AutoLog;
 import org.wpilib.math.geometry.Rotation2d;
+
+import org.littletonrobotics.junction.AutoLog;
 
 public interface ModuleIO {
   @AutoLog

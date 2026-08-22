@@ -5,22 +5,25 @@
 /***************************************************************/
 package com.stuypulse.robot.constants;
 
+import static org.wpilib.units.Units.*;
+import org.wpilib.units.measure.*;
+
 public interface DriverConstants {
-
-  public interface Driver {
-    double BUZZ_TIME = 1.0;
-    double BUZZ_INTENSITY = 1.0;
-
-    public interface Drive {
-      double DEADBAND = 0.05;
-      double RC = 0.05;
-      int POWER = 2;
+    public interface DriverSettings {
+        int INDEX = 0;
+        Time BUZZ_TIME = Seconds.of(1.0);
+        double BUZZ_INTENSITY = 1.0;
     }
 
-    public interface Turn {
-      double DEADBAND = 0.05;
-      double RC = 0.05;
-      int POWER = 2;
+    public interface DriverDriveSettings {
+        double DEADBAND = 0.05;
+        double RC = 0.05;
+        int POWER = 2;
     }
-  }
+
+    public interface DriverTurnSettings {
+        double DEADBAND = 0.05;
+        double RC = 0.05;
+        int POWER = 2;
+    }
 }

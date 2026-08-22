@@ -1,20 +1,21 @@
-/************************ PROJECT SSSS ************************/
-/* Copyright (c) 2026 StuyPulse Robotics. All rights reserved.*/
-/* This work is licensed under the terms of the MIT license.  */
-/**************************************************************/
+/************************ PROJECT TRIBECBOT *************************/
+/* Copyright (c) 2026 StuyPulse Robotics. All rights reserved. */
+/* Use of this source code is governed by an MIT-style license */
+/* that can be found in the repository LICENSE file.           */
+/***************************************************************/
 package com.stuypulse.robot.subsystems.vision;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
-import org.photonvision.PhotonCamera;
 import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.geometry.Transform3d;
 
 import com.stuypulse.robot.constants.Field;
+
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import org.photonvision.PhotonCamera;
 
 /** IO implementation for real PhotonVision hardware. */
 public class VisionIOPhotonVision implements VisionIO {

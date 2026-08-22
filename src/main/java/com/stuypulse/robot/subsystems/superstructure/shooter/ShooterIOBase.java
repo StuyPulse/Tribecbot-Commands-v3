@@ -1,3 +1,8 @@
+/************************ PROJECT TRIBECBOT *************************/
+/* Copyright (c) 2026 StuyPulse Robotics. All rights reserved. */
+/* Use of this source code is governed by an MIT-style license */
+/* that can be found in the repository LICENSE file.           */
+/***************************************************************/
 package com.stuypulse.robot.subsystems.superstructure.shooter;
 
 import org.wpilib.units.measure.Angle;
@@ -12,99 +17,101 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
+
 import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
 
 public abstract class ShooterIOBase implements ShooterIO {
-    private final TalonFX shooterLeader;
-    private final TalonFX shooterFollower;
+  private final TalonFX shooterLeader;
+  private final TalonFX shooterFollower;
 
-    private final VelocityTorqueCurrentFOC shooterLeaderController;
-    private final Follower shooterFollowerController;
+  private final VelocityTorqueCurrentFOC shooterLeaderController;
+  private final Follower shooterFollowerController;
 
-    private final StatusSignal<Angle> shooterLeaderPosition;
-    private final StatusSignal<Current> shooterLeaderSupplyCurrent;
-    private final StatusSignal<Current> shooterLeaderStatorCurrent;
-    private final StatusSignal<Temperature> shooterLeaderTemperature;
-    private final StatusSignal<Voltage> shooterLeaderAppliedVoltage;
-    private final StatusSignal<AngularVelocity> shooterLeaderVelocity;
+  private final StatusSignal<Angle> shooterLeaderPosition;
+  private final StatusSignal<Current> shooterLeaderSupplyCurrent;
+  private final StatusSignal<Current> shooterLeaderStatorCurrent;
+  private final StatusSignal<Temperature> shooterLeaderTemperature;
+  private final StatusSignal<Voltage> shooterLeaderAppliedVoltage;
+  private final StatusSignal<AngularVelocity> shooterLeaderVelocity;
 
-    private final StatusSignal<Angle> shooterFollowerPosition;
-    private final StatusSignal<Current> shooterFollowerSupplyCurrent;
-    private final StatusSignal<Current> shooterFollowerStatorCurrent;
-    private final StatusSignal<Temperature> shooterFollowerTemperature;
-    private final StatusSignal<Voltage> shooterFollowerAppliedVoltage;
-    private final StatusSignal<AngularVelocity> shooterFollowerVelocity;
+  private final StatusSignal<Angle> shooterFollowerPosition;
+  private final StatusSignal<Current> shooterFollowerSupplyCurrent;
+  private final StatusSignal<Current> shooterFollowerStatorCurrent;
+  private final StatusSignal<Temperature> shooterFollowerTemperature;
+  private final StatusSignal<Voltage> shooterFollowerAppliedVoltage;
+  private final StatusSignal<AngularVelocity> shooterFollowerVelocity;
 
-    public ShooterIOBase(TalonFX shooterLeader, TalonFX shooterFollower) {
-        this.shooterFollower = shooterFollower;
-        this.shooterLeader = shooterLeader;
+  public ShooterIOBase(TalonFX shooterLeader, TalonFX shooterFollower) {
+    this.shooterFollower = shooterFollower;
+    this.shooterLeader = shooterLeader;
 
-        SuperstructureConstants.Shooter.Motors.SHOOTER_CONFIG.configure(shooterLeader);
-        SuperstructureConstants.Shooter.Motors.SHOOTER_CONFIG.configure(shooterFollower);
+    SuperstructureConstants.Shooter.Motors.SHOOTER_CONFIG.configure(shooterLeader);
+    SuperstructureConstants.Shooter.Motors.SHOOTER_CONFIG.configure(shooterFollower);
 
-        shooterLeaderController = new VelocityTorqueCurrentFOC(0);
-        shooterFollowerController = new Follower(shooterLeader.getDeviceID(), MotorAlignmentValue.Opposed);
+    shooterLeaderController = new VelocityTorqueCurrentFOC(0);
+    shooterFollowerController =
+        new Follower(shooterLeader.getDeviceID(), MotorAlignmentValue.Opposed);
+
+    shooterFollower.setControl(shooterFollowerController);
+
+    shooterLeaderPosition = shooterLeader.getPosition();
+    shooterLeaderSupplyCurrent = shooterLeader.getSupplyCurrent();
+    shooterLeaderStatorCurrent = shooterLeader.getStatorCurrent();
+    shooterLeaderTemperature = shooterLeader.getDeviceTemp();
+    shooterLeaderAppliedVoltage = shooterLeader.getMotorVoltage();
+    shooterLeaderVelocity = shooterLeader.getVelocity();
+
+    shooterFollowerPosition = shooterFollower.getPosition();
+    shooterFollowerSupplyCurrent = shooterFollower.getSupplyCurrent();
+    shooterFollowerStatorCurrent = shooterFollower.getStatorCurrent();
+    shooterFollowerTemperature = shooterFollower.getDeviceTemp();
+    shooterFollowerAppliedVoltage = shooterFollower.getMotorVoltage();
+    shooterFollowerVelocity = shooterFollower.getVelocity();
+  }
+
+  @Override
+  public void updateInputs(ShooterIOInputs inputs) {
+    BaseStatusSignal.refreshAll(
+        shooterLeaderPosition,
+        shooterLeaderSupplyCurrent,
+        shooterLeaderStatorCurrent,
+        shooterLeaderTemperature,
+        shooterLeaderAppliedVoltage,
+        shooterLeaderVelocity,
+        shooterFollowerPosition,
+        shooterFollowerSupplyCurrent,
+        shooterFollowerStatorCurrent,
+        shooterFollowerTemperature,
+        shooterFollowerAppliedVoltage,
+        shooterFollowerVelocity);
+
+    inputs.shooterLeaderMotorPosition = shooterLeaderPosition.getValue();
+    inputs.shooterLeaderMotorSupplyCurrent = shooterLeaderSupplyCurrent.getValue();
+    inputs.shooterLeaderMotorStatorCurrent = shooterLeaderStatorCurrent.getValue();
+    inputs.shooterLeaderMotorTemperature = shooterLeaderTemperature.getValue();
+    inputs.shooterLeaderMotorAppliedVoltage = shooterLeaderAppliedVoltage.getValue();
+    inputs.shooterLeaderMotorVelocity = shooterLeaderVelocity.getValue();
+
+    inputs.shooterFollowerMotorPosition = shooterFollowerPosition.getValue();
+    inputs.shooterFollowerMotorSupplyCurrent = shooterFollowerSupplyCurrent.getValue();
+    inputs.shooterFollowerMotorStatorCurrent = shooterFollowerStatorCurrent.getValue();
+    inputs.shooterFollowerMotorTemperature = shooterFollowerTemperature.getValue();
+    inputs.shooterFollowerMotorAppliedVoltage = shooterFollowerAppliedVoltage.getValue();
+    inputs.shooterFollowerMotorVelocity = shooterFollowerVelocity.getValue();
+  }
+
+  @Override
+  public void applyOutputs(ShooterIOOutputs outputs) {
+    switch (outputs.shooterMode) {
+      case VELOCITY ->
+          shooterLeader.setControl(shooterLeaderController.withVelocity(outputs.shooterVelocity));
+
+      case STOP -> {
+        shooterLeader.stopMotor();
+        shooterFollower.stopMotor();
 
         shooterFollower.setControl(shooterFollowerController);
-
-        shooterLeaderPosition = shooterLeader.getPosition();
-        shooterLeaderSupplyCurrent = shooterLeader.getSupplyCurrent();
-        shooterLeaderStatorCurrent = shooterLeader.getStatorCurrent();
-        shooterLeaderTemperature = shooterLeader.getDeviceTemp();
-        shooterLeaderAppliedVoltage = shooterLeader.getMotorVoltage();
-        shooterLeaderVelocity = shooterLeader.getVelocity();
-
-        shooterFollowerPosition = shooterFollower.getPosition();
-        shooterFollowerSupplyCurrent = shooterFollower.getSupplyCurrent();
-        shooterFollowerStatorCurrent = shooterFollower.getStatorCurrent();
-        shooterFollowerTemperature = shooterFollower.getDeviceTemp();
-        shooterFollowerAppliedVoltage = shooterFollower.getMotorVoltage();
-        shooterFollowerVelocity = shooterFollower.getVelocity();
+      }
     }
-
-    @Override
-    public void updateInputs(ShooterIOInputs inputs) {
-        BaseStatusSignal.refreshAll(
-                shooterLeaderPosition,
-                shooterLeaderSupplyCurrent,
-                shooterLeaderStatorCurrent,
-                shooterLeaderTemperature,
-                shooterLeaderAppliedVoltage,
-                shooterLeaderVelocity,
-                shooterFollowerPosition,
-                shooterFollowerSupplyCurrent,
-                shooterFollowerStatorCurrent,
-                shooterFollowerTemperature,
-                shooterFollowerAppliedVoltage,
-                shooterFollowerVelocity);
-
-        inputs.shooterLeaderMotorPosition = shooterLeaderPosition.getValue();
-        inputs.shooterLeaderMotorSupplyCurrent = shooterLeaderSupplyCurrent.getValue();
-        inputs.shooterLeaderMotorStatorCurrent = shooterLeaderStatorCurrent.getValue();
-        inputs.shooterLeaderMotorTemperature = shooterLeaderTemperature.getValue();
-        inputs.shooterLeaderMotorAppliedVoltage = shooterLeaderAppliedVoltage.getValue();
-        inputs.shooterLeaderMotorVelocity = shooterLeaderVelocity.getValue();
-
-        inputs.shooterFollowerMotorPosition = shooterFollowerPosition.getValue();
-        inputs.shooterFollowerMotorSupplyCurrent = shooterFollowerSupplyCurrent.getValue();
-        inputs.shooterFollowerMotorStatorCurrent = shooterFollowerStatorCurrent.getValue();
-        inputs.shooterFollowerMotorTemperature = shooterFollowerTemperature.getValue();
-        inputs.shooterFollowerMotorAppliedVoltage = shooterFollowerAppliedVoltage.getValue();
-        inputs.shooterFollowerMotorVelocity = shooterFollowerVelocity.getValue();
-    }
-
-    @Override
-    public void applyOutputs(ShooterIOOutputs outputs) {
-        switch (outputs.shooterMode) {
-            case VELOCITY -> shooterLeader.setControl(
-                shooterLeaderController.withVelocity(outputs.shooterVelocity));
-
-            case STOP -> {
-                shooterLeader.stopMotor();
-                shooterFollower.stopMotor();
-
-                shooterFollower.setControl(shooterFollowerController);
-                }
-            }
-        }    
+  }
 }

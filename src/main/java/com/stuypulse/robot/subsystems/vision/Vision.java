@@ -1,10 +1,9 @@
-/************************ PROJECT SSSS ************************/
-/* Copyright (c) 2026 StuyPulse Robotics. All rights reserved.*/
-/* This work is licensed under the terms of the MIT license.  */
-/**************************************************************/
+/************************ PROJECT TRIBECBOT *************************/
+/* Copyright (c) 2026 StuyPulse Robotics. All rights reserved. */
+/* Use of this source code is governed by an MIT-style license */
+/* that can be found in the repository LICENSE file.           */
+/***************************************************************/
 package com.stuypulse.robot.subsystems.vision;
-
-
 
 import org.wpilib.command3.Command;
 import org.wpilib.driverstation.Alert;
@@ -35,25 +34,29 @@ import org.littletonrobotics.junction.Logger;
 
 public class Vision extends FullSubsystem {
   private static final Vision instance;
-  
+
   static {
     Drive drive = Drive.getInstance();
     EnumMap<Cameras, VisionIO> cameraIOMap = new EnumMap<>(Cameras.class);
-    
+
     switch (Settings.currentMode) {
       case REAL -> {
-       for (Cameras camera : Cameras.values()) {
-          if(Settings.currentVisionMode == Settings.VisionMode.LIMELIGHT) {
+        for (Cameras camera : Cameras.values()) {
+          if (Settings.currentVisionMode == Settings.VisionMode.LIMELIGHT) {
             cameraIOMap.put(camera, new VisionIOLimelight(camera.getName(), drive::getRotation));
           } else {
-            cameraIOMap.put(camera, new VisionIOPhotonVision(camera.getName(), camera.getRobotToCamera()));
+            cameraIOMap.put(
+                camera, new VisionIOPhotonVision(camera.getName(), camera.getRobotToCamera()));
           }
-       }
+        }
       }
 
       case SIM -> {
         for (Cameras camera : Cameras.values()) {
-          cameraIOMap.put(camera, new VisionIOPhotonVisionSim(camera.getName(), camera.getRobotToCamera(), drive::getPose));
+          cameraIOMap.put(
+              camera,
+              new VisionIOPhotonVisionSim(
+                  camera.getName(), camera.getRobotToCamera(), drive::getPose));
         }
       }
 
@@ -64,24 +67,20 @@ public class Vision extends FullSubsystem {
         }
       }
     }
-    
+
     instance = new Vision(drive::addVisionMeasurement, cameraIOMap);
   }
-
-  
-  
 
   private final VisionConsumer consumer;
   private final EnumMap<Cameras, VisionIO> io;
   private final EnumMap<Cameras, VisionIOInputsAutoLogged> inputs;
   private final EnumMap<Cameras, VisionIOOutputs> outputs;
   private final EnumMap<Cameras, Alert> disconnectedAlerts;
-  private int maxTagCount; 
- 
+  private int maxTagCount;
 
   public Vision(VisionConsumer consumer, EnumMap<Cameras, VisionIO> io) {
     this.consumer = consumer;
-    
+
     this.io = new EnumMap<>(io);
 
     // Initialize inputs
@@ -90,14 +89,13 @@ public class Vision extends FullSubsystem {
 
     // Initialize disconnected alerts
     this.disconnectedAlerts = new EnumMap<>(Cameras.class);
-  
+
     for (Cameras camera : Cameras.values()) {
       inputs.put(camera, new VisionIOInputsAutoLogged());
       outputs.put(camera, new VisionIOOutputs());
-      disconnectedAlerts.put(camera, new Alert(
-        "Vision camera " + camera.getName() + " is disconnected.",
-        Alert.Level.MEDIUM
-      ));
+      disconnectedAlerts.put(
+          camera,
+          new Alert("Vision camera " + camera.getName() + " is disconnected.", Alert.Level.MEDIUM));
     }
   }
 
@@ -122,7 +120,6 @@ public class Vision extends FullSubsystem {
   public void periodic() {
     maxTagCount = 0;
 
-
     for (Entry<Cameras, VisionIO> entry : io.entrySet()) {
       VisionIO currentIO = entry.getValue();
       VisionIOInputsAutoLogged currentInputs = inputs.get(entry.getKey());
@@ -144,7 +141,7 @@ public class Vision extends FullSubsystem {
     for (Entry<Cameras, VisionIO> entry : io.entrySet()) {
       CameraData currentCameraData = entry.getKey().getData();
       VisionIOInputsAutoLogged currentInputs = inputs.get(entry.getKey());
-      
+
       // Update disconnected alert
       disconnectedAlerts.get(entry.getKey()).set(!currentInputs.connected);
 
@@ -169,7 +166,8 @@ public class Vision extends FullSubsystem {
         boolean rejectPose =
             observation.tagCount() == 0 // Must have at least one tag
                 || (observation.tagCount() == 1
-                    && observation.ambiguity() > VisionSettings.MAX_AMBIGUITY) // Cannot be high ambiguity
+                    && observation.ambiguity()
+                        > VisionSettings.MAX_AMBIGUITY) // Cannot be high ambiguity
                 || Math.abs(observation.pose().getZ())
                     > VisionSettings.MAX_Z_ERROR // Must have realistic Z coordinate
 
@@ -177,7 +175,7 @@ public class Vision extends FullSubsystem {
                 || observation.pose().getX() < 0.0
                 || observation.pose().getX() > Field.APRIL_TAG_LAYOUT.getFieldLength()
                 || observation.pose().getY() < 0.0
-                || observation.pose().getY() > Field.APRIL_TAG_LAYOUT .getFieldWidth();
+                || observation.pose().getY() > Field.APRIL_TAG_LAYOUT.getFieldWidth();
 
         // Add pose to log
         robotPoses.add(observation.pose());
@@ -248,8 +246,9 @@ public class Vision extends FullSubsystem {
     for (Entry<Cameras, VisionIO> entry : io.entrySet()) {
       VisionIO currentIO = entry.getValue();
       VisionIOOutputs currentOutputs = outputs.get(entry.getKey());
-      
-      Logger.recordOutput("Vision/" + entry.getKey().name() + "/MegaTagMode", currentOutputs.megaTagMode);
+
+      Logger.recordOutput(
+          "Vision/" + entry.getKey().name() + "/MegaTagMode", currentOutputs.megaTagMode);
       Logger.recordOutput("Vision/" + entry.getKey().name() + "/Pipeline", currentOutputs.pipeline);
       currentIO.applyOutputs(currentOutputs);
     }

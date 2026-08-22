@@ -57,5 +57,6 @@
     "org.wpilib.math.**.proto.*",
     "org.wpilib.math.**.struct.*",
   ],
-  "java.dependency.enableDependencyCheckup": false
+  "java.dependency.enableDependencyCheckup": false,
+  "C_Cpp.errorSquiggles": "enabled"
 }
