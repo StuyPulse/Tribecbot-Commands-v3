@@ -25,11 +25,11 @@ public class LEDIOCANdle implements LEDIO {
     public boolean underVoltageFault = false;
 
     private CANdleConfiguration candleConfigs;
-    private ControlRequest ledPattern = LEDConstants.LED.solidColorRequest.withColor(LEDConstants.LED.DISABLED);
+    private ControlRequest ledPattern = LEDConstants.Settings.solidColorRequest.withColor(LEDConstants.Settings.DISABLED);
 
     public LEDIOCANdle() {
 
-        leds = new CANdle(Ports.LED.CANDLE_PORT, Ports.CANIVORE);
+        leds = new CANdle(LEDConstants.Ports.CANDLE_PORT, Ports.CANIVORE);
         candleConfigs = new CANdleConfiguration()
                 .withLED(
                         new LEDConfigs()

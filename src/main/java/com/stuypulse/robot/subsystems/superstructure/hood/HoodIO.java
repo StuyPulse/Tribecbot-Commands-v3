@@ -4,6 +4,7 @@ import static org.wpilib.units.Units.*;
 import org.wpilib.units.measure.*;
 
 import org.littletonrobotics.junction.AutoLog;
+import org.littletonrobotics.junction.AutoLogOutput;
 
 public interface HoodIO {
     @AutoLog
@@ -18,13 +19,18 @@ public interface HoodIO {
 
     public static enum HoodIOOutputMode {
         POSITION,
-        VOLTAGE
+        VOLTAGE,
+        STOP
     }
 
     public static class HoodIOOutputs {
+        @AutoLogOutput(key = "Superstructure/Hood/Output Mode")
         public HoodIOOutputMode outputMode = HoodIOOutputMode.POSITION;
 
+        @AutoLogOutput(key = "Superstructure/Hood/Target Position")
         public Angle position = Degrees.zero();
+
+        @AutoLogOutput(key = "Superstructure/Hood/Target Voltage")
         public Voltage voltage = Volts.zero();
     }
 
