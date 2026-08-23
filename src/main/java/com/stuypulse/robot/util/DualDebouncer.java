@@ -5,7 +5,10 @@
 /***************************************************************/
 package com.stuypulse.robot.util;
 
+import static org.wpilib.units.Units.Seconds;
+
 import org.wpilib.system.Timer;
+import org.wpilib.units.measure.Time;
 
 public class DualDebouncer {
   private final double riseTime;
@@ -17,6 +20,10 @@ public class DualDebouncer {
     riseTime = riseSeconds;
     fallTime = fallSeconds;
     timer.start();
+  }
+
+  public DualDebouncer(Time riseTime, Time fallTime) {
+    this(riseTime.in(Seconds), fallTime.in(Seconds));
   }
 
   public boolean calculate(boolean input) {

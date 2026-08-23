@@ -12,7 +12,9 @@ import org.wpilib.math.system.Models;
 import org.wpilib.simulation.FlywheelSim;
 import org.wpilib.simulation.SingleJointedArmSim;
 
-import com.stuypulse.robot.constants.Settings;
+import com.stuypulse.robot.constants.GlobalSettings;
+import com.stuypulse.robot.subsystems.intake.IntakeConstants.*;
+
 import com.stuypulse.robot.util.talonfx.sim.SystemSim;
 import com.stuypulse.robot.util.talonfx.sim.TalonFXSimulation;
 
@@ -25,36 +27,36 @@ public class IntakeIOSim extends IntakeIOBase {
   private final TalonFXSimulation rollerFollowerMotor;
 
   public IntakeIOSim() {
-    final double pivotGearRatio = IntakeConstants.Settings.Pivot.PIVOT_GEAR_RATIO;
+    final double pivotGearRatio = IntakeSettings.PIVOT_GEAR_RATIO;
     final SystemSim<SingleJointedArmSim> pivotSim =
         SystemSim.of(
             new SingleJointedArmSim(
                 DCMotor.getKrakenX60Foc(1),
                 pivotGearRatio,
-                IntakeConstants.Settings.Pivot.PIVOT_MOI.in(KilogramSquareMeters),
-                IntakeConstants.Settings.Pivot.PIVOT_ARM_LENGTH.in(Meters),
-                IntakeConstants.Settings.Pivot.PIVOT_MIN_ANGLE.in(Radians),
-                IntakeConstants.Settings.Pivot.PIVOT_MAX_ANGLE.in(Radians),
+                IntakeSettings.PIVOT_MOI.in(KilogramSquareMeters),
+                IntakeSettings.ARM_LENGTH.in(Meters),
+                IntakeSettings.PIVOT_MIN_ANGLE.in(Radians),
+                IntakeSettings.PIVOT_MAX_ANGLE.in(Radians),
                 true,
-                IntakeConstants.Settings.Pivot.PIVOT_STOW_ANGLE.in(Radians)));
+                IntakeSettings.PIVOT_STOW_ANGLE.in(Radians)));
     final TalonFXSimulation pivotMotor =
-        new TalonFXSimulation(IntakeConstants.Ports.PIVOT_MOTOR, pivotGearRatio, pivotSim);
+        new TalonFXSimulation(IntakeDeviceIds.PIVOT_MOTOR, pivotGearRatio, pivotSim);
 
-    final double rollerGearRatio = IntakeConstants.Settings.Roller.ROLLER_GEAR_RATIO;
+    final double rollerGearRatio = IntakeSettings.ROLLER_GEAR_RATIO;
     final SystemSim<FlywheelSim> rollerSim =
         SystemSim.of(
             new FlywheelSim(
                 Models.flywheelFromPhysicalConstants(
                     DCMotor.getKrakenX60Foc(2),
-                    IntakeConstants.Settings.Roller.ROLLER_MOI.in(KilogramSquareMeters),
+                    IntakeSettings.ROLLER_MOI.in(KilogramSquareMeters),
                     rollerGearRatio),
                 DCMotor.getKrakenX60Foc(2)));
     final TalonFXSimulation rollerLeaderMotor =
         new TalonFXSimulation(
-            IntakeConstants.Ports.ROLLER_LEADER_MOTOR, rollerGearRatio, rollerSim);
+            IntakeDeviceIds.ROLLER_LEADER_MOTOR, rollerGearRatio, rollerSim);
     final TalonFXSimulation rollerFollowerMotor =
         new TalonFXSimulation(
-            IntakeConstants.Ports.ROLLER_FOLLOWER_MOTOR, rollerGearRatio, rollerSim);
+            IntakeDeviceIds.ROLLER_FOLLOWER_MOTOR, rollerGearRatio, rollerSim);
 
     super(pivotMotor, rollerLeaderMotor, rollerFollowerMotor);
 
@@ -68,10 +70,10 @@ public class IntakeIOSim extends IntakeIOBase {
 
   @Override
   public void updateInputs(IntakeIOInputs inputs) {
-    pivotSim.update(Settings.DT);
+    pivotSim.update(GlobalSettings.DT);
     pivotMotor.refresh();
 
-    rollerSim.update(Settings.DT);
+    rollerSim.update(GlobalSettings.DT);
     rollerLeaderMotor.refresh();
     rollerFollowerMotor.refresh();
 

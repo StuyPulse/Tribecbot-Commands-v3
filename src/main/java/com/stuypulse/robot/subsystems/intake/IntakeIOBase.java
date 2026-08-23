@@ -7,6 +7,8 @@ package com.stuypulse.robot.subsystems.intake;
 
 import org.wpilib.units.measure.*;
 
+import com.stuypulse.robot.subsystems.intake.IntakeConstants.*;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.controls.DutyCycleOut;
@@ -54,9 +56,9 @@ public abstract class IntakeIOBase implements IntakeIO {
     this.rollerLeaderMotor = rollerLeaderMotor;
     this.rollerFollowerMotor = rollerFollowerMotor;
 
-    IntakeConstants.Motors.PIVOT_MOTOR_CONFIG.configure(pivotMotor);
-    IntakeConstants.Motors.ROLLER_MOTOR_CONFIG.configure(rollerLeaderMotor);
-    IntakeConstants.Motors.ROLLER_MOTOR_CONFIG.configure(rollerFollowerMotor);
+    IntakeMotorConfigs.PIVOT_MOTOR_CONFIG.configure(pivotMotor);
+    IntakeMotorConfigs.ROLLER_MOTOR_CONFIG.configure(rollerLeaderMotor);
+    IntakeMotorConfigs.ROLLER_MOTOR_CONFIG.configure(rollerFollowerMotor);
 
     rollerLeaderController = new DutyCycleOut(0).withEnableFOC(true);
     rollerFollowerController =
@@ -66,7 +68,7 @@ public abstract class IntakeIOBase implements IntakeIO {
     pivotVoltageController = new VoltageOut(0).withEnableFOC(true);
 
     rollerFollowerMotor.setControl(rollerFollowerController);
-    pivotMotor.setPosition(IntakeConstants.Settings.Pivot.PIVOT_STOW_ANGLE);
+    pivotMotor.setPosition(IntakeSettings.PIVOT_STOW_ANGLE);
 
     pivotPosition = pivotMotor.getPosition();
     pivotSupplyCurrent = pivotMotor.getSupplyCurrent();

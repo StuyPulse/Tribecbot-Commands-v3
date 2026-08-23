@@ -7,15 +7,16 @@ package com.stuypulse.robot.subsystems.intake;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 
-import com.stuypulse.robot.constants.Ports;
+import com.stuypulse.robot.constants.GlobalSettings;
+import com.stuypulse.robot.subsystems.intake.IntakeConstants.*;
 
 public class IntakeIOTalonFX extends IntakeIOBase {
   public IntakeIOTalonFX() {
-    final TalonFX pivotMotor = new TalonFX(IntakeConstants.Ports.PIVOT_MOTOR, Ports.RIO);
+    final TalonFX pivotMotor = new TalonFX(IntakeDeviceIds.PIVOT_MOTOR, GlobalSettings.RIO);
     final TalonFX rollerLeaderMotor =
-        new TalonFX(IntakeConstants.Ports.ROLLER_LEADER_MOTOR, Ports.RIO);
+        new TalonFX(IntakeDeviceIds.ROLLER_LEADER_MOTOR, GlobalSettings.RIO);
     final TalonFX rollerFollowerMotor =
-        new TalonFX(IntakeConstants.Ports.ROLLER_FOLLOWER_MOTOR, Ports.RIO);
+        new TalonFX(IntakeDeviceIds.ROLLER_FOLLOWER_MOTOR, GlobalSettings.RIO);
     super(pivotMotor, rollerLeaderMotor, rollerFollowerMotor);
   }
 }
