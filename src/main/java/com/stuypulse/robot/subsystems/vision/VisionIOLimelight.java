@@ -12,6 +12,7 @@ import org.wpilib.math.util.Units;
 import org.wpilib.networktables.*;
 import org.wpilib.system.RobotController;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -152,7 +153,7 @@ public class VisionIOLimelight implements VisionIO {
 
     pipelinePublisher.accept(outputs.pipeline);
 
-    aprilTagWhitelistPublisher.accept(outputs.aprilTagIDWhitelist);
+    aprilTagWhitelistPublisher.accept(Arrays.stream(outputs.aprilTagIDWhitelist).asDoubleStream().toArray());
   }
 
   /** Parses the 3D pose from a Limelight botpose array. */

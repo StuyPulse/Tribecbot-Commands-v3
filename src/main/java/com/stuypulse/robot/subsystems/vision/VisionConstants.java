@@ -5,7 +5,11 @@
 /***************************************************************/
 package com.stuypulse.robot.subsystems.vision;
 
+import org.wpilib.math.geometry.Rotation3d;
 import org.wpilib.math.geometry.Transform3d;
+
+import static org.wpilib.units.Units.*;
+import org.wpilib.units.measure.*;
 
 public interface VisionConstants {
   public interface VisionSettings {
@@ -31,9 +35,39 @@ public interface VisionConstants {
   record CameraData(String name, Transform3d robotToCamera, double stdDevFactor) {}
 
   public enum Cameras {
-    // placeholders
-    FRONT("Front", new Transform3d(), 1.0),
-    BACK("Back", new Transform3d(), 1.0);
+     RIGHT(
+                "limelight-right",
+                new Transform3d(
+                        Inches.of(-9.149),
+                        Inches.of(15.080),
+                        Inches.of(8.088),
+                        new Rotation3d(
+                                Degrees.of(180),
+                                Degrees.of(28.0),
+                                Degrees.of(-80.203885))),
+                1.0),
+        LEFT(
+                "limelight-left",
+                new Transform3d(
+                        Inches.of(-2.490),
+                        Inches.of(-14.8620),
+                        Inches.of(5.676),
+                        new Rotation3d(
+                                Degrees.of(0),
+                                Degrees.of(14.955812),
+                                Degrees.of(71.5))),
+                1.0),
+        BACK(
+                "limelight-back",
+                new Transform3d(
+                        Inches.of(-10.676),
+                        Inches.of(-12.969),
+                        Inches.of(8.753),
+                        new Rotation3d(
+                                Degrees.of(0),
+                                Degrees.of(27.875),
+                                Degrees.of(185.155825))),
+                1.0);
 
     private final CameraData data;
 

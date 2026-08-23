@@ -16,7 +16,9 @@ import org.wpilib.math.numbers.N1;
 import org.wpilib.math.numbers.N3;
 
 import com.stuypulse.robot.constants.Field;
-import com.stuypulse.robot.constants.Settings;
+import com.stuypulse.robot.constants.GlobalSettings;
+import com.stuypulse.robot.constants.GlobalSettings.VisionMode;
+
 import com.stuypulse.robot.subsystems.swerve.Drive;
 import com.stuypulse.robot.subsystems.vision.VisionConstants.CameraData;
 import com.stuypulse.robot.subsystems.vision.VisionConstants.Cameras;
@@ -39,10 +41,10 @@ public class Vision extends FullSubsystem {
     Drive drive = Drive.getInstance();
     EnumMap<Cameras, VisionIO> cameraIOMap = new EnumMap<>(Cameras.class);
 
-    switch (Settings.currentMode) {
+    switch (GlobalSettings.CURRENT_MODE) {
       case REAL -> {
         for (Cameras camera : Cameras.values()) {
-          if (Settings.currentVisionMode == Settings.VisionMode.LIMELIGHT) {
+          if (GlobalSettings.VISION_MODE == VisionMode.LIMELIGHT) {
             cameraIOMap.put(camera, new VisionIOLimelight(camera.getName(), drive::getRotation));
           } else {
             cameraIOMap.put(
@@ -71,6 +73,10 @@ public class Vision extends FullSubsystem {
     instance = new Vision(drive::addVisionMeasurement, cameraIOMap);
   }
 
+  public static Vision getInstance() {
+    return instance;
+  }
+ 
   private final VisionConsumer consumer;
   private final EnumMap<Cameras, VisionIO> io;
   private final EnumMap<Cameras, VisionIOInputsAutoLogged> inputs;
@@ -127,7 +133,7 @@ public class Vision extends FullSubsystem {
       Logger.processInputs("Vision/" + entry.getKey().getName(), currentInputs);
     }
 
-    if (!Settings.EnabledSubsystems.VISION.get()) {
+    if (!GlobalSettings.EnabledSubsystems.VISION.get()) {
       return;
     }
 
@@ -280,7 +286,7 @@ public class Vision extends FullSubsystem {
         .named("Pipeline");
   }
 
-  public Command setAprilTagWhitelist(double[] whitelist) {
+  public Command setAprilTagWhitelist(int[] whitelist) {
     return run(coroutine -> {
           for (VisionIOOutputs output : outputs.values()) {
             output.aprilTagIDWhitelist = whitelist;

@@ -50,7 +50,7 @@ public interface VisionIO {
 
     public int pipeline = 0;
 
-    public double[] aprilTagIDWhitelist = Field.ALL_TAGS;
+    public int[] aprilTagIDWhitelist = Field.ALL_TAGS;
   }
 
   public default void updateInputs(VisionIOInputs inputs) {}
