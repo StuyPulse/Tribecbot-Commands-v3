@@ -10,14 +10,11 @@ import static org.wpilib.units.Units.*;
 import org.wpilib.units.measure.*;
 
 import org.wpilib.framework.RobotBase;
-import org.wpilib.math.geometry.Translation2d;
-import org.wpilib.math.util.Units;
 
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
-import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 /**
- * File containing tunable settings for every subsystem on the robot.
+ * File containing tunable settings that apply to the entire robot rather than specific subsystems.
  *
  * <p>We use DogLog's tunables in order to have tunable values that we can edit from external
  * dashboards.
