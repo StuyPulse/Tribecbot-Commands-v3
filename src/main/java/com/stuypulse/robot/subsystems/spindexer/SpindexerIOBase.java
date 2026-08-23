@@ -14,6 +14,8 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 
+import com.stuypulse.robot.subsystems.spindexer.SpindexerConstants.*;
+
 public abstract class SpindexerIOBase implements SpindexerIO {
   private final TalonFX spindexerLeaderMotor;
   private final TalonFX spindexerFollowerMotor;
@@ -39,8 +41,8 @@ public abstract class SpindexerIOBase implements SpindexerIO {
     this.spindexerLeaderMotor = spindexerLeaderMotor;
     this.spindexerFollowerMotor = spindexerFollowerMotor;
 
-    SpindexerConstants.Motors.SPINDEXER_MOTOR_CONFIG.configure(spindexerLeaderMotor);
-    SpindexerConstants.Motors.SPINDEXER_MOTOR_CONFIG.configure(spindexerFollowerMotor);
+    SpindexerMotorConfigs.SPINDEXER_MOTOR_CONFIG.configure(spindexerLeaderMotor);
+    SpindexerMotorConfigs.SPINDEXER_MOTOR_CONFIG.configure(spindexerFollowerMotor);
 
     spindexerController = new DutyCycleOut(0);
     followerController =

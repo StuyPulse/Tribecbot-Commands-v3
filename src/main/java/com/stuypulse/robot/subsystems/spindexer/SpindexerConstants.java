@@ -5,35 +5,60 @@
 /***************************************************************/
 package com.stuypulse.robot.subsystems.spindexer;
 
+import static org.wpilib.units.Units.*;
+import org.wpilib.units.measure.*;
+
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import com.stuypulse.robot.util.talonfx.TalonFXConfig;
 
-public final class SpindexerConstants {
-  private SpindexerConstants() {}
+public interface SpindexerConstants {
+    public interface SpindexerSettings {
+        double FORWARD_DUTY_CYCLE = 1.0;
+        double ANTI_POPCORN_DUTY_CYCLE = 0.2;
+        double REVERSE_DUTY_CYCLE = -1.0;
+        double STOP_SPEED = 0.0;
+        double REVERSE_TIME = 2.0;
+        double ANTI_POPCORN_FREQ = 100;
+        double ANTI_POPCORN_LENGTH = 10;
 
-  public interface Settings {
-    double FORWARD_DUTY_CYCLE = 1.0;
-    double REVERSE_DUTY_CYCLE = -1.0;
+        double RPM_TOLERANCE = 800.0;
+        double TOLERANCE_TO_START_INTAKE_ROLLERS_DURING_SCORING_ROUTINE = 1500.0;
+        double STALL_CURRENT_LIMIT = 40.0; // random number as of 3/9
 
-    /* CONSTANTS */
-    double GEAR_RATIO = 11.04 / 1.0;
-  }
+        double GEAR_RATIO = 11.04 / 1.0;
 
-  public interface Motors {
-    TalonFXConfig SPINDEXER_MOTOR_CONFIG =
-        new TalonFXConfig()
-            .withInvertedValue(InvertedValue.Clockwise_Positive)
-            .withNeutralMode(NeutralModeValue.Brake)
-            .withSupplyCurrentLimit(45)
-            .withStatorCurrentLimitEnabled(false)
-            .withRampRate(0.25)
-            .withSensorToMechanismRatio(SpindexerConstants.Settings.GEAR_RATIO);
-  }
+        // sim
+        MomentOfInertia SPINDEXER_MOI = KilogramSquareMeters.of(0.01);
+    }
 
-  public interface Ports {
-    int LEADER_MOTOR = 30;
-    int FOLLOWER_MOTOR = 31; // TODO: follower port
-  }
+    public interface SpindexerDeviceIds {
+        int LEADER_MOTOR = 30;
+        int FOLLOWER_MOTOR = 31;
+    }
+
+    public interface SpindexerGains {
+        double kP = 1.2;
+        double kI = 0.0;
+        double kD = 10.0;
+
+        double kS = 0.25;
+        double kV = 1.2;
+        double kA = 0.010876;
+    }
+
+    public interface SpindexerMotorConfigs {
+        TalonFXConfig SPINDEXER_MOTOR_CONFIG =
+                new TalonFXConfig()
+                        .withInvertedValue(InvertedValue.Clockwise_Positive)
+                        .withNeutralMode(NeutralModeValue.Brake)
+                        .withSupplyCurrentLimit(Amps.of(45))
+                        .withStatorCurrentLimitEnabled(false)
+                        .withRampRate(0.25)
+                        .withPIDConstants(
+                                SpindexerGains.kP, SpindexerGains.kI, SpindexerGains.kD, 0)
+                        .withFFConstants(SpindexerGains.kS, SpindexerGains.kV, SpindexerGains.kA, 0)
+                        .withSensorToMechanismRatio(SpindexerSettings.GEAR_RATIO);
+    }
 }

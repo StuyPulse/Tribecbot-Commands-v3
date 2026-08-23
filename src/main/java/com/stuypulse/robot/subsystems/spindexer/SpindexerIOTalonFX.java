@@ -7,14 +7,15 @@ package com.stuypulse.robot.subsystems.spindexer;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 
-import com.stuypulse.robot.constants.Ports;
+import com.stuypulse.robot.constants.GlobalSettings;
+import com.stuypulse.robot.subsystems.spindexer.SpindexerConstants.*;
 
 public class SpindexerIOTalonFX extends SpindexerIOBase {
   public SpindexerIOTalonFX() {
     final TalonFX spindexerLeaderMotor =
-        new TalonFX(SpindexerConstants.Ports.LEADER_MOTOR, Ports.RIO);
+        new TalonFX(SpindexerDeviceIds.LEADER_MOTOR, GlobalSettings.RIO);
     final TalonFX spindexerFollowerMotor =
-        new TalonFX(SpindexerConstants.Ports.FOLLOWER_MOTOR, Ports.RIO);
+        new TalonFX(SpindexerDeviceIds.FOLLOWER_MOTOR, GlobalSettings.RIO);
     super(spindexerLeaderMotor, spindexerFollowerMotor);
   }
 }

@@ -7,7 +7,9 @@ package com.stuypulse.robot.subsystems.spindexer;
 
 import org.wpilib.command3.Command;
 
-import com.stuypulse.robot.constants.Settings;
+import com.stuypulse.robot.constants.GlobalSettings;
+import com.stuypulse.robot.subsystems.spindexer.SpindexerConstants.*;
+
 import com.stuypulse.robot.subsystems.spindexer.SpindexerIO.SpindexerIOOutputs;
 import com.stuypulse.robot.util.FullSubsystem;
 
@@ -18,7 +20,7 @@ public class Spindexer extends FullSubsystem {
   private static final Spindexer instance;
 
   static {
-    switch (Settings.currentMode) {
+    switch (GlobalSettings.CURRENT_MODE) {
       case REAL -> instance = new Spindexer(new SpindexerIOTalonFX());
 
       case SIM -> instance = new Spindexer(new SpindexerIOSim());
@@ -57,15 +59,15 @@ public class Spindexer extends FullSubsystem {
     io.updateInputs(inputs);
     Logger.processInputs("Spindexer", inputs);
 
-    if (!Settings.EnabledSubsystems.SPINDEXER.get()) {
+    if (!GlobalSettings.EnabledSubsystems.SPINDEXER.get()) {
       stop();
 
       return;
     }
 
     switch (state) {
-      case FORWARD -> runDutyCycle(SpindexerConstants.Settings.FORWARD_DUTY_CYCLE);
-      case REVERSE -> runDutyCycle(SpindexerConstants.Settings.REVERSE_DUTY_CYCLE);
+      case FORWARD -> runDutyCycle(SpindexerSettings.FORWARD_DUTY_CYCLE);
+      case REVERSE -> runDutyCycle(SpindexerSettings.REVERSE_DUTY_CYCLE);
       case STOP -> stop();
     }
   }
