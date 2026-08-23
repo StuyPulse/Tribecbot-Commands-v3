@@ -121,8 +121,8 @@ public class Intake extends FullSubsystem {
         && inputs.pivotMotorPosition.lte(
             IntakeSettings.THRESHOLD_TO_START_ROLLERS)) {
       switch (rollerState) {
-        case INTAKE -> runRollersDutyCycle(1.0);
-        case OUTTAKE -> runRollersDutyCycle(-1.0);
+        case INTAKE -> runRollersDutyCycle(IntakeSettings.ROLLER_INTAKE_DUTY_CYCLE);
+        case OUTTAKE -> runRollersDutyCycle(IntakeSettings.ROLLER_OUTTAKE_DUTY_CYCLE);
         case STOP -> stopRollers();
       }
     } else {
