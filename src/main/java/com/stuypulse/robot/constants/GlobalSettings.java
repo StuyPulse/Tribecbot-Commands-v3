@@ -18,6 +18,7 @@ public interface GlobalSettings {
     CANBus CANIVORE = new CANBus("CANIVORE");
 
     public interface EnabledSubsystems {
+        LoggedNetworkBoolean SWERVE = new LoggedNetworkBoolean("/Tuning/Enabled Subsystems/Intake", true);
         LoggedNetworkBoolean INTAKE =
                 new LoggedNetworkBoolean("/Tuning/Enabled Subsystems/Intake", true);
         LoggedNetworkBoolean HOOD =

@@ -26,8 +26,8 @@ import org.wpilib.math.numbers.N1;
 import org.wpilib.math.numbers.N3;
 
 import com.stuypulse.robot.constants.Field;
-import com.stuypulse.robot.constants.Settings;
-import com.stuypulse.robot.constants.Settings.Mode;
+import com.stuypulse.robot.constants.GlobalSettings;
+import com.stuypulse.robot.constants.GlobalSettings.Mode;
 import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
 import com.stuypulse.robot.subsystems.superstructure.turret.Turret;
 
@@ -48,7 +48,7 @@ public class Drive extends Mechanism {
   private Optional<Boolean> isBtwnOppHubAndWall = Optional.empty();
 
   static {
-    switch (Settings.currentMode) {
+    switch (GlobalSettings.CURRENT_MODE) {
       case REAL -> {
         instance =
             new Drive(
@@ -370,14 +370,14 @@ public class Drive extends Mechanism {
     odometryLock.unlock();
 
     // Stop moving when disabled
-    if (!Settings.EnabledSubsystems.SWERVE.get()) {
+    if (!GlobalSettings.EnabledSubsystems.SWERVE.get()) {
       for (var module : modules) {
         module.stop();
       }
     }
 
     // Log empty setpoint states when disabled
-    if (!Settings.EnabledSubsystems.SWERVE.get()) {
+    if (!GlobalSettings.EnabledSubsystems.SWERVE.get()) {
       Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleVelocity[] {});
       Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleVelocity[] {});
     }
@@ -414,7 +414,7 @@ public class Drive extends Mechanism {
     }
 
     // Update gyro alert
-    gyroDisconnectedAlert.set(!gyroInputs.connected && Settings.currentMode != Mode.SIM);
+    gyroDisconnectedAlert.set(!gyroInputs.connected && GlobalSettings.CURRENT_MODE != Mode.SIM);
   }
 
   /**
@@ -425,7 +425,7 @@ public class Drive extends Mechanism {
   public void runVelocity(ChassisVelocities speeds) {
 
     // Calculate module setpoints
-    ChassisVelocities discreteSpeeds = speeds.discretize(Settings.DT.in(Seconds));
+    ChassisVelocities discreteSpeeds = speeds.discretize(GlobalSettings.DT.in(Seconds));
     SwerveModuleVelocity[] setpointStates = kinematics.toSwerveModuleVelocities(discreteSpeeds);
     var desaturatedStates =
         SwerveDriveKinematics.desaturateWheelVelocities(
