@@ -5,9 +5,8 @@
 /***************************************************************/
 package com.stuypulse.robot.subsystems.swerve;
 
-import static edu.wpi.first.units.Units.*;
-
-import edu.wpi.first.units.measure.*;
+import static org.wpilib.units.Units.*;
+import org.wpilib.units.measure.*;
 
 public interface SwerveConstants {
     public interface SwerveConstraints {
