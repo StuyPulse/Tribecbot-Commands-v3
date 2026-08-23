@@ -9,7 +9,7 @@ import org.wpilib.util.Color;
 
 import com.ctre.phoenix6.signals.RGBWColor;
 
-import com.stuypulse.robot.constants.Settings;
+import com.stuypulse.robot.constants.GlobalSettings;
 import com.stuypulse.robot.subsystems.leds.LEDIO.LEDIOOutputs;
 import com.stuypulse.robot.subsystems.leds.LEDIO.LEDPattern;
 import com.stuypulse.robot.util.FullSubsystem;
@@ -20,7 +20,7 @@ public class LEDController extends FullSubsystem {
   private static final LEDController instance; // LED instance
 
   static {
-    switch (Settings.currentMode) {
+    switch (GlobalSettings.CURRENT_MODE) {
       case REAL -> instance = new LEDController(new LEDIOCANdle() {});
 
       case SIM -> instance = new LEDController(new LEDIOSim() {});

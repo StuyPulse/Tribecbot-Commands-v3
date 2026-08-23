@@ -17,7 +17,8 @@ import com.ctre.phoenix6.signals.LossOfSignalBehaviorValue;
 import com.ctre.phoenix6.signals.StatusLedWhenActiveValue;
 import com.ctre.phoenix6.signals.StripTypeValue;
 
-import com.stuypulse.robot.constants.Ports;
+import com.stuypulse.robot.constants.GlobalSettings;
+import com.stuypulse.robot.subsystems.leds.LEDConstants.*;
 
 public class LEDIOCANdle implements LEDIO {
   private final CANdle leds;
@@ -32,11 +33,11 @@ public class LEDIOCANdle implements LEDIO {
 
   private CANdleConfiguration candleConfigs;
   private ControlRequest ledPattern =
-      LEDConstants.Settings.solidColorRequest.withColor(LEDConstants.Settings.DISABLED);
+      LEDSettings.solidColorRequest.withColor(LEDSettings.StateColors.DISABLED);
 
   public LEDIOCANdle() {
 
-    leds = new CANdle(LEDConstants.Ports.CANDLE_PORT, Ports.CANIVORE);
+    leds = new CANdle(LEDDeviceIds.CANDLE_PORT, GlobalSettings.CANIVORE);
     candleConfigs =
         new CANdleConfiguration()
             .withLED(
