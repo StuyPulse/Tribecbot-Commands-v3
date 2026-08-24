@@ -1,62 +1,112 @@
+/************************ PROJECT TRIBECBOT *************************/
+/* Copyright (c) 2026 StuyPulse Robotics. All rights reserved. */
+/* Use of this source code is governed by an MIT-style license */
+/* that can be found in the repository LICENSE file.           */
+/***************************************************************/
 package com.stuypulse.robot.subsystems.spindexer;
 
-import com.stuypulse.robot.constants.Settings;
-import com.stuypulse.robot.subsystems.spindexer.SpindexerIO.SpindexerIOOutputs;
-import org.littletonrobotics.junction.Logger;
 import org.wpilib.command3.Command;
-import org.wpilib.command3.Mechanism;
 
-public class Spindexer extends Mechanism {
-    private static final Spindexer instance;
+import com.stuypulse.robot.constants.GlobalSettings;
+import com.stuypulse.robot.subsystems.spindexer.SpindexerConstants.*;
 
-    static {
-        switch (Settings.currentMode) {
-            case REAL -> instance = new Spindexer(new SpindexerIOTalonFX());
+import com.stuypulse.robot.subsystems.spindexer.SpindexerIO.SpindexerIOOutputs;
+import com.stuypulse.robot.util.FullSubsystem;
 
-            case SIM -> instance = new Spindexer(new SpindexerIOSim());
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
-            default -> instance = new Spindexer(new SpindexerIO() {
-            });
-        }
+public class Spindexer extends FullSubsystem {
+  private static final Spindexer instance;
+
+  static {
+    switch (GlobalSettings.CURRENT_MODE) {
+      case REAL -> instance = new Spindexer(new SpindexerIOTalonFX());
+
+      case SIM -> instance = new Spindexer(new SpindexerIOSim());
+
+      default -> instance = new Spindexer(new SpindexerIO() {});
+    }
+  }
+
+  public static Spindexer getInstance() {
+    return instance;
+  }
+
+  private final SpindexerIO io;
+  private final SpindexerIOInputsAutoLogged inputs;
+  private final SpindexerIOOutputs outputs;
+
+  @AutoLogOutput(key = "States/Spindexer")
+  private SpindexerState state;
+
+  private Spindexer(SpindexerIO io) {
+    this.io = io;
+    this.inputs = new SpindexerIOInputsAutoLogged();
+    this.outputs = new SpindexerIOOutputs();
+
+    setState(SpindexerState.STOP);
+  }
+
+  public enum SpindexerState {
+    FORWARD,
+    REVERSE,
+    STOP
+  }
+
+  @Override
+  public void periodic() {
+    io.updateInputs(inputs);
+    Logger.processInputs("Spindexer", inputs);
+
+    if (!GlobalSettings.EnabledSubsystems.SPINDEXER.get()) {
+      stop();
+
+      return;
     }
 
-    public static Spindexer getInstance() {
-        return instance;
+    switch (state) {
+      case FORWARD -> runDutyCycle(SpindexerSettings.FORWARD_DUTY_CYCLE);
+      case REVERSE -> runDutyCycle(SpindexerSettings.REVERSE_DUTY_CYCLE);
+      case STOP -> stop();
     }
+  }
 
-    private final SpindexerIO io;
-    private final SpindexerIOInputsAutoLogged inputs;
-    private final SpindexerIOOutputs outputs;
+  @Override
+  public void periodicAfterScheduler() {
+    io.applyOutputs(outputs);
+  }
 
-    private Spindexer(SpindexerIO io) {
-        this.io = io;
-        this.inputs = new SpindexerIOInputsAutoLogged();
-        this.outputs = new SpindexerIOOutputs();
-    }
+  private void runDutyCycle(double dutyCycle) {
+    outputs.spindexerMode = SpindexerIO.SpindexerIOOutputMode.DUTY_CYCLE;
+    outputs.spindexerLeaderDutyCycle = dutyCycle;
+  }
 
-    public void periodic() {
-        io.updateInputs(inputs);
-        Logger.processInputs("Spindexer", inputs);
-    }
+  private void stop() {
+    outputs.spindexerMode = SpindexerIO.SpindexerIOOutputMode.STOP;
+  }
 
-    public void periodicAfterScheduler() {
-        Logger.recordOutput("Spindexer/Duty Cycle Setpoint", outputs.spindexerLeaderDutyCycle);
-        io.applyOutputs(outputs);
-    }
+  private void setState(SpindexerState state) {
+    this.state = state;
+  }
 
-    private void runDutyCycle(double dutyCycle) {
-        outputs.spindexerLeaderDutyCycle = dutyCycle;
-    }
+  public SpindexerState getState() {
+    return state;
+  }
 
-    public Command runSpindexerForward() {
-        return run(coroutine -> runDutyCycle(Settings.Spindexer.FORWARD_DUTY_CYCLE)).named("Spindexer Forward");
-    }
+  public void setStateCommand(SpindexerState state) {
+    setState(state);
+  }
 
-    public Command runSpindexerReverse() {
-        return run(coroutine -> runDutyCycle(Settings.Spindexer.REVERSE_DUTY_CYCLE)).named("Spindexer Reverse");
-    }
+  public Command runSpindexerForward() {
+    return run(coroutine -> setState(SpindexerState.FORWARD)).named("Spindexer Forward");
+  }
 
-    public Command stopSpindexer() {
-        return run(coroutine -> runDutyCycle(0)).named("Spindexer Stop");
-    }
+  public Command runSpindexerReverse() {
+    return run(coroutine -> setState(SpindexerState.REVERSE)).named("Spindexer Reverse");
+  }
+
+  public Command stopSpindexer() {
+    return run(coroutine -> setState(SpindexerState.STOP)).named("Spindexer Stop");
+  }
 }

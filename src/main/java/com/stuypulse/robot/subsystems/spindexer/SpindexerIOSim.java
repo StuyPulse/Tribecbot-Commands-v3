@@ -1,123 +1,56 @@
+/************************ PROJECT TRIBECBOT *************************/
+/* Copyright (c) 2026 StuyPulse Robotics. All rights reserved. */
+/* Use of this source code is governed by an MIT-style license */
+/* that can be found in the repository LICENSE file.           */
+/***************************************************************/
 package com.stuypulse.robot.subsystems.spindexer;
+
+import static org.wpilib.units.Units.KilogramSquareMeters;
 
 import org.wpilib.math.system.DCMotor;
 import org.wpilib.math.system.Models;
 import org.wpilib.simulation.FlywheelSim;
-import org.wpilib.units.measure.Angle;
-import org.wpilib.units.measure.AngularVelocity;
-import org.wpilib.units.measure.Current;
-import org.wpilib.units.measure.Temperature;
-import org.wpilib.units.measure.Voltage;
 
-import com.ctre.phoenix6.BaseStatusSignal;
-import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.controls.DutyCycleOut;
-import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
-import com.stuypulse.robot.constants.Ports;
-import com.stuypulse.robot.constants.Settings;
-import com.stuypulse.robot.util.Simulation.TalonFXSimulation.SystemSim;
-import com.stuypulse.robot.util.Simulation.TalonFXSimulation.TalonFXSimulation;
+import com.stuypulse.robot.constants.GlobalSettings;
+import com.stuypulse.robot.subsystems.spindexer.SpindexerConstants.*;
 
-public class SpindexerIOSim implements SpindexerIO {
+import com.stuypulse.robot.util.talonfx.sim.SystemSim;
+import com.stuypulse.robot.util.talonfx.sim.TalonFXSimulation;
 
-    private final SystemSim<FlywheelSim> flywheelSim;
+public class SpindexerIOSim extends SpindexerIOBase {
+  private final SystemSim<FlywheelSim> spindexerSim;
 
-    private final TalonFXSimulation spindexerLeaderSim;
-    private final TalonFXSimulation spindexerFollowerSim;
+  private final TalonFXSimulation spindexerLeaderMotor;
+  private final TalonFXSimulation spindexerFollowerMotor;
 
-    private final StatusSignal<Angle> spindexerLeaderPosition;
-    private final StatusSignal<Current> spindexerLeaderSupplyCurrent;
-    private final StatusSignal<Current> spindexerLeaderStatorCurrent;
-    private final StatusSignal<Temperature> spindexerLeaderTemperature;
-    private final StatusSignal<Voltage> spindexerLeaderAppliedVoltage;
-    private final StatusSignal<AngularVelocity> spindexerLeaderVelocity;
+  public SpindexerIOSim() {
+    final double gearing = SpindexerSettings.GEAR_RATIO;
+    final SystemSim<FlywheelSim> spindexerSim =
+        SystemSim.of(
+            new FlywheelSim(
+                Models.flywheelFromPhysicalConstants(DCMotor.getKrakenX60(1), SpindexerSettings.SPINDEXER_MOI.in(KilogramSquareMeters), gearing),
+                DCMotor.getKrakenX60(1),
+                0.01));
 
-    private final StatusSignal<Angle> spindexerFollowerPosition;
-    private final StatusSignal<Current> spindexerFollowerSupplyCurrent;
-    private final StatusSignal<Temperature> spindexerFollowerTemperature;
-    private final StatusSignal<Current> spindexerFollowerStatorCurrent;
-    private final StatusSignal<Voltage> spindexerFollowerAppliedVoltage;
-    private final StatusSignal<AngularVelocity> spindexerFollowerVelocity;
+    final TalonFXSimulation spindexerLeaderMotor =
+        new TalonFXSimulation(SpindexerDeviceIds.LEADER_MOTOR, gearing, spindexerSim);
+    final TalonFXSimulation spindexerFollowerMotor =
+        new TalonFXSimulation(SpindexerDeviceIds.FOLLOWER_MOTOR, gearing, spindexerSim);
 
-    private final DutyCycleOut spindexerController;
-    private final Follower followerController;
+    super(spindexerLeaderMotor, spindexerFollowerMotor);
 
-    public SpindexerIOSim() {
+    this.spindexerSim = spindexerSim;
+    this.spindexerLeaderMotor = spindexerLeaderMotor;
+    this.spindexerFollowerMotor = spindexerFollowerMotor;
+  }
 
-        flywheelSim = 
-            SystemSim.of(
-                new FlywheelSim(
-                    Models.flywheelFromPhysicalConstants(
-                        DCMotor.getKrakenX60(1), 0.01, 1),
-                    DCMotor.getKrakenX60(1),
-                    0.01));
+  @Override
+  public void updateInputs(SpindexerIOInputs inputs) {
+    spindexerSim.update(GlobalSettings.DT);
 
-        spindexerLeaderSim = 
-            new TalonFXSimulation(
-                Ports.Spindexer.LEADER,
-                Settings.Spindexer.GEAR_RATIO,
-                flywheelSim);
-        spindexerFollowerSim = 
-            new TalonFXSimulation(
-                Ports.Spindexer.LEADER, 
-                Settings.Spindexer.GEAR_RATIO,
-                flywheelSim);
-        
-        spindexerController = new DutyCycleOut(0);
-        followerController = new Follower(spindexerLeaderSim.getDeviceID(), MotorAlignmentValue.Aligned);
+    spindexerLeaderMotor.refresh();
+    spindexerFollowerMotor.refresh();
 
-        spindexerFollowerSim.setControl(followerController);
-
-        spindexerLeaderPosition = spindexerLeaderSim.getPosition();
-        spindexerLeaderSupplyCurrent = spindexerLeaderSim.getSupplyCurrent();
-        spindexerLeaderStatorCurrent = spindexerLeaderSim.getStatorCurrent();
-        spindexerLeaderTemperature = spindexerLeaderSim.getDeviceTemp();
-        spindexerLeaderAppliedVoltage = spindexerLeaderSim.getMotorVoltage();
-        spindexerLeaderVelocity = spindexerLeaderSim.getVelocity();
-
-        spindexerFollowerPosition = spindexerFollowerSim.getPosition();
-        spindexerFollowerSupplyCurrent = spindexerFollowerSim.getSupplyCurrent();
-        spindexerFollowerStatorCurrent = spindexerFollowerSim.getStatorCurrent();
-        spindexerFollowerTemperature = spindexerFollowerSim.getDeviceTemp();
-        spindexerFollowerAppliedVoltage = spindexerFollowerSim.getMotorVoltage();
-        spindexerFollowerVelocity = spindexerFollowerSim.getVelocity();
-    }
-
-    @Override
-    public void updateInputs(SpindexerIOInputs inputs) {
-        BaseStatusSignal.refreshAll(
-                spindexerLeaderPosition,
-                spindexerLeaderSupplyCurrent,
-                spindexerLeaderStatorCurrent,
-                spindexerLeaderTemperature,
-                spindexerLeaderAppliedVoltage,
-                spindexerLeaderVelocity,
-                spindexerFollowerPosition,
-                spindexerFollowerSupplyCurrent,
-                spindexerFollowerStatorCurrent,
-                spindexerFollowerTemperature,
-                spindexerFollowerAppliedVoltage,
-                spindexerFollowerVelocity);
-
-        inputs.spindexerLeaderMotorPosition = spindexerLeaderPosition.getValue();
-        inputs.spindexerLeaderMotorSupplyCurrent = spindexerLeaderSupplyCurrent.getValue();
-        inputs.spindexerLeaderMotorStatorCurrent = spindexerLeaderStatorCurrent.getValue();
-        inputs.spindexerLeaderMotorTemperature = spindexerLeaderTemperature.getValue();
-        inputs.spindexerLeaderMotorAppliedVoltage = spindexerLeaderAppliedVoltage.getValue();
-        inputs.spindexerLeaderMotorVelocity = spindexerLeaderVelocity.getValue();
-
-        inputs.spindexerFollowerMotorPosition = spindexerFollowerPosition.getValue();
-        inputs.spindexerFollowerMotorSupplyCurrent = spindexerFollowerSupplyCurrent.getValue();
-        inputs.spindexerFollowerMotorStatorCurrent = spindexerFollowerStatorCurrent.getValue();
-        inputs.spindexerFollowerMotorTemperature = spindexerFollowerTemperature.getValue();
-        inputs.spindexerFollowerMotorAppliedVoltage = spindexerFollowerAppliedVoltage.getValue();
-        inputs.spindexerFollowerMotorVelocity = spindexerFollowerVelocity.getValue();
-    }
-
-    @Override
-    public void applyOutputs(SpindexerIOOutputs outputs) {
-        spindexerLeaderSim.setControl(
-                spindexerController.withOutput(outputs.spindexerLeaderDutyCycle));
-    }
+    super.updateInputs(inputs);
+  }
 }
