@@ -17,7 +17,7 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 
-import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
+import com.stuypulse.robot.subsystems.superstructure.hood.HoodConstants.*;
 
 public abstract class HoodIOBase implements HoodIO {
   private final TalonFX hoodMotor;
@@ -35,9 +35,9 @@ public abstract class HoodIOBase implements HoodIO {
   public HoodIOBase(TalonFX hoodMotor) {
     this.hoodMotor = hoodMotor;
 
-    SuperstructureConstants.Hood.Motors.HOOD_CONFIG.configure(hoodMotor);
+    HoodMotorConfigs.HOOD_CONFIG.configure(hoodMotor);
 
-    seedHoodPosition(SuperstructureConstants.Hood.Settings.Angles.STOW);
+    seedHoodPosition(HoodAngles.STOW);
 
     positionController = new PositionVoltage(0).withEnableFOC(true);
     homingController = new VoltageOut(0).withIgnoreSoftwareLimits(true);

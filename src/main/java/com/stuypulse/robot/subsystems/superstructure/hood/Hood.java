@@ -14,9 +14,9 @@ import org.wpilib.command3.button.CommandGamepad;
 import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.filter.Debouncer.DebounceType;
 
-import com.stuypulse.robot.constants.Settings;
-import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
-import com.stuypulse.robot.subsystems.superstructure.hood.Hood.HoodState;
+import com.stuypulse.robot.constants.GlobalSettings;
+import com.stuypulse.robot.subsystems.superstructure.hood.HoodConstants.*;
+
 import com.stuypulse.robot.subsystems.superstructure.hood.HoodIO.HoodIOOutputMode;
 import com.stuypulse.robot.subsystems.superstructure.hood.HoodIO.HoodIOOutputs;
 import com.stuypulse.robot.util.FullSubsystem;
@@ -30,7 +30,7 @@ public class Hood extends FullSubsystem {
   private static final Hood instance;
 
   static {
-    switch (Settings.currentMode) {
+    switch (GlobalSettings.CURRENT_MODE) {
       case REAL -> instance = new Hood(new HoodIOTalonFX());
 
       case SIM -> instance = new Hood(new HoodIOSim());
@@ -65,8 +65,8 @@ public class Hood extends FullSubsystem {
     setState(HoodState.STOW);
 
     hoodStallingDebouncer =
-        new Debouncer(SuperstructureConstants.Hood.Settings.STALL_DEBOUNCE, DebounceType.kBoth);
-    hoodAtToleranceDebouncer = new Debouncer(0.05, DebounceType.kBoth);
+        new Debouncer(HoodSettings.STALL_DEBOUNCE.in(Seconds), DebounceType.kBoth);
+    hoodAtToleranceDebouncer = new Debouncer(HoodSettings.HOOD_AT_TOLERANCE_DEBOUNCE.in(Seconds), DebounceType.kBoth);
 
     this.atTolerance = false;
   }
@@ -92,7 +92,7 @@ public class Hood extends FullSubsystem {
     io.updateInputs(inputs);
     Logger.processInputs("Hood", inputs);
 
-    if (!Settings.EnabledSubsystems.HOOD.get()) {
+    if (!GlobalSettings.EnabledSubsystems.HOOD.get()) {
       stop();
 
       return;
@@ -101,28 +101,28 @@ public class Hood extends FullSubsystem {
     switch (state) {
       case HOMING_UPPER -> {
         if (isStalling()) {
-          io.seedHoodPosition(SuperstructureConstants.Hood.Settings.MAX_FROM_HORIZON);
+          io.seedHoodPosition(HoodSettings.MAX_FROM_HORIZON);
           setState(HoodState.STOW);
         } else {
-          runVoltage(SuperstructureConstants.Hood.Settings.HOOD_HOMING_VOLTAGE);
+          runVoltage(HoodSettings.HOOD_HOMING_VOLTAGE);
         }
       }
       case HOMING_LOWER -> {
         if (isStalling()) {
-          io.seedHoodPosition(SuperstructureConstants.Hood.Settings.MIN_FROM_HORIZON);
+          io.seedHoodPosition(HoodSettings.MIN_FROM_HORIZON);
           setState(HoodState.STOW);
         } else {
-          runVoltage(SuperstructureConstants.Hood.Settings.HOOD_HOMING_VOLTAGE.unaryMinus());
+          runVoltage(HoodSettings.HOOD_HOMING_VOLTAGE.unaryMinus());
         }
       }
-      case STOW -> runPosition(SuperstructureConstants.Hood.Settings.Angles.STOW);
+      case STOW -> runPosition(HoodAngles.STOW);
       case FERRY -> runPosition(InterpolationCalculator.getInterpolatedFerryAngle());
       case MANUAL_OVERRIDE ->
           runPosition(
-              Degrees.of(SuperstructureConstants.Hood.Settings.Angles.MANUAL_OVERRIDE.get()));
-      case KB -> runPosition(SuperstructureConstants.Hood.Settings.Angles.KB);
-      case LEFT_CORNER -> runPosition(SuperstructureConstants.Hood.Settings.Angles.LEFT_CORNER);
-      case RIGHT_CORNER -> runPosition(SuperstructureConstants.Hood.Settings.Angles.RIGHT_CORNER);
+              Degrees.of(HoodAngles.MANUAL_OVERRIDE_DEG.get()));
+      case KB -> runPosition(HoodAngles.KB);
+      case LEFT_CORNER -> runPosition(HoodAngles.LEFT_CORNER);
+      case RIGHT_CORNER -> runPosition(HoodAngles.RIGHT_CORNER);
       case INTERPOLATION -> runPosition(InterpolationCalculator.getInterpolatedShotAngle());
       case SOTM -> runPosition(SOTMCalculator.calculateHoodAngleSOTM());
       case FOTM -> runPosition(SOTMCalculator.calculateHoodAngleFOTM());
@@ -159,10 +159,10 @@ public class Hood extends FullSubsystem {
 
     if (state == HoodState.SOTM || state == HoodState.FOTM) {
       atTolerance =
-          error.abs(Degrees) < SuperstructureConstants.Settings.HOOD_SOTM_TOLERANCE.in(Degrees);
+          error.abs(Degrees) < HoodSettings.HOOD_SOTM_TOLERANCE.in(Degrees);
     } else {
       atTolerance =
-          error.abs(Degrees) < SuperstructureConstants.Settings.HOOD_TOLERANCE.in(Degrees);
+          error.abs(Degrees) < HoodSettings.HOOD_TOLERANCE.in(Degrees);
     }
   }
 
@@ -172,8 +172,8 @@ public class Hood extends FullSubsystem {
   }
 
   private Angle hoodAnalogToInput(CommandGamepad gamepad) {
-    double hoodMin = SuperstructureConstants.Hood.Settings.Angles.MIN.in(Degrees);
-    double hoodMax = SuperstructureConstants.Hood.Settings.Angles.MAX.in(Degrees);
+    double hoodMin = HoodAngles.MIN.in(Degrees);
+    double hoodMax = HoodAngles.MAX.in(Degrees);
 
     return Degrees.of(hoodMin + (gamepad.getLeftX() + 1.0) * ((hoodMax - hoodMin) / 2));
   }
@@ -181,7 +181,7 @@ public class Hood extends FullSubsystem {
   private boolean isStalling() {
     return hoodStallingDebouncer.calculate(
         inputs.hoodMotorStatorCurrent.gt(
-            SuperstructureConstants.Hood.Settings.STALL_CURRENT_LIMIT));
+            HoodSettings.STALL_CURRENT_LIMIT));
   }
 
   private void setState(HoodState state) {
@@ -212,13 +212,13 @@ public class Hood extends FullSubsystem {
 
   public Command seedRelativeEncoderAtUpperHardstop() {
     return run(coroutine ->
-            io.seedHoodPosition(SuperstructureConstants.Hood.Settings.MAX_FROM_HORIZON))
+            io.seedHoodPosition(HoodSettings.MAX_FROM_HORIZON))
         .named("Hood Seed Relative Encoder at Upper Hardstop");
   }
 
   public Command seedRelativeEncoderAtLowerHardstop() {
     return run(coroutine ->
-            io.seedHoodPosition(SuperstructureConstants.Hood.Settings.MIN_FROM_HORIZON))
+            io.seedHoodPosition(HoodSettings.MIN_FROM_HORIZON))
         .named("Hood Seed Relative Encoder at Lower Hardstop");
   }
 }

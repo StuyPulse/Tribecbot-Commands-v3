@@ -12,8 +12,9 @@ import org.wpilib.units.measure.AngularVelocity;
 import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.filter.Debouncer.DebounceType;
 
-import com.stuypulse.robot.constants.Settings;
-import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
+import com.stuypulse.robot.constants.GlobalSettings;
+import com.stuypulse.robot.subsystems.superstructure.shooter.ShooterConstants.*;
+
 import com.stuypulse.robot.subsystems.superstructure.shooter.ShooterIO.ShooterIOOutputMode;
 import com.stuypulse.robot.subsystems.superstructure.shooter.ShooterIO.ShooterIOOutputs;
 import com.stuypulse.robot.util.FullSubsystem;
@@ -27,7 +28,7 @@ public class Shooter extends FullSubsystem {
   private static final Shooter instance;
 
   static {
-    switch (Settings.currentMode) {
+    switch (GlobalSettings.CURRENT_MODE) {
       case REAL -> instance = new Shooter(new ShooterIOTalonFX());
 
       case SIM -> instance = new Shooter(new ShooterIOSim());
@@ -78,7 +79,7 @@ public class Shooter extends FullSubsystem {
     io.updateInputs(inputs);
     Logger.processInputs("Shooter", inputs);
 
-    if (!Settings.EnabledSubsystems.SHOOTER.get()) {
+    if (!GlobalSettings.EnabledSubsystems.SHOOTER.get()) {
       stopShooter();
 
       return;
@@ -87,12 +88,12 @@ public class Shooter extends FullSubsystem {
     switch (state) {
       case STOP -> stopShooter();
       case MANUAL_OVERRIDE ->
-          runVelocity(RPM.of(SuperstructureConstants.Shooter.Settings.RPM.MANUAL_OVERRIDE.get()));
+          runVelocity(RPM.of(ShooterRPMValues.MANUAL_OVERRIDE.get()));
       case FERRY -> runVelocity(InterpolationCalculator.getInterpolatedFerryRPM());
-      case REVERSE -> runVelocity(SuperstructureConstants.Shooter.Settings.RPM.REVERSE);
-      case KB -> runVelocity(SuperstructureConstants.Shooter.Settings.RPM.KB);
-      case LEFT_CORNER -> runVelocity(SuperstructureConstants.Shooter.Settings.RPM.LEFT_CORNER);
-      case RIGHT_CORNER -> runVelocity(SuperstructureConstants.Shooter.Settings.RPM.RIGHT_CORNER);
+      case REVERSE -> runVelocity(ShooterRPMValues.REVERSE);
+      case KB -> runVelocity(ShooterRPMValues.KB);
+      case LEFT_CORNER -> runVelocity(ShooterRPMValues.LEFT_CORNER);
+      case RIGHT_CORNER -> runVelocity(ShooterRPMValues.RIGHT_CORNER);
       case INTERPOLATION -> runVelocity(InterpolationCalculator.getInterpolatedShotRPM());
       case SOTM -> runVelocity(SOTMCalculator.calculateShooterRPMSOTM());
       case FOTM -> runVelocity(SOTMCalculator.calculateShooterRPMFOTM());
@@ -120,16 +121,16 @@ public class Shooter extends FullSubsystem {
 
     AngularVelocity toleranceHigh =
         switch (state) {
-          case SOTM -> RPM.of(SuperstructureConstants.Settings.SHOOTER_FOTM_TOLERANCE_RPM_HIGH);
-          case FOTM -> RPM.of(SuperstructureConstants.Settings.SHOOTER_FOTM_TOLERANCE_RPM_HIGH);
-          default -> RPM.of(SuperstructureConstants.Settings.SHOOTER_TOLERANCE_RPM_HIGH);
+          case SOTM -> ShooterSettings.SHOOTER_FOTM_TOLERANCE_RPM_HIGH;
+          case FOTM -> ShooterSettings.SHOOTER_FOTM_TOLERANCE_RPM_HIGH;
+          default -> ShooterSettings.SHOOTER_TOLERANCE_RPM_HIGH;
         };
 
     AngularVelocity toleranceLow =
         switch (state) {
-          case SOTM -> RPM.of(SuperstructureConstants.Settings.SHOOTER_SOTM_TOLERANCE_RPM_LOW);
-          case FOTM -> RPM.of(SuperstructureConstants.Settings.SHOOTER_FOTM_TOLERANCE_RPM_LOW);
-          default -> RPM.of(SuperstructureConstants.Settings.SHOOTER_TOLERANCE_RPM_LOW);
+          case SOTM -> ShooterSettings.SHOOTER_SOTM_TOLERANCE_RPM_LOW;
+          case FOTM -> ShooterSettings.SHOOTER_FOTM_TOLERANCE_RPM_LOW;
+          default -> ShooterSettings.SHOOTER_TOLERANCE_RPM_LOW;
         };
 
     atTolerance = error.lt(toleranceLow.unaryMinus()) && error.gt(toleranceHigh);
@@ -146,7 +147,7 @@ public class Shooter extends FullSubsystem {
   public boolean isShooting() {
     return currentlyShootingDebouncer.calculate(
         inputs.shooterLeaderMotorStatorCurrent.gt(
-            SuperstructureConstants.Shooter.Settings.IS_SHOOTING_CURRENT));
+            ShooterSettings.IS_SHOOTING_CURRENT));
   }
 
   private void setState(ShooterState state) {

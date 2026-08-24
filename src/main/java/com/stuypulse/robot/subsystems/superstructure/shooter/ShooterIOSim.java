@@ -5,6 +5,8 @@
 /***************************************************************/
 package com.stuypulse.robot.subsystems.superstructure.shooter;
 
+import static org.wpilib.units.Units.*;
+
 import org.wpilib.math.system.DCMotor;
 import org.wpilib.math.system.Models;
 import org.wpilib.simulation.FlywheelSim;
@@ -12,9 +14,9 @@ import org.wpilib.simulation.FlywheelSim;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.stuypulse.robot.constants.GlobalSettings;
+import com.stuypulse.robot.subsystems.superstructure.shooter.ShooterConstants.*;
 
-import com.stuypulse.robot.constants.Ports;
-import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
 import com.stuypulse.robot.util.talonfx.sim.SystemSim;
 import com.stuypulse.robot.util.talonfx.sim.TalonFXSimulation;
 
@@ -37,20 +39,20 @@ public class ShooterIOSim extends ShooterIOBase {
             new FlywheelSim(
                 Models.flywheelFromPhysicalConstants(
                     DCMotor.getKrakenX44(2),
-                    0.05,
-                    SuperstructureConstants.Shooter.Settings.GEAR_RATIO),
+                    ShooterSettings.FLYWHEEL_MOI.in(KilogramSquareMeters),
+                    ShooterSettings.GEAR_RATIO),
                 DCMotor.getKrakenX44(2),
-                SuperstructureConstants.Shooter.Settings.GEAR_RATIO));
+                ShooterSettings.GEAR_RATIO));
 
     final TalonFXSimulation shooterLeaderSim =
         new TalonFXSimulation(
-            Ports.Superstructure.Shooter.MOTOR_LEAD,
-            SuperstructureConstants.Shooter.Settings.GEAR_RATIO,
+            ShooterDeviceIds.MOTOR_LEAD,
+            ShooterSettings.GEAR_RATIO,
             flywheelSim);
     final TalonFXSimulation shooterFollowerSim =
         new TalonFXSimulation(
-            Ports.Superstructure.Shooter.MOTOR_FOLLOW,
-            SuperstructureConstants.Shooter.Settings.GEAR_RATIO,
+            ShooterDeviceIds.MOTOR_FOLLOW,
+            ShooterSettings.GEAR_RATIO,
             flywheelSim);
 
     final VelocityTorqueCurrentFOC shooterLeaderController = new VelocityTorqueCurrentFOC(0);
@@ -70,6 +72,7 @@ public class ShooterIOSim extends ShooterIOBase {
 
   @Override
   public void updateInputs(ShooterIOInputs inputs) {
+    flywheelSim.update(GlobalSettings.DT);
     shooterLeaderSim.refresh();
     shooterFollowerSim.refresh();
 

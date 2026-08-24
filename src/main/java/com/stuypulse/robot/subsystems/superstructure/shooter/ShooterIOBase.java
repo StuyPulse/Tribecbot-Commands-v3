@@ -18,7 +18,7 @@ import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 
-import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
+import com.stuypulse.robot.subsystems.superstructure.shooter.ShooterConstants.*;
 
 public abstract class ShooterIOBase implements ShooterIO {
   private final TalonFX shooterLeader;
@@ -45,8 +45,8 @@ public abstract class ShooterIOBase implements ShooterIO {
     this.shooterFollower = shooterFollower;
     this.shooterLeader = shooterLeader;
 
-    SuperstructureConstants.Shooter.Motors.SHOOTER_CONFIG.configure(shooterLeader);
-    SuperstructureConstants.Shooter.Motors.SHOOTER_CONFIG.configure(shooterFollower);
+    ShooterMotorConfigs.SHOOTER_CONFIG.configure(shooterLeader);
+    ShooterMotorConfigs.SHOOTER_CONFIG.configure(shooterFollower);
 
     shooterLeaderController = new VelocityTorqueCurrentFOC(0);
     shooterFollowerController =

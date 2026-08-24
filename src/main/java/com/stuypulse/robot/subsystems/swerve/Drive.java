@@ -5,9 +5,7 @@
 /***************************************************************/
 package com.stuypulse.robot.subsystems.swerve;
 
-import static org.wpilib.units.Units.Meters;
-import static org.wpilib.units.Units.MetersPerSecond;
-import static org.wpilib.units.Units.Seconds;
+import static org.wpilib.units.Units.*;
 
 import org.wpilib.command3.Mechanism;
 import org.wpilib.driverstation.Alert;
@@ -28,7 +26,7 @@ import org.wpilib.math.numbers.N3;
 import com.stuypulse.robot.constants.Field;
 import com.stuypulse.robot.constants.GlobalSettings;
 import com.stuypulse.robot.constants.GlobalSettings.Mode;
-import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
+import com.stuypulse.robot.subsystems.superstructure.turret.TurretConstants.*;
 import com.stuypulse.robot.subsystems.superstructure.turret.Turret;
 
 import java.util.Optional;
@@ -91,7 +89,7 @@ public class Drive extends Mechanism {
 
     Transform2d turretTransform =
         new Transform2d(
-            SuperstructureConstants.Turret.Settings.TURRET_OFFSET, turret.getTurretYaw());
+            TurretSettings.TURRET_OFFSET, turret.getTurretYaw());
 
     return getPose().transformBy(turretTransform);
   }

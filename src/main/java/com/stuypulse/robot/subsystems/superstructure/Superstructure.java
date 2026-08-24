@@ -16,12 +16,10 @@ import org.wpilib.system.Timer;
 
 import com.stuypulse.robot.Robot;
 import com.stuypulse.robot.commands.DriveCommands;
-import com.stuypulse.robot.constants.DriverConstants;
 import com.stuypulse.robot.subsystems.handoff.Handoff;
 import com.stuypulse.robot.subsystems.handoff.Handoff.HandoffState;
 import com.stuypulse.robot.subsystems.spindexer.Spindexer;
 import com.stuypulse.robot.subsystems.spindexer.Spindexer.SpindexerState;
-import com.stuypulse.robot.subsystems.superstructure.Superstructure.SuperstructureState;
 import com.stuypulse.robot.subsystems.superstructure.hood.Hood;
 import com.stuypulse.robot.subsystems.superstructure.hood.Hood.HoodState;
 import com.stuypulse.robot.subsystems.superstructure.shooter.Shooter;
@@ -29,6 +27,8 @@ import com.stuypulse.robot.subsystems.superstructure.shooter.Shooter.ShooterStat
 import com.stuypulse.robot.subsystems.superstructure.turret.Turret;
 import com.stuypulse.robot.subsystems.superstructure.turret.Turret.TurretState;
 import com.stuypulse.robot.subsystems.swerve.Drive;
+
+import com.stuypulse.robot.constants.DriverConstants.*;
 
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
@@ -257,8 +257,8 @@ public class Superstructure extends Mechanism {
 
     return () ->
         cachedStateIdleDebouncer.calculate(
-            driverInputAsVelocity.getNorm() <= DriverConstants.Driver.Drive.DEADBAND
-                && Math.abs(driver.getRightX()) <= DriverConstants.Driver.Turn.DEADBAND);
+            driverInputAsVelocity.getNorm() <= DriverDriveSettings.DEADBAND
+                && Math.abs(driver.getRightX()) <= DriverTurnSettings.DEADBAND);
   }
 
   public Command cacheState(CommandGamepad driver) {

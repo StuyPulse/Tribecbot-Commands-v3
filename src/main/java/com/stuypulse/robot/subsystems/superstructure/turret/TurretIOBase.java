@@ -16,22 +16,19 @@ import org.wpilib.units.measure.Voltage;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.SensorDirectionValue;
 
-import com.stuypulse.robot.constants.Motors.CANCoderConfig;
-import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
+import com.stuypulse.robot.util.talonfx.CANCoderConfig;
+import com.stuypulse.robot.subsystems.superstructure.turret.TurretConstants.*;
 
 public abstract class TurretIOBase implements TurretIO {
   private final TalonFX turretMotor;
 
   private final CANcoder encoder17t;
   private final CANcoder encoder18t;
-
-  private CANCoderConfig encoder17tConfig;
-  private CANCoderConfig encoder18tConfig;
 
   private final PositionVoltage positionController;
 
@@ -45,29 +42,22 @@ public abstract class TurretIOBase implements TurretIO {
   private final StatusSignal<Angle> encoder17tPosition;
   private final StatusSignal<Angle> encoder18tPosition;
 
+  private final MagnetSensorConfigs encoder17tMagnetConfig;
+  private final MagnetSensorConfigs encoder18tMagnetConfig;
+
   public TurretIOBase(TalonFX turretMotor, CANcoder encoder17t, CANcoder encoder18t) {
     this.turretMotor = turretMotor;
     this.encoder17t = encoder17t;
     this.encoder18t = encoder18t;
 
-    SuperstructureConstants.Turret.Motors.TURRET_CONFIG.configure(turretMotor);
+    TurretMotorConfigs.TURRET_CONFIG.configure(turretMotor);
 
     turretMotor.getClosedLoopError().setUpdateFrequency(Hertz.of(50));
 
-    positionController = new PositionVoltage(0).withEnableFOC(true);
+    TurretEncoderConfigs.encoder17tConfig.configure(encoder17t);
+    TurretEncoderConfigs.encoder18tConfig.configure(encoder18t);
 
-    encoder17tConfig =
-        new CANCoderConfig()
-            .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive)
-            .withMagnetOffset(
-                SuperstructureConstants.Turret.Settings.Encoder17t.OFFSET.in(Rotations))
-            .withAbsoluteSensorDiscontinuityPoint(1.0);
-    encoder18tConfig =
-        new CANCoderConfig()
-            .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive)
-            .withMagnetOffset(
-                SuperstructureConstants.Turret.Settings.Encoder18t.OFFSET.in(Rotations))
-            .withAbsoluteSensorDiscontinuityPoint(1.0);
+    positionController = new PositionVoltage(0).withEnableFOC(true);
 
     turretMotorPosition = turretMotor.getPosition();
     turretMotorSupplyCurrent = turretMotor.getSupplyCurrent();
@@ -78,6 +68,9 @@ public abstract class TurretIOBase implements TurretIO {
 
     encoder17tPosition = encoder17t.getAbsolutePosition();
     encoder18tPosition = encoder18t.getAbsolutePosition();
+
+    encoder17tMagnetConfig = new MagnetSensorConfigs();
+    encoder18tMagnetConfig = new MagnetSensorConfigs();
   }
 
   @Override
@@ -91,6 +84,10 @@ public abstract class TurretIOBase implements TurretIO {
         turretMotorVelocity,
         encoder17tPosition,
         encoder18tPosition);
+
+    encoder17t.getConfigurator().refresh(encoder17tMagnetConfig);
+    encoder18t.getConfigurator().refresh(encoder18tMagnetConfig);
+
     inputs.turretMotorPosition = turretMotorPosition.getValue();
     inputs.turretMotorSupplyCurrent = turretMotorSupplyCurrent.getValue();
     inputs.turretMotorStatorCurrent = turretMotorStatorCurrent.getValue();
@@ -101,8 +98,8 @@ public abstract class TurretIOBase implements TurretIO {
     inputs.encoder17tPosition = encoder17tPosition.getValue();
     inputs.encoder18tPosition = encoder18tPosition.getValue();
 
-    inputs.encoder17tMagnetOffset = encoder17tConfig.getConfiguration().MagnetSensor.MagnetOffset;
-    inputs.encoder18tMagnetOffset = encoder18tConfig.getConfiguration().MagnetSensor.MagnetOffset;
+    inputs.encoder17tMagnetOffset = encoder17tMagnetConfig.getMagnetOffsetMeasure();
+    inputs.encoder18tMagnetOffset = encoder18tMagnetConfig.getMagnetOffsetMeasure();
   }
 
   @Override
@@ -125,17 +122,16 @@ public abstract class TurretIOBase implements TurretIO {
   }
 
   @Override
-  public void refreshMagnetSensorConfigs() {
-    encoder17t.getConfigurator().refresh(encoder17tConfig.getConfiguration().MagnetSensor);
-    encoder18t.getConfigurator().refresh(encoder18tConfig.getConfiguration().MagnetSensor);
-  }
+  public void zeroEncoders() {
+    BaseStatusSignal.refreshAll(
+      encoder17tPosition,
+      encoder18tPosition
+    );
 
-  @Override
-  public void reconfigureEncoderMagnetOffsets(double offset17t, double offset18t) {
-    encoder17tConfig.withMagnetOffset(offset17t);
-    encoder18tConfig.withMagnetOffset(offset18t);
+    encoder17t.getConfigurator().refresh(encoder17tMagnetConfig);
+    encoder18t.getConfigurator().refresh(encoder18tMagnetConfig);
 
-    encoder17tConfig.configure(encoder17t);
-    encoder18tConfig.configure(encoder18t);
+    Angle newOffset17t = encoder17tMagnetConfig.getMagnetOffsetMeasure().minus(encoder17tPosition.getValue());
+    Angle newOffset18t = encoder17tMagnetConfig.getMagnetOffsetMeasure().minus(encoder18tPosition.getValue());
   }
 }

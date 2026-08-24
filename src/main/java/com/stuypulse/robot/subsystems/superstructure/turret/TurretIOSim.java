@@ -5,14 +5,16 @@
 /***************************************************************/
 package com.stuypulse.robot.subsystems.superstructure.turret;
 
+import static org.wpilib.units.Units.*;
+
 import org.wpilib.math.system.DCMotor;
 import org.wpilib.math.system.Models;
 import org.wpilib.simulation.DCMotorSim;
 
 import com.ctre.phoenix6.controls.PositionVoltage;
+import com.stuypulse.robot.constants.GlobalSettings;
+import com.stuypulse.robot.subsystems.superstructure.turret.TurretConstants.*;
 
-import com.stuypulse.robot.constants.Ports;
-import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
 import com.stuypulse.robot.util.talonfx.sim.SystemSim;
 import com.stuypulse.robot.util.talonfx.sim.TalonFXSimulation;
 
@@ -28,15 +30,15 @@ public class TurretIOSim extends TurretIOBase {
             new DCMotorSim(
                 Models.singleJointedArmFromPhysicalConstants(
                     DCMotor.getKrakenX60(1),
-                    0,
-                    SuperstructureConstants.Turret.Settings.GEAR_RATIO_MOTOR_TO_MECH),
+                    TurretSettings.TURRET_MOI.in(KilogramSquareMeters),
+                    TurretSettings.GEAR_RATIO_MOTOR_TO_MECH),
                 DCMotor.getKrakenX60(1),
                 2.8));
 
     final TalonFXSimulation simMotor =
         new TalonFXSimulation(
-            Ports.Superstructure.Turret.MOTOR,
-            SuperstructureConstants.Turret.Settings.GEAR_RATIO_MOTOR_TO_MECH,
+            TurretDeviceIds.MOTOR,
+            TurretSettings.GEAR_RATIO_MOTOR_TO_MECH,
             sim);
 
     controller = new PositionVoltage(0).withEnableFOC(true);
@@ -49,6 +51,7 @@ public class TurretIOSim extends TurretIOBase {
 
   @Override
   public void updateInputs(TurretIOInputs inputs) {
+    sim.update(GlobalSettings.DT);
     simMotor.refresh();
 
     super.updateInputs(inputs);

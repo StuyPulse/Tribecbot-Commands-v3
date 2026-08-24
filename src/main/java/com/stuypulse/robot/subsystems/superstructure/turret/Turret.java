@@ -18,11 +18,12 @@ import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.geometry.Translation2d;
 
 import com.stuypulse.robot.RobotContainer;
-import com.stuypulse.robot.constants.DriverConstants;
 import com.stuypulse.robot.constants.Field;
-import com.stuypulse.robot.constants.Gains;
-import com.stuypulse.robot.constants.Settings;
-import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
+
+import com.stuypulse.robot.constants.GlobalSettings;
+import com.stuypulse.robot.subsystems.superstructure.turret.TurretConstants.*;
+import com.stuypulse.robot.constants.DriverConstants.*;
+
 import com.stuypulse.robot.subsystems.superstructure.turret.TurretIO.TurretIOOutputMode;
 import com.stuypulse.robot.subsystems.superstructure.turret.TurretIO.TurretIOOutputs;
 import com.stuypulse.robot.subsystems.swerve.Drive;
@@ -38,7 +39,7 @@ public class Turret extends FullSubsystem {
   private Angle driverInput;
 
   static {
-    switch (Settings.currentMode) {
+    switch (GlobalSettings.CURRENT_MODE) {
       case REAL -> instance = new Turret(new TurretIOTalonFX());
 
       case SIM -> instance = new Turret(new TurretIOSim());
@@ -62,8 +63,6 @@ public class Turret extends FullSubsystem {
   private boolean lagging;
   private boolean hasUsedAbsoluteEncoder;
   private boolean hasInitializedFilter;
-  private boolean zeroingEncoders;
-  private boolean hasRefreshedEncoderMagnetOffsets;
   private boolean isWrapping;
 
   private double prevActualTargetAngle;
@@ -84,8 +83,6 @@ public class Turret extends FullSubsystem {
 
     hasUsedAbsoluteEncoder = false;
     hasInitializedFilter = false;
-    zeroingEncoders = false;
-    hasRefreshedEncoderMagnetOffsets = false;
   }
 
   public enum TurretState {
@@ -134,10 +131,10 @@ public class Turret extends FullSubsystem {
       delta += 360;
     }
 
-    if (current + delta > SuperstructureConstants.Turret.Settings.RANGE_CW) {
+    if (current + delta > TurretSettings.RANGE_CW) {
       return delta - 360;
     }
-    if (current + delta < SuperstructureConstants.Turret.Settings.RANGE_CCW) {
+    if (current + delta < TurretSettings.RANGE_CCW) {
       return delta + 360;
     }
 
@@ -155,7 +152,7 @@ public class Turret extends FullSubsystem {
     io.updateInputs(inputs);
     Logger.processInputs("Turret", inputs);
 
-    if (!Settings.EnabledSubsystems.TURRET.get()) {
+    if (!GlobalSettings.EnabledSubsystems.TURRET.get()) {
       stopTurret();
 
       return;
@@ -168,9 +165,9 @@ public class Turret extends FullSubsystem {
       case SOTM -> runPosition(SOTMCalculator.calculateTurretAngleSOTM());
       case FOTM -> runPosition(SOTMCalculator.calculateTurretAngleFOTM());
       case FERRY -> runPosition(getFerryAngle());
-      case LEFT_CORNER -> runPosition(SuperstructureConstants.Turret.Settings.LEFT_CORNER);
-      case RIGHT_CORNER -> runPosition(SuperstructureConstants.Turret.Settings.RIGHT_CORNER);
-      case KB -> runPosition(SuperstructureConstants.Turret.Settings.KB);
+      case LEFT_CORNER -> runPosition(TurretAngles.LEFT_CORNER);
+      case RIGHT_CORNER -> runPosition(TurretAngles.RIGHT_CORNER);
+      case KB -> runPosition(TurretAngles.KB);
       case TESTING -> runPosition(driverInput);
     }
     ;
@@ -222,21 +219,6 @@ public class Turret extends FullSubsystem {
     outputs.turretMode = TurretIOOutputMode.STOP;
   }
 
-  private void zeroEncoders() {
-    double encoderPos17T = inputs.encoder17tPosition.in(Rotations);
-    double encoderPos18T = inputs.encoder18tPosition.in(Rotations);
-
-    io.refreshMagnetSensorConfigs();
-
-    double currentOffset17T = inputs.encoder17tMagnetOffset;
-    double currentOffset18T = inputs.encoder18tMagnetOffset;
-
-    double newOffset17T = currentOffset17T - encoderPos17T;
-    double newOffset18T = currentOffset18T - encoderPos18T;
-
-    io.reconfigureEncoderMagnetOffsets(newOffset17T, newOffset18T);
-  }
-
   private void runPosition(Angle position) {
     if (!hasUsedAbsoluteEncoder) {
       seedTurret();
@@ -254,12 +236,12 @@ public class Turret extends FullSubsystem {
     double delta = actualTargetAngle - prevActualTargetAngle;
 
     boolean deltaIsSignificant =
-        Math.abs(delta) >= SuperstructureConstants.Turret.Settings.SETPOINT_FILTER_THRESHOLD_DEG;
+        Math.abs(delta) >= TurretSettings.SETPOINT_FILTER_THRESHOLD_DEG;
 
     boolean driverIsMoving =
-        Math.abs(RobotContainer.driver.getLeftX()) > DriverConstants.Driver.Drive.DEADBAND
-            || Math.abs(RobotContainer.driver.getLeftY()) > DriverConstants.Driver.Drive.DEADBAND
-            || Math.abs(RobotContainer.driver.getRightX()) > DriverConstants.Driver.Drive.DEADBAND;
+        Math.abs(RobotContainer.driver.getLeftX()) > DriverDriveSettings.DEADBAND
+            || Math.abs(RobotContainer.driver.getLeftY()) > DriverDriveSettings.DEADBAND
+            || Math.abs(RobotContainer.driver.getRightX()) > DriverDriveSettings.DEADBAND;
 
     if (deltaIsSignificant || driverIsMoving) {
       prevActualTargetAngle = actualTargetAngle;
@@ -268,11 +250,11 @@ public class Turret extends FullSubsystem {
     if (isWrapping) {
       isWrapping =
           Math.abs(getWrappedTargetAngle(position) - currentAngle)
-              > SuperstructureConstants.Turret.Settings.GAIN_SWITCHING_THRESHOLD_END.in(Degrees);
+              > TurretSettings.GAIN_SWITCHING_THRESHOLD_END.in(Degrees);
     } else {
       isWrapping =
           Math.abs(getWrappedTargetAngle(position) - currentAngle)
-              > SuperstructureConstants.Turret.Settings.GAIN_SWITCHING_THRESHOLD_START.in(Degrees);
+              > TurretSettings.GAIN_SWITCHING_THRESHOLD_START.in(Degrees);
     }
 
     int slot = 0;
@@ -282,12 +264,12 @@ public class Turret extends FullSubsystem {
     }
 
     double omega = Drive.getInstance().getChassisSpeeds().omega;
-    double omegaFF = Gains.Superstructure.Turret.kOmega.get() * omega;
+    double omegaFF = TurretGains.kOmega.get() * omega;
     double setpointVelocityRPS = delta / (360 * 0.02);
 
     double translationalComponentVelocityRPS = setpointVelocityRPS - omega / (2 * Math.PI);
     double translationFF =
-        Gains.Superstructure.Turret.kTranslation.get() * translationalComponentVelocityRPS;
+        TurretGains.kTranslation.get() * translationalComponentVelocityRPS;
 
     outputs.turretMode = TurretIOOutputMode.POSITION;
     outputs.turretPosition = Degrees.of(prevActualTargetAngle);
@@ -301,18 +283,18 @@ public class Turret extends FullSubsystem {
         switch (state) {
           case SOTM ->
               swerve.getTurretPose().getTranslation().getDistance(Field.HUB_CENTER.getTranslation())
-                      > SuperstructureConstants.Turret.Settings.SOTM_TOLERANCE_THRESHOLD_METERS
+                      > TurretSettings.SOTM_TOLERANCE_THRESHOLD_METERS
                           .get()
-                  ? Degrees.of(SuperstructureConstants.Turret.Settings.SOTM_TOLERANCE_CLOSE.get())
-                  : Degrees.of(SuperstructureConstants.Turret.Settings.SOTM_TOLERANCE_FAR.get());
-          case FOTM -> SuperstructureConstants.Turret.Settings.FOTM_TOLERANCE;
-          default -> SuperstructureConstants.Turret.Settings.TOLERANCE;
+                  ? Degrees.of(TurretSettings.SOTM_TOLERANCE_CLOSE.get())
+                  : Degrees.of(TurretSettings.SOTM_TOLERANCE_FAR.get());
+          case FOTM -> TurretSettings.FOTM_TOLERANCE;
+          default -> TurretSettings.TOLERANCE;
         };
 
     atTolerance = error.abs(Degrees) < tolerance.in(Degrees);
     lagging =
         error.abs(Degrees)
-            >= SuperstructureConstants.Turret.Settings.GAIN_SWITCHING_THRESHOLD_START.in(Degrees);
+            >= TurretSettings.GAIN_SWITCHING_THRESHOLD_START.in(Degrees);
   }
 
   public Command runFerry() {
@@ -340,7 +322,7 @@ public class Turret extends FullSubsystem {
   }
 
   public Command zeroTurret() {
-    Command zeroEncoders = run(coroutine -> zeroEncoders()).named("Zero encoders");
+    Command zeroEncoders = run(coroutine -> io.zeroEncoders()).named("Zero encoders");
     Command seedTurret = run(coroutine -> seedTurret()).named("Seed turret");
 
     return run(coroutine -> zeroEncoders.andThen(seedTurret)).named("Zero turret");

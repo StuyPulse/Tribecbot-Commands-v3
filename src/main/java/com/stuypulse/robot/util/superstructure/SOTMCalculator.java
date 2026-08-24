@@ -5,10 +5,8 @@
 /***************************************************************/
 package com.stuypulse.robot.util.superstructure;
 
-import static org.wpilib.units.Units.Meters;
-
-import org.wpilib.units.measure.Angle;
-import org.wpilib.units.measure.AngularVelocity;
+import static org.wpilib.units.Units.*;
+import org.wpilib.units.measure.*;
 
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
@@ -19,9 +17,11 @@ import org.wpilib.math.kinematics.ChassisVelocities;
 import org.wpilib.smartdashboard.FieldObject2d;
 import org.wpilib.smartdashboard.SmartDashboard;
 
+import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants.*;
+import com.stuypulse.robot.subsystems.superstructure.hood.HoodConstants.*;
+
 import com.stuypulse.robot.Robot;
 import com.stuypulse.robot.constants.Field;
-import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
 import com.stuypulse.robot.subsystems.superstructure.hood.Hood;
 import com.stuypulse.robot.subsystems.superstructure.shooter.Shooter;
 import com.stuypulse.robot.subsystems.superstructure.turret.Turret;
@@ -250,7 +250,7 @@ public class SOTMCalculator {
     That way, when we reach tolerance and fire at the future pose and rotation, the parameters will be correct.
     */
 
-    double t = SuperstructureConstants.Settings.SOTM.UPDATE_DELAY.getAsDouble();
+    double t = SOTM.UPDATE_DELAY.getAsDouble();
 
     Twist2d robotTwist =
         new Twist2d(robotRelativeSpeeds.vx * t, robotRelativeSpeeds.vy * t, omega * t);
@@ -316,8 +316,8 @@ public class SOTMCalculator {
             futureRobotPose.getRotation(),
             vTurretX,
             vTurretY,
-            SuperstructureConstants.Settings.SOTM.MAX_ITERATIONS,
-            SuperstructureConstants.Settings.SOTM.TIME_TOLERANCE);
+            SOTM.MAX_ITERATIONS,
+            SOTM.TIME_TOLERANCE);
 
     hubPose2d.setPose(Robot.isBlue() ? hubPose : Field.transformToOppositeAlliance(hubPose));
     virtualHubPose2d.setPose(
@@ -351,7 +351,7 @@ public class SOTMCalculator {
         robotRelativeSpeeds.toRobotRelative(robotPose.getRotation());
 
     double omega = robotRelativeSpeeds.omega;
-    double t = SuperstructureConstants.Settings.SOTM.UPDATE_DELAY.getAsDouble();
+    double t = SOTM.UPDATE_DELAY.getAsDouble();
 
     Twist2d robotTwist =
         new Twist2d(robotRelativeSpeeds.vx * t, robotRelativeSpeeds.vy * t, omega * t);
@@ -376,8 +376,8 @@ public class SOTMCalculator {
             futureRobotPose.getRotation(),
             vTurretX,
             vTurretY,
-            SuperstructureConstants.Settings.SOTM.MAX_ITERATIONS,
-            SuperstructureConstants.Settings.SOTM.TIME_TOLERANCE);
+            SOTM.MAX_ITERATIONS,
+            SOTM.TIME_TOLERANCE);
 
     ferryPose2d.setPose(Robot.isBlue() ? ferryPose : Field.transformToOppositeAlliance(ferryPose));
     virtualFerryPose2d.setPose(
@@ -413,7 +413,7 @@ public class SOTMCalculator {
     // TODO: don't forget to change this back to the solution!!
     // return ferrySol.targetHoodAngle();
     // return Rotation2d.fromDegrees(40);
-    return SuperstructureConstants.Hood.Settings.Angles.FERRY_ANGLE;
+    return HoodAngles.FERRY_ANGLE;
   }
 
   public static Angle calculateTurretAngleFOTM() {

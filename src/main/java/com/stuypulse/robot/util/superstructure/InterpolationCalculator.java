@@ -16,12 +16,9 @@ import org.wpilib.math.geometry.Translation2d;
 import org.wpilib.math.interpolation.InterpolatingDoubleTreeMap;
 
 import com.stuypulse.robot.constants.Field;
-import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
-import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants.Settings.AngleInterpolation;
-import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants.Settings.FerryRPMInterpolation;
-import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants.Settings.FerryTOFInterpolation;
-import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants.Settings.RPMInterpolation;
-import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants.Settings.TOFInterpolation;
+import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants.*;
+import com.stuypulse.robot.subsystems.superstructure.hood.HoodConstants.*;
+
 import com.stuypulse.robot.subsystems.swerve.Drive;
 
 import dev.doglog.DogLog;
@@ -80,27 +77,27 @@ public class InterpolationCalculator {
 
   static {
     distanceAngleInterpolator = new InterpolatingDoubleTreeMap();
-    for (double[] pair : AngleInterpolation.distanceAngleInterpolationValues) {
+    for (double[] pair : InterpolationConstants.DISTANCE_ANGLE_INTERPOLATION_VALUES) {
       distanceAngleInterpolator.put(pair[0], pair[1]);
     }
 
     distanceRPMInterpolator = new InterpolatingDoubleTreeMap();
-    for (double[] pair : RPMInterpolation.distanceRPMInterpolationValues) {
+    for (double[] pair : InterpolationConstants.DISTANCE_RPM_INTERPOLATION_VALUES) {
       distanceRPMInterpolator.put(pair[0], pair[1]);
     }
 
     distanceTOFInterpolator = new InterpolatingDoubleTreeMap();
-    for (double[] pair : TOFInterpolation.distanceTOFInterpolationValues) {
+    for (double[] pair : InterpolationConstants.DISTANCE_TOF_INTERPOLATION_VALUES) {
       distanceTOFInterpolator.put(pair[0], pair[1]);
     }
 
     ferryingDistanceRPMInterpolator = new InterpolatingDoubleTreeMap();
-    for (double[] pair : FerryRPMInterpolation.ferryDistanceRPMInterpolation) {
+    for (double[] pair : InterpolationConstants.FERRY_DISTANCE_RPM_INTERPOLATION) {
       ferryingDistanceRPMInterpolator.put(pair[0], pair[1]);
     }
 
     ferryingDistanceTOFInterpolator = new InterpolatingDoubleTreeMap();
-    for (double[] pair : FerryTOFInterpolation.FerryTOFInterpolationInterpolation) {
+    for (double[] pair : InterpolationConstants.FERRY_TOF_INTERPOLATION) {
       ferryingDistanceTOFInterpolator.put(pair[0], pair[1]);
     }
   }
@@ -139,7 +136,7 @@ public class InterpolationCalculator {
 
     double distanceMeters = currentPose.getDistance(ferryPose);
 
-    Angle targetAngle = SuperstructureConstants.Hood.Settings.Angles.FERRY_ANGLE;
+    Angle targetAngle = HoodAngles.FERRY_ANGLE;
     AngularVelocity targetRPM = RPM.of(ferryingDistanceRPMInterpolator.get(distanceMeters));
     double flightTime = ferryingDistanceTOFInterpolator.get(distanceMeters);
 

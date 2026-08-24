@@ -5,6 +5,7 @@
 /***************************************************************/
 package com.stuypulse.robot.subsystems.superstructure.hood;
 
+import static org.wpilib.units.Units.Kilograms;
 import static org.wpilib.units.Units.Meters;
 
 import org.wpilib.units.measure.Angle;
@@ -15,9 +16,8 @@ import org.wpilib.simulation.ElevatorSim;
 
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
-
-import com.stuypulse.robot.constants.Ports;
-import com.stuypulse.robot.subsystems.superstructure.SuperstructureConstants;
+import com.stuypulse.robot.constants.GlobalSettings;
+import com.stuypulse.robot.subsystems.superstructure.hood.HoodConstants.*;
 import com.stuypulse.robot.util.talonfx.sim.SystemSim;
 import com.stuypulse.robot.util.talonfx.sim.TalonFXSimulation;
 
@@ -36,19 +36,19 @@ public class HoodIOSim extends HoodIOBase {
             new ElevatorSim(
                 Models.elevatorFromPhysicalConstants(
                     DCMotor.getKrakenX60(1),
-                    1.0,
-                    SuperstructureConstants.Hood.Settings.DRUM_RADIUS,
-                    1.0),
+                    HoodSettings.HOOD_MASS.in(Kilograms),
+                    HoodSettings.DRUM_RADIUS.in(Meters),
+                    HoodSettings.GEAR_RATIO),
                 DCMotor.getKrakenX60(1),
-                SuperstructureConstants.Hood.Settings.MIN_HEIGHT,
-                SuperstructureConstants.Hood.Settings.MAX_HEIGHT,
+                HoodSettings.MIN_HEIGHT.in(Meters),
+                HoodSettings.MAX_HEIGHT.in(Meters),
                 false,
-                SuperstructureConstants.Hood.Settings.MIN_HEIGHT,
+                HoodSettings.MIN_HEIGHT.in(Meters),
                 0.001),
-            Meters.of(SuperstructureConstants.Hood.Settings.DRUM_RADIUS));
+            HoodSettings.DRUM_RADIUS);
 
     final TalonFXSimulation hoodMotor =
-        new TalonFXSimulation(Ports.Superstructure.Hood.MOTOR, 1, sim);
+        new TalonFXSimulation(HoodDeviceIds.MOTOR, 1, sim);
 
     super(hoodMotor);
 
@@ -61,6 +61,7 @@ public class HoodIOSim extends HoodIOBase {
 
   @Override
   public void updateInputs(HoodIOInputs inputs) {
+    sim.update(GlobalSettings.DT);
     hoodMotor.refresh();
 
     super.updateInputs(inputs);
