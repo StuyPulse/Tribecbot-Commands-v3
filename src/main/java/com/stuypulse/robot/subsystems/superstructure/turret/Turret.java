@@ -207,12 +207,8 @@ public class Turret extends FullSubsystem {
     driverInput = Degrees.of(gamepad.getLeftX() * 180);
   }
 
-  private void setState(TurretState state) {
+  public void setState(TurretState state) {
     this.state = state;
-  }
-
-  public void setStateCommand(TurretState state) {
-    setState(state);
   }
 
   private void stopTurret() {

@@ -184,12 +184,8 @@ public class Hood extends FullSubsystem {
             HoodSettings.STALL_CURRENT_LIMIT));
   }
 
-  private void setState(HoodState state) {
+  public void setState(HoodState state) {
     this.state = state;
-  }
-
-  public void setStateCommand(HoodState state) {
-    setState(state);
   }
 
   public Command runHomingUpper() {

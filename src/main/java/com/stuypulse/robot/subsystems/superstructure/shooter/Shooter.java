@@ -150,11 +150,7 @@ public class Shooter extends FullSubsystem {
             ShooterSettings.IS_SHOOTING_CURRENT));
   }
 
-  private void setState(ShooterState state) {
+  public void setState(ShooterState state) {
     this.state = state;
-  }
-
-  public void setStateCommand(ShooterState state) {
-    setState(state);
   }
 }

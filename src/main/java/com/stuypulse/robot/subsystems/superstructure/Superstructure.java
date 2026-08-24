@@ -104,9 +104,9 @@ public class Superstructure extends Mechanism {
 
   private void setState(SuperstructureState state) {
     this.state = state;
-    hood.setStateCommand(state.getHoodState());
-    shooter.setStateCommand(state.getShooterState());
-    turret.setStateCommand(state.getTurretState());
+    hood.setState(state.getHoodState());
+    shooter.setState(state.getShooterState());
+    turret.setState(state.getTurretState());
   }
 
   public SuperstructureState getState() {

@@ -5,8 +5,7 @@
 /***************************************************************/
 package com.stuypulse.robot.subsystems.handoff;
 
-import static org.wpilib.units.Units.Amps;
-import static org.wpilib.units.Units.Seconds;
+import static org.wpilib.units.Units.*;
 
 import org.wpilib.command3.*;
 import org.wpilib.math.filter.Debouncer;
