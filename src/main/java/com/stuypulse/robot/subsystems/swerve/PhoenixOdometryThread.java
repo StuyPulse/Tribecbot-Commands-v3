@@ -1,14 +1,17 @@
-// Copyright (c) 2021-2026 Littleton Robotics
-// http://github.com/Mechanical-Advantage
-//
-// Use of this source code is governed by a BSD
-// license that can be found in the LICENSE file
-// at the root directory of this project.
-
+/************************ PROJECT TRIBECBOT *************************/
+/* Copyright (c) 2026 StuyPulse Robotics. All rights reserved. */
+/* Use of this source code is governed by an MIT-style license */
+/* that can be found in the repository LICENSE file.           */
+/***************************************************************/
 package com.stuypulse.robot.subsystems.swerve;
+
+import org.wpilib.units.measure.Angle;
+
+import org.wpilib.system.RobotController;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
@@ -16,9 +19,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.DoubleSupplier;
-
-import org.wpilib.system.RobotController;
-import org.wpilib.units.measure.Angle;
 
 /**
  * Provides an interface for asynchronously reading high-frequency measurements to a set of queues.

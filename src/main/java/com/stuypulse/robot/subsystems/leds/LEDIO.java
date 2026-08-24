@@ -6,10 +6,7 @@
 package com.stuypulse.robot.subsystems.leds;
 
 import static org.wpilib.units.Units.*;
-
 import org.wpilib.units.measure.*;
-
-import org.wpilib.hardware.led.LEDPattern;
 
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.signals.RGBWColor;

@@ -1,7 +1,8 @@
-/************************ PROJECT SSSS ************************/
-/* Copyright (c) 2026 StuyPulse Robotics. All rights reserved.*/
-/* This work is licensed under the terms of the MIT license.  */
-/**************************************************************/
+/************************ PROJECT TRIBECBOT *************************/
+/* Copyright (c) 2026 StuyPulse Robotics. All rights reserved. */
+/* Use of this source code is governed by an MIT-style license */
+/* that can be found in the repository LICENSE file.           */
+/***************************************************************/
 package com.stuypulse.robot.subsystems.vision;
 
 import org.wpilib.math.geometry.Pose3d;
@@ -11,6 +12,7 @@ import org.wpilib.math.util.Units;
 import org.wpilib.networktables.*;
 import org.wpilib.system.RobotController;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -151,7 +153,7 @@ public class VisionIOLimelight implements VisionIO {
 
     pipelinePublisher.accept(outputs.pipeline);
 
-    aprilTagWhitelistPublisher.accept(outputs.aprilTagIDWhitelist);
+    aprilTagWhitelistPublisher.accept(Arrays.stream(outputs.aprilTagIDWhitelist).asDoubleStream().toArray());
   }
 
   /** Parses the 3D pose from a Limelight botpose array. */

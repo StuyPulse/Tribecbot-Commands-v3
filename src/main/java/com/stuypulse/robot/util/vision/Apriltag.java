@@ -8,16 +8,16 @@ package com.stuypulse.robot.util.vision;
 import org.wpilib.math.geometry.Pose3d;
 
 public record Apriltag(int id, Pose3d location) {
-    public Apriltag(int id, Pose3d location) {
-        this.id = id;
-        this.location = location;
-    }
+  public Apriltag(int id, Pose3d location) {
+    this.id = id;
+    this.location = location;
+  }
 
-    public int getID() {
-        return id;
-    }
+  public int getID() {
+    return id;
+  }
 
-    public Pose3d getLocation() {
-        return location;
-    }
+  public Pose3d getLocation() {
+    return location;
+  }
 }

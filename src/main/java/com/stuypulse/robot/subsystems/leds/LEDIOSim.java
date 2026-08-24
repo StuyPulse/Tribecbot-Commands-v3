@@ -14,6 +14,8 @@ import org.wpilib.hardware.led.AddressableLEDBuffer;
 
 import com.ctre.phoenix6.signals.RGBWColor;
 
+import com.stuypulse.robot.subsystems.leds.LEDConstants.*;
+
 public class LEDIOSim implements LEDIO {
   private final AddressableLED led;
   private final AddressableLEDBuffer buffer;
@@ -21,8 +23,8 @@ public class LEDIOSim implements LEDIO {
   public boolean isInitialized = false;
 
   public LEDIOSim() {
-    this.led = new AddressableLED(LEDConstants.Ports.LED_PORT);
-    this.buffer = new AddressableLEDBuffer(LEDConstants.Settings.LED_LENGTH);
+    this.led = new AddressableLED(LEDDeviceIds.LED_PORT);
+    this.buffer = new AddressableLEDBuffer(LEDSettings.LED_LENGTH);
 
     led.setLength(buffer.getLength());
     led.setData(buffer);
