@@ -106,12 +106,8 @@ public class Handoff extends FullSubsystem {
     return state;
   }
 
-  private void setState(HandoffState state) {
+  public void setState(HandoffState state) {
     this.state = state;
-  }
-
-  public void setStateCommand(HandoffState state) {
-    setState(state);
   }
 
   public Command runHandoffForward() {

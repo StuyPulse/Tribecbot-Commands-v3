@@ -191,8 +191,8 @@ public class Superstructure extends Mechanism {
             .isAutonomous()) { // allows us to start SOTM earlier in auto, but currently not desired
       // in teleop
       setState(SuperstructureState.STOW);
-      Spindexer.getInstance().setStateCommand(SpindexerState.STOP);
-      Handoff.getInstance().setStateCommand(HandoffState.STOP);
+      Spindexer.getInstance().setState(SpindexerState.STOP);
+      Handoff.getInstance().setState(HandoffState.STOP);
     }
   }
 
