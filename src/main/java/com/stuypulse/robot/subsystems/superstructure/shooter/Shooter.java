@@ -1,105 +1,156 @@
+/************************ PROJECT TRIBECBOT *************************/
+/* Copyright (c) 2026 StuyPulse Robotics. All rights reserved. */
+/* Use of this source code is governed by an MIT-style license */
+/* that can be found in the repository LICENSE file.           */
+/***************************************************************/
 package com.stuypulse.robot.subsystems.superstructure.shooter;
 
 import static org.wpilib.units.Units.*;
-import org.wpilib.units.measure.*;
 
-import com.stuypulse.robot.constants.Settings;
-import com.stuypulse.robot.subsystems.superstructure.shooter.ShooterIO.ShooterIOOutputs;
+import org.wpilib.units.measure.AngularVelocity;
 
-import org.wpilib.command3.Command;
-import org.wpilib.command3.Mechanism;
 import org.wpilib.math.filter.Debouncer;
 import org.wpilib.math.filter.Debouncer.DebounceType;
-import java.util.function.DoubleSupplier;
+
+import com.stuypulse.robot.constants.GlobalSettings;
+import com.stuypulse.robot.subsystems.superstructure.shooter.ShooterConstants.*;
+
+import com.stuypulse.robot.subsystems.superstructure.shooter.ShooterIO.ShooterIOOutputMode;
+import com.stuypulse.robot.subsystems.superstructure.shooter.ShooterIO.ShooterIOOutputs;
+import com.stuypulse.robot.util.FullSubsystem;
+import com.stuypulse.robot.util.superstructure.InterpolationCalculator;
+import com.stuypulse.robot.util.superstructure.SOTMCalculator;
+
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class Shooter extends Mechanism {
-    private static final Shooter instance;
+public class Shooter extends FullSubsystem {
+  private static final Shooter instance;
 
-    static {
-        switch (Settings.currentMode) {
-            case REAL -> instance = new Shooter(new ShooterIOTalonFX());
+  static {
+    switch (GlobalSettings.CURRENT_MODE) {
+      case REAL -> instance = new Shooter(new ShooterIOTalonFX());
 
-            case SIM -> instance = new Shooter(new ShooterIOSim());
+      case SIM -> instance = new Shooter(new ShooterIOSim());
 
-            default -> instance = new Shooter(new ShooterIO() {
-            });
-        }
+      default -> instance = new Shooter(new ShooterIO() {});
+    }
+  }
+
+  public static Shooter getInstance() {
+    return instance;
+  }
+
+  private final ShooterIO io;
+  private final ShooterIOInputsAutoLogged inputs;
+  private final ShooterIOOutputs outputs;
+
+  @AutoLogOutput(key = "States/Shooter")
+  private ShooterState state;
+
+  private final Debouncer readyToShootDebouncer;
+  private final Debouncer currentlyShootingDebouncer;
+  private boolean atTolerance;
+
+  private Shooter(ShooterIO io) {
+    this.io = io;
+    this.inputs = new ShooterIOInputsAutoLogged();
+    this.outputs = new ShooterIOOutputs();
+
+    readyToShootDebouncer = new Debouncer(0.5, DebounceType.kBoth);
+    currentlyShootingDebouncer = new Debouncer(2, DebounceType.kFalling);
+    atTolerance = false;
+  }
+
+  public enum ShooterState {
+    STOP,
+    MANUAL_OVERRIDE,
+    FERRY,
+    REVERSE,
+    KB,
+    LEFT_CORNER,
+    RIGHT_CORNER,
+    INTERPOLATION,
+    SOTM,
+    FOTM;
+  }
+
+  public void periodic() {
+    io.updateInputs(inputs);
+    Logger.processInputs("Shooter", inputs);
+
+    if (!GlobalSettings.EnabledSubsystems.SHOOTER.get()) {
+      stopShooter();
+
+      return;
     }
 
-    public static Shooter getInstance() {
-        return instance;
+    switch (state) {
+      case STOP -> stopShooter();
+      case MANUAL_OVERRIDE ->
+          runVelocity(RPM.of(ShooterRPMValues.MANUAL_OVERRIDE.get()));
+      case FERRY -> runVelocity(InterpolationCalculator.getInterpolatedFerryRPM());
+      case REVERSE -> runVelocity(ShooterRPMValues.REVERSE);
+      case KB -> runVelocity(ShooterRPMValues.KB);
+      case LEFT_CORNER -> runVelocity(ShooterRPMValues.LEFT_CORNER);
+      case RIGHT_CORNER -> runVelocity(ShooterRPMValues.RIGHT_CORNER);
+      case INTERPOLATION -> runVelocity(InterpolationCalculator.getInterpolatedShotRPM());
+      case SOTM -> runVelocity(SOTMCalculator.calculateShooterRPMSOTM());
+      case FOTM -> runVelocity(SOTMCalculator.calculateShooterRPMFOTM());
     }
+  }
 
-    private final ShooterIO io;
-    private final ShooterIOInputsAutoLogged inputs;
-    private final ShooterIOOutputs outputs;
+  @Override
+  public void periodicAfterScheduler() {
+    io.applyOutputs(outputs);
+  }
 
-    private final Debouncer readyToShootDebouncer;
-    private boolean atTolerance;
+  public AngularVelocity getShooterVelocity() {
+    return inputs.shooterLeaderMotorVelocity;
+  }
 
-    private Shooter(ShooterIO io) {
-        this.io = io;
-        this.inputs = new ShooterIOInputsAutoLogged();
-        this.outputs = new ShooterIOOutputs();
+  public void stopShooter() {
+    outputs.shooterMode = ShooterIOOutputMode.STOP;
+  }
 
-        readyToShootDebouncer = new Debouncer(0.5, DebounceType.kBoth);
-        atTolerance = false;
-    }
+  private void runVelocity(AngularVelocity velocity) {
+    outputs.shooterMode = ShooterIOOutputMode.VELOCITY;
+    outputs.shooterVelocity = velocity;
 
-    public void periodic() {
-        io.updateInputs(inputs);
-        Logger.processInputs("Shooter", inputs);
-    }
+    AngularVelocity error = inputs.shooterLeaderMotorVelocity.minus(velocity);
 
-    public void periodicAfterScheduler() {
-        Logger.recordOutput("Shooter/Velocity Setpoint", outputs.shooterVelocity);
-        io.applyOutputs(outputs);
-    }
+    AngularVelocity toleranceHigh =
+        switch (state) {
+          case SOTM -> ShooterSettings.SHOOTER_FOTM_TOLERANCE_RPM_HIGH;
+          case FOTM -> ShooterSettings.SHOOTER_FOTM_TOLERANCE_RPM_HIGH;
+          default -> ShooterSettings.SHOOTER_TOLERANCE_RPM_HIGH;
+        };
 
-    public AngularVelocity getShooterVelocity() {
-        return inputs.shooterLeaderMotorVelocity;
-    }
+    AngularVelocity toleranceLow =
+        switch (state) {
+          case SOTM -> ShooterSettings.SHOOTER_SOTM_TOLERANCE_RPM_LOW;
+          case FOTM -> ShooterSettings.SHOOTER_FOTM_TOLERANCE_RPM_LOW;
+          default -> ShooterSettings.SHOOTER_TOLERANCE_RPM_LOW;
+        };
 
-    private void runVelocity(AngularVelocity velocity) {
-        outputs.shooterVelocity = velocity;
-    }
+    atTolerance = error.lt(toleranceLow.unaryMinus()) && error.gt(toleranceHigh);
+  }
 
-    public boolean readyToShoot() {
-        return readyToShootDebouncer.calculate(atTolerance);
-    }
+  public boolean readyToShoot() {
+    return readyToShootDebouncer.calculate(atTolerance);
+  }
 
-    public Command stopShooter() {
-        return run(coroutine -> runVelocity(RPM.zero())).named("Stop shooter");
-    }
+  public boolean atTolerance() {
+    return atTolerance;
+  }
 
-    // Anything that isn't SOTM or FOTM
-    private Command runManual(DoubleSupplier rpmSupplier) {
-        return run(
-                coroutine -> {
-                    double targetRPM = rpmSupplier.getAsDouble();
+  public boolean isShooting() {
+    return currentlyShootingDebouncer.calculate(
+        inputs.shooterLeaderMotorStatorCurrent.gt(
+            ShooterSettings.IS_SHOOTING_CURRENT));
+  }
 
-                    runVelocity(RPM.of(targetRPM));
-                    double error = inputs.shooterLeaderMotorVelocity.in(RPM) - targetRPM;
-
-                    atTolerance = error > -Settings.Superstructure.SHOOTER_TOLERANCE_RPM_LOW
-                            && error < Settings.Superstructure.SHOOTER_TOLERANCE_RPM_HIGH;
-                }).named("Run manual");
-    }
-
-    public Command runManualOverride() {
-        return runManual(Settings.Superstructure.Shooter.RPM.MANUAL_OVERRIDE::get);
-    }
-
-    public Command runLeftCorner() {
-        return runManual(() -> Settings.Superstructure.Shooter.RPM.LEFT_CORNER.in(RPM));
-    }
-
-    public Command runRightCorner() {
-        return runManual(() -> Settings.Superstructure.Shooter.RPM.RIGHT_CORNER.in(RPM));
-    }
-
-    public Command runReverse() {
-        return runManual(() -> Settings.Superstructure.Shooter.RPM.REVERSE.in(RPM));
-    }
+  public void setState(ShooterState state) {
+    this.state = state;
+  }
 }
