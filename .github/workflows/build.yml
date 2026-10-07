@@ -7,7 +7,7 @@ on:
     branches: [ main, staging ]
 
 jobs:
-  roborio:
+  systemcore:
     uses: StuyPulse/.github/.github/workflows/systemcore-build.yml@main
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
