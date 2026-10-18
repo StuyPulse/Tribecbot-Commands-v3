@@ -10,6 +10,7 @@ import org.wpilib.command3.Scheduler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 /**
  * A standard subsystem that includes an extra periodic callback which runs after the command
@@ -17,32 +18,53 @@ import java.util.List;
  */
 public abstract class FullSubsystem extends Mechanism {
   private static List<FullSubsystem> instances = new ArrayList<>();
+  private BooleanSupplier isEnabled;
 
-  public FullSubsystem() {
-    super();
+  public FullSubsystem(String name, BooleanSupplier enabledSupplier) {
+    super(name);
+    this.isEnabled = enabledSupplier;
     instances.add(this);
-    Scheduler.getDefault().addPeriodic(this::periodic);
+    Scheduler.getDefault().addPeriodic(this::periodicLoop);
   }
 
   public FullSubsystem(String name) {
-    super(name);
-    instances.add(this);
-    Scheduler.getDefault().addPeriodic(this::periodic);
+    this(name, () -> true);
   }
 
   /**
    * This method is called periodically before scheduled commands, and should be overriden for
-   * updating inputs.
+   * updating inputs. This runs regardless of if the subsystem is enabled or disabled.
    */
   public void periodic() {}
-  ;
+
+  /**
+   * This method is called periodically only if the subsystem is disabled, and should be overriden
+   * for actual subsystem logic
+   */
+  public void enabledPeriodic() {}
 
   /**
    * This method is called periodically after the command scheduler, and should be overriden for
    * applying outputs.
    */
   public void periodicAfterScheduler() {}
-  ;
+
+  private void periodicLoop() {
+    periodic();
+
+    if (!isEnabled.getAsBoolean()) {
+      disabledPeriodic();
+      return;
+    }
+
+    enabledPeriodic();
+  }
+
+  /**
+   * This method is called periodically when the subsystem is disabled, and should be overriden
+   * for stopping motors and zeroing out values.
+   */
+  public void disabledPeriodic() {}
 
   /** Run the "after periodic" methods for all subsystems. */
   public static void runAllPeriodicAfterScheduler() {
