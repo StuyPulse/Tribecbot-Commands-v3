@@ -31,6 +31,10 @@ public abstract class FullSubsystem extends Mechanism {
     this(name, () -> true);
   }
 
+  public FullSubsystem() {
+    super();
+  }
+
   /**
    * This method is called periodically before scheduled commands, and should be overriden for
    * updating inputs. This runs regardless of if the subsystem is enabled or disabled.
