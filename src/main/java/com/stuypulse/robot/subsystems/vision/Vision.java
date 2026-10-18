@@ -85,6 +85,7 @@ public class Vision extends FullSubsystem {
   private int maxTagCount;
 
   public Vision(VisionConsumer consumer, EnumMap<Cameras, VisionIO> io) {
+    super(GlobalSettings.EnabledSubsystems.VISION);
     this.consumer = consumer;
 
     this.io = new EnumMap<>(io);
@@ -132,11 +133,10 @@ public class Vision extends FullSubsystem {
       currentIO.updateInputs(currentInputs);
       Logger.processInputs("Vision/" + entry.getKey().getName(), currentInputs);
     }
-
-    if (!GlobalSettings.EnabledSubsystems.VISION.get()) {
-      return;
-    }
-
+  }
+  
+  @Override
+  public void enabledPeriodic() {
     // Initialize logging values
     List<Pose3d> allTagPoses = new LinkedList<>();
     List<Pose3d> allRobotPoses = new LinkedList<>();

@@ -58,6 +58,7 @@ public class Hood extends FullSubsystem {
   private boolean atTolerance;
 
   private Hood(HoodIO io) {
+    super(GlobalSettings.EnabledSubsystems.HOOD);
     this.io = io;
     inputs = new HoodIOInputsAutoLogged();
     outputs = new HoodIOOutputs();
@@ -91,13 +92,15 @@ public class Hood extends FullSubsystem {
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Hood", inputs);
+  }
 
-    if (!GlobalSettings.EnabledSubsystems.HOOD.get()) {
-      stop();
+  @Override
+  public void disabledPeriodic() {
+    stop();
+  }
 
-      return;
-    }
-
+  @Override
+  public void enabledPeriodic() {
     switch (state) {
       case HOMING_UPPER -> {
         if (isStalling()) {
@@ -131,6 +134,7 @@ public class Hood extends FullSubsystem {
     }
   }
 
+  @Override
   public void periodicAfterScheduler() {
     io.applyOutputs(outputs);
   }

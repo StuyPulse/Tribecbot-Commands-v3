@@ -70,6 +70,7 @@ public class Turret extends FullSubsystem {
   private final Debouncer readyToShootDebouncer;
 
   public Turret(TurretIO io) {
+    super(GlobalSettings.EnabledSubsystems.TURRET);
     this.io = io;
     this.inputs = new TurretIOInputsAutoLogged();
     this.outputs = new TurretIOOutputs();
@@ -151,13 +152,15 @@ public class Turret extends FullSubsystem {
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Turret", inputs);
+  }
 
-    if (!GlobalSettings.EnabledSubsystems.TURRET.get()) {
-      stopTurret();
+  @Override
+  public void disabledPeriodic() {
+    stopTurret();
+  }
 
-      return;
-    }
-
+  @Override
+  public void enabledPeriodic() {
     switch (state) {
       case IDLE -> runPosition(inputs.turretMotorPosition);
       case ZERO -> runPosition(Degrees.zero());
@@ -170,7 +173,6 @@ public class Turret extends FullSubsystem {
       case KB -> runPosition(TurretAngles.KB);
       case TESTING -> runPosition(driverInput);
     }
-    ;
   }
 
   @Override

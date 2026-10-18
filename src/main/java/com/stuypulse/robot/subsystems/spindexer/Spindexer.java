@@ -41,6 +41,7 @@ public class Spindexer extends FullSubsystem {
   private SpindexerState state;
 
   private Spindexer(SpindexerIO io) {
+    super(GlobalSettings.EnabledSubsystems.SPINDEXER);
     this.io = io;
     this.inputs = new SpindexerIOInputsAutoLogged();
     this.outputs = new SpindexerIOOutputs();
@@ -58,13 +59,15 @@ public class Spindexer extends FullSubsystem {
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Spindexer", inputs);
+  }
 
-    if (!GlobalSettings.EnabledSubsystems.SPINDEXER.get()) {
-      stop();
+  @Override
+  public void disabledPeriodic() {
+    stop();
+  }
 
-      return;
-    }
-
+  @Override
+  public void enabledPeriodic() {
     switch (state) {
       case FORWARD -> runDutyCycle(SpindexerSettings.FORWARD_DUTY_CYCLE);
       case REVERSE -> runDutyCycle(SpindexerSettings.REVERSE_DUTY_CYCLE);

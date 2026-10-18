@@ -48,6 +48,7 @@ public class Handoff extends FullSubsystem {
   private final Debouncer handoffStallingDebouncer;
 
   private Handoff(HandoffIO io) {
+    super(GlobalSettings.EnabledSubsystems.HANDOFF);
     this.io = io;
     this.inputs = new HandoffIOInputsAutoLogged();
     this.outputs = new HandoffIOOutputs();
@@ -68,13 +69,15 @@ public class Handoff extends FullSubsystem {
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Handoff", inputs);
+  }
 
-    if (!GlobalSettings.EnabledSubsystems.HANDOFF.get()) {
-      stopHandoff();
+  @Override
+  public void disabledPeriodic() {
+    stopHandoff();
+  }
 
-      return;
-    }
-
+  @Override
+  public void enabledPeriodic() {
     switch (state) {
       case FORWARD -> runHandoffDutyCycle(HandoffSettings.FORWARD_DUTY_CYCLE);
       case REVERSE -> runHandoffDutyCycle(HandoffSettings.REVERSE_DUTY_CYCLE);

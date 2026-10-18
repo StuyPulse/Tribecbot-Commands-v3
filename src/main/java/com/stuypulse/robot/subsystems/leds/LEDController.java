@@ -41,6 +41,7 @@ public class LEDController extends FullSubsystem {
   // CANdle
 
   public LEDController(LEDIO io) { // might have to be private
+    super(GlobalSettings.EnabledSubsystems.VISION);
     this.io = io;
     this.inputs = new LEDIOInputsAutoLogged();
     this.outputs = new LEDIOOutputs();

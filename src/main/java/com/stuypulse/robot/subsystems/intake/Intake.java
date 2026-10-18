@@ -54,6 +54,7 @@ public class Intake extends FullSubsystem {
   private final IntakeIOOutputs outputs;
 
   private Intake(IntakeIO io) {
+    super(GlobalSettings.EnabledSubsystems.INTAKE);
     this.io = io;
     this.inputs = new IntakeIOInputsAutoLogged();
     this.outputs = new IntakeIOOutputs();
@@ -83,14 +84,16 @@ public class Intake extends FullSubsystem {
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Intake", inputs);
+  }
 
-    if (!GlobalSettings.EnabledSubsystems.INTAKE.get()) {
-      stopPivot();
-      stopRollers();
+  @Override
+  public void disabledPeriodic() {
+    stopPivot();
+    stopRollers();
+  }
 
-      return;
-    }
-
+  @Override
+  public void enabledPeriodic() {
     switch (pivotState) {
       case DEPLOY -> {
         if (isPivotBelowPushdownThreshold()) {

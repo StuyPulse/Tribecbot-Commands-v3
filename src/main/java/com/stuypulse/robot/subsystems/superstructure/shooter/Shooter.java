@@ -53,6 +53,7 @@ public class Shooter extends FullSubsystem {
   private boolean atTolerance;
 
   private Shooter(ShooterIO io) {
+    super(GlobalSettings.EnabledSubsystems.SHOOTER);
     this.io = io;
     this.inputs = new ShooterIOInputsAutoLogged();
     this.outputs = new ShooterIOOutputs();
@@ -78,13 +79,15 @@ public class Shooter extends FullSubsystem {
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs("Shooter", inputs);
+  }
 
-    if (!GlobalSettings.EnabledSubsystems.SHOOTER.get()) {
-      stopShooter();
+  @Override
+  public void disabledPeriodic() {
+    stopShooter();
+  }
 
-      return;
-    }
-
+  @Override
+  public void enabledPeriodic() {
     switch (state) {
       case STOP -> stopShooter();
       case MANUAL_OVERRIDE ->

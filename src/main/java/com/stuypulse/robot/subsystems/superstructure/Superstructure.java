@@ -6,7 +6,6 @@
 package com.stuypulse.robot.subsystems.superstructure;
 
 import org.wpilib.command3.Command;
-import org.wpilib.command3.Mechanism;
 import org.wpilib.command3.ParallelGroup;
 import org.wpilib.command3.button.CommandGamepad;
 import org.wpilib.driverstation.RobotState;
@@ -27,13 +26,13 @@ import com.stuypulse.robot.subsystems.superstructure.shooter.Shooter.ShooterStat
 import com.stuypulse.robot.subsystems.superstructure.turret.Turret;
 import com.stuypulse.robot.subsystems.superstructure.turret.Turret.TurretState;
 import com.stuypulse.robot.subsystems.swerve.Drive;
-
+import com.stuypulse.robot.util.FullSubsystem;
 import com.stuypulse.robot.constants.DriverConstants.*;
 
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
-public class Superstructure extends Mechanism {
+public class Superstructure extends FullSubsystem {
   private static final Superstructure instance;
 
   private SuperstructureState cachedState;
@@ -170,6 +169,7 @@ public class Superstructure extends Mechanism {
     return !shooter.isShooting();
   }
 
+  @Override
   public void periodicAfterScheduler() {
     if (state == SuperstructureState.SOTM && shouldStop() && RobotState.isEnabled()) {
       sotmStoppedTimer.start();

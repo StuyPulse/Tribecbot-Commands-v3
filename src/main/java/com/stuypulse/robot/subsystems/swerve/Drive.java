@@ -9,6 +9,8 @@ import static org.wpilib.units.Units.*;
 
 import org.wpilib.command3.Mechanism;
 import org.wpilib.driverstation.Alert;
+import org.wpilib.driverstation.DriverStation;
+import org.wpilib.driverstation.RobotState;
 import org.wpilib.math.estimator.SwerveDrivePoseEstimator;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
@@ -27,6 +29,7 @@ import com.stuypulse.robot.constants.Field;
 import com.stuypulse.robot.constants.GlobalSettings;
 import com.stuypulse.robot.constants.GlobalSettings.Mode;
 import com.stuypulse.robot.subsystems.superstructure.turret.TurretConstants.*;
+import com.stuypulse.robot.util.FullSubsystem;
 import com.stuypulse.robot.subsystems.superstructure.turret.Turret;
 
 import java.util.Optional;
@@ -35,7 +38,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class Drive extends Mechanism {
+public class Drive extends FullSubsystem {
   private static final Drive instance;
 
   private Optional<Boolean> isBehindHub = Optional.empty();
@@ -316,6 +319,9 @@ public class Drive extends Mechanism {
       ModuleIO frModuleIO,
       ModuleIO blModuleIO,
       ModuleIO brModuleIO) {
+    super(() -> {
+      return GlobalSettings.EnabledSubsystems.SWERVE.get() && RobotState.isEnabled();
+    });
     this.gyroIO = gyroIO;
     modules[0] = new Module(flModuleIO, 0, TunerConstants.FrontLeft);
     modules[1] = new Module(frModuleIO, 1, TunerConstants.FrontRight);
@@ -358,6 +364,7 @@ public class Drive extends Mechanism {
     //             (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
   }
 
+  @Override
   public void periodic() {
     odometryLock.lock(); // Prevents odometry updates while reading data
     gyroIO.updateInputs(gyroInputs);
@@ -367,15 +374,15 @@ public class Drive extends Mechanism {
     }
     odometryLock.unlock();
 
-    // Stop moving when disabled
-    if (!GlobalSettings.EnabledSubsystems.SWERVE.get()) {
+    
+    if (!isEnabled()) {
       for (var module : modules) {
         module.stop();
       }
     }
 
-    // Log empty setpoint states when disabled
-    if (!GlobalSettings.EnabledSubsystems.SWERVE.get()) {
+    
+    if (!isEnabled()) {
       Logger.recordOutput("SwerveStates/Setpoints", new SwerveModuleVelocity[] {});
       Logger.recordOutput("SwerveStates/SetpointsOptimized", new SwerveModuleVelocity[] {});
     }
