@@ -33,6 +33,16 @@ public abstract class FullSubsystem extends Mechanism {
 
   public FullSubsystem() {
     super();
+    this.isEnabled = () -> true;
+    instances.add(this);
+    Scheduler.getDefault().addPeriodic(this::periodicLoop);
+  }
+
+  public FullSubsystem(BooleanSupplier enabledSupplier) {
+    super();
+    this.isEnabled = enabledSupplier;
+    instances.add(this);
+    Scheduler.getDefault().addPeriodic(this::periodicLoop);
   }
 
   /**
@@ -69,6 +79,10 @@ public abstract class FullSubsystem extends Mechanism {
    * for stopping motors and zeroing out values.
    */
   public void disabledPeriodic() {}
+
+  public boolean isEnabled() {
+    return this.isEnabled.getAsBoolean();
+  }
 
   /** Run the "after periodic" methods for all subsystems. */
   public static void runAllPeriodicAfterScheduler() {
