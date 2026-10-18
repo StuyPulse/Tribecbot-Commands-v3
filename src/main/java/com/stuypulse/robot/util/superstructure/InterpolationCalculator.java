@@ -10,7 +10,7 @@ import static org.wpilib.units.Units.Radians;
 
 import org.wpilib.units.measure.Angle;
 import org.wpilib.units.measure.AngularVelocity;
-
+import org.littletonrobotics.junction.Logger;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Translation2d;
 import org.wpilib.math.interpolation.InterpolatingDoubleTreeMap;
@@ -21,7 +21,6 @@ import com.stuypulse.robot.subsystems.superstructure.hood.HoodConstants.*;
 
 import com.stuypulse.robot.subsystems.swerve.Drive;
 
-import dev.doglog.DogLog;
 import java.util.Optional;
 
 public class InterpolationCalculator {
@@ -140,9 +139,9 @@ public class InterpolationCalculator {
     AngularVelocity targetRPM = RPM.of(ferryingDistanceRPMInterpolator.get(distanceMeters));
     double flightTime = ferryingDistanceTOFInterpolator.get(distanceMeters);
 
-    DogLog.log("Superstructure/Interpolated Ferry Target Angle", targetAngle);
-    DogLog.log("Superstructure/Interpolated Ferry RPM", targetRPM);
-    DogLog.log("Superstructure/Interpolated Ferry TOF", flightTime);
+    Logger.recordOutput("Superstructure/Interpolated Ferry Target Angle", targetAngle);
+    Logger.recordOutput("Superstructure/Interpolated Ferry RPM", targetRPM);
+    Logger.recordOutput("Superstructure/Interpolated Ferry TOF", flightTime);
 
     return new InterpolatedFerryInfo(targetAngle, targetRPM, flightTime);
   }
