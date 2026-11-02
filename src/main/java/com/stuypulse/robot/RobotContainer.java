@@ -31,7 +31,6 @@ public class RobotContainer {
   // Robot container
 
   public RobotContainer() {
-    configureLogging();
     configureDefaultCommands();
     configureButtonBindings();
     configureAutons();
@@ -40,11 +39,6 @@ public class RobotContainer {
   /***************/
   /*** LOGGING ***/
   /***************/
-
-  private void configureLogging() {
-    DogLog.setOptions(
-        new DogLogOptions().withCaptureDs(true).withNtTunables(true).withLogExtras(true));
-  }
 
   /****************/
   /*** DEFAULTS ***/
