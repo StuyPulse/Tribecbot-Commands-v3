@@ -5,6 +5,10 @@ plugins {
     id "com.diffplug.spotless" version "8.9.0"
 }
 
+repositories {
+    mavenCentral()
+}
+
 java {
     sourceCompatibility = JavaVersion.VERSION_25
     targetCompatibility = JavaVersion.VERSION_25
