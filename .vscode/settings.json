@@ -57,6 +57,7 @@
     "org.wpilib.math.**.proto.*",
     "org.wpilib.math.**.struct.*",
   ],
+  "java.debug.settings.enableRunDebugCodeLens": false,
   "java.dependency.enableDependencyCheckup": false,
   "C_Cpp.errorSquiggles": "enabled"
 }
