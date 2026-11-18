@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main, staging ]
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
   systemcore:
     uses: StuyPulse/.github/.github/workflows/systemcore-build.yml@main
